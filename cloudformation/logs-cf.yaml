@@ -3,6 +3,8 @@ AWSTemplateFormatVersion: '2010-09-09'
 # This template sets up a complete logging infrastructure for the Cruddur app
 Description: This Template creates CloudWatch logs, CloudTrail for audit logging, and S3 storage.
 
+
+
 # Input parameters that customize the deployment for different environments and projects
 Parameters:
   environmentSelection:

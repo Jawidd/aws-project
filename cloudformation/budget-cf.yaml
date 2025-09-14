@@ -4,45 +4,122 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: This Template creates a budget, alarms, and notifications for cost monitoring.
 
 
+
+Mappings:
+  NotificationConfig:
+    UsageThresholdsPercentage:
+      Warning: 10    # Early warning at 10% of budget
+      Critical: 60   # Critical alert at 60% of budget
+
+
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Budget Configuration"
+        Parameters:
+          - BudgetAmount
+          - BudgetTimeUnit
+      - Label:
+          default: "Notification Settings"
+        Parameters:
+          - NotificationEmail
+    ParameterLabels:
+      BudgetAmount:
+        default: "Budget Limit ($)"
+      BudgetTimeUnit:
+        default: "Time Period"
+      NotificationEmail:
+        default: "Alert Email"
+
+
+
 Parameters:
   NotificationEmail:
+    ## # Optional email parameter - if empty, uses SSM stored email for security
+    #   aws ssm put-parameter \
+    #   --name "/budget/notification-email" \
+    #   --value "!!!your email here" \
+    #   --type "SecureString" \
+    #   --key-id "alias/my-key" \"
     Type: String
-    Description: Email for budget notifications (leave empty to use SSM stored email)
+    Description: Email for budget notifications (leave empty to use SSM Secure stored email) 
     Default: ""
 
+  BudgetAmount:
+    Type: Number
+    Description: Budget limit amount in USD
+    Default: 5
+    MinValue: 1
+    MaxValue: 50
+
+  BudgetTimeUnit:
+    Type: String
+    Description: Time unit for the budget
+    Default: MONTHLY
+    AllowedValues:
+      - DAILY
+      - MONTHLY
+      - QUARTERLY
+      - ANNUALLY
+
+
+# (userinput(parameter) or SSM)
 Conditions:
-  UseParameterEmailProvided: !Not [!Equals [!Ref NotificationEmail, ""]]
+  UseParameterEmail: !Not [!Equals [!Ref NotificationEmail, ""]]
+
+
 
 Resources:
-  # budget which supposed to keep costs near free tier limits or near $5
+  #budget which supposed to keep costs near free tier limits or near $5
   FreeTierBudget:
-  Type: AWS::Budgets::Budget
-  Properties:
-    Budget: 
-      BudgetLimit: 
-        Amount: 5
-        Unit: USD
-      BudgetName: FreeTierBudget
-      BudgetType: COST
-      TimeUnit: MONTHLY
-    NotificationsWithSubscribers:
-    - Notification: 
-          ComparisonOperator: GREATER_THAN
-          NotificationType: ACTUAL
-          Threshold: 5
-          ThresholdType: PERCENTAGE
-      Subscribers: 
-        - Address: jkhalidzada@gmail.com
-          SubscriptionType: EMAIL
-    - Notification: 
-          ComparisonOperator: GREATER_THAN
-          NotificationType: ACTUAL
-          Threshold: 50
-          ThresholdType: PERCENTAGE
-      Subscribers: 
-        - Address: jkhalidzada@gmail.com
-          SubscriptionType: EMAIL
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget: 
+        BudgetLimit: 
+          Amount: !Ref BudgetAmount
+          Unit: USD
+        BudgetName: FreeTierBudget
+        BudgetType: COST
+        TimeUnit: !Ref BudgetTimeUnit
+      NotificationsWithSubscribers:
+        # Warning notification at warning threshold
+      - Notification: 
+            ComparisonOperator: GREATER_THAN
+            NotificationType: ACTUAL
+            Threshold: !FindInMap [NotificationConfig, UsageThresholdsPercentage, Warning]
+            ThresholdType: PERCENTAGE
+        Subscribers: 
+          - Address: !If 
+              - UseParameterEmail
+              - !Ref NotificationEmail
+              - !Sub "{{resolve:ssm-secure:/budget/notification-email}}"
+            SubscriptionType: EMAIL
+        # Warning notification at critical threshold
+      - Notification: 
+            ComparisonOperator: GREATER_THAN
+            NotificationType: ACTUAL
+            Threshold: !FindInMap [NotificationConfig, UsageThresholdsPercentage, Critical]
+            ThresholdType: PERCENTAGE
+        Subscribers: 
+          - Address: !If 
+              - UseParameterEmail
+              - !Ref NotificationEmail
+              - !Sub "{{resolve:ssm-secure:/budget/notification-email}}"
+            SubscriptionType: EMAIL
 
 
 
-
+Outputs:
+  BudgetName:
+    Description: "Name of the created budget"
+    Value: !Ref FreeTierBudget
+    Export:
+      Name: !Sub "${AWS::StackName}-BudgetName"
+      
+  BudgetAmount:
+    Description: "Budget limit amount"
+    Value: !Ref BudgetAmount
+    Export:
+      Name: !Sub "${AWS::StackName}-BudgetAmount"
