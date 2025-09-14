@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Description: This Template creates a budget, alarms, and notifications for cost monitoring.
+
+
+Parameters:
+  NotificationEmail:
+    Type: String
+    Description: Email for budget notifications (leave empty to use SSM stored email)
+    Default: ""
+
+Conditions:
+  UseParameterEmailProvided: !Not [!Equals [!Ref NotificationEmail, ""]]
+
+Resources:
+  # budget which supposed to keep costs near free tier limits or near $5
+  FreeTierBudget:
+  Type: AWS::Budgets::Budget
+  Properties:
+    Budget: 
+      BudgetLimit: 
+        Amount: 5
+        Unit: USD
+      BudgetName: FreeTierBudget
+      BudgetType: COST
+      TimeUnit: MONTHLY
+    NotificationsWithSubscribers:
+    - Notification: 
+          ComparisonOperator: GREATER_THAN
+          NotificationType: ACTUAL
+          Threshold: 5
+          ThresholdType: PERCENTAGE
+      Subscribers: 
+        - Address: jkhalidzada@gmail.com
+          SubscriptionType: EMAIL
+    - Notification: 
+          ComparisonOperator: GREATER_THAN
+          NotificationType: ACTUAL
+          Threshold: 50
+          ThresholdType: PERCENTAGE
+      Subscribers: 
+        - Address: jkhalidzada@gmail.com
+          SubscriptionType: EMAIL
+
+
+
+
