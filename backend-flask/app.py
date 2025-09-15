@@ -68,7 +68,7 @@ def data_home():
 
 @app.route("/api/activities/notifications", methods=['GET'])
 def data_notifications():
-  data = notificationsActivities.run()
+  data = NotificationsActivities.run()
   return data, 200
 
 
