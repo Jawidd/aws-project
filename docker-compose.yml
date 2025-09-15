@@ -1,0 +1,28 @@
+services:
+  backend-flask:
+    environment:
+      FRONTEND_URL: "http://frontend-react-js:3000"
+      BACKEND_URL: "http://backend-flask:5000"
+    build: ./backend-flask
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend-flask:/backend-flask
+    networks:
+      - internal-network
+
+  frontend-react-js:
+    environment:
+      REACT_APP_BACKEND_URL: https://localhost:5000
+    build: ./frontend-react-js
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend-react-js:/frontend-react-js
+    networks:
+      - internal-network
+
+networks:
+  internal-network:
+    driver: bridge
+    name: cruddur
