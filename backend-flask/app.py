@@ -14,35 +14,33 @@ from services.create_message import *
 from services.show_activity import *
 from services.notifications_activities import *
 
-# #Honeycomb- Tracing
-# from opentelemetry import trace
-# from opentelemetry.instrumentation.flask import FlaskInstrumentor
-# from opentelemetry.instrumentation.requests import RequestsInstrumentor
-# from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter 
-# from opentelemetry.sdk.trace import TracerProvider
-# from opentelemetry.sdk.trace.export import BatchSpanProcessor
-# ##Honeycomb- Tracing - Exporter for !!Debugging to console
-# from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SimpleSpanProcessor
+#Honeycomb- Tracing
+from opentelemetry import trace
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.instrumentation.requests import RequestsInstrumentor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+##Honeycomb- Tracing - Exporter for !!Debugging to console
+# from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SimpleSpanProcessor #!!Debugging to console
 
-# #Honeycomb- Initialize tracing and exporter that can send data to Honeycomb
-# provider = TracerProvider()
-# processor = BatchSpanProcessor(OTLPSpanExporter())
-# provider.add_span_processor(processor)
-# trace.set_tracer_provider(provider)
-# tracer = trace.get_tracer(__name__)
+#Honeycomb- Initialize tracing and exporter that can send data to Honeycomb
+provider = TracerProvider()
+processor = BatchSpanProcessor(OTLPSpanExporter())
+provider.add_span_processor(processor)
 
 # #Honeycomb- exporter that can send data to console logs for !!Debugging
-# consoleProcessor = SimpleSpanProcessor(ConsoleSpanExporter())
-# provider.add_span_processor(consoleProcessor)
+# consoleProcessor = SimpleSpanProcessor(ConsoleSpanExporter()) #!!Debugging to console
+# provider.add_span_processor(consoleProcessor) #!!Debugging to console
 
-
+trace.set_tracer_provider(provider)
+tracer = trace.get_tracer(__name__)
 
 app = Flask(__name__)
 
-# #Honeycomb- Initialize autmomatic instrumentation with Flask and Requests
-# FlaskInstrumentor().instrument()
-# RequestsInstrumentor().instrument()
-
+#Honeycomb- Initialize autmomatic instrumentation with Flask and Requests
+FlaskInstrumentor().instrument_app(app)#FlaskInstrumentor().instrument()
+RequestsInstrumentor().instrument()
 
 frontend = os.getenv('FRONTEND_URL')
 backend = os.getenv('BACKEND_URL')
