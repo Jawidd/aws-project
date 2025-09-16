@@ -29,7 +29,7 @@ provider = TracerProvider()
 processor = BatchSpanProcessor(OTLPSpanExporter())
 provider.add_span_processor(processor)
 
-# #Honeycomb- exporter that can send data to console logs for !!Debugging
+# #Honeycomb- exporter that can send data to console logs for !!Debugging to console
 # consoleProcessor = SimpleSpanProcessor(ConsoleSpanExporter()) #!!Debugging to console
 # provider.add_span_processor(consoleProcessor) #!!Debugging to console
 
