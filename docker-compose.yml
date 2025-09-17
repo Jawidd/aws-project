@@ -42,16 +42,16 @@ services:
   #     - db:/var/lib/postgresql/data
 
 
-  xray-daemon:
-    image: amazon/aws-xray-daemon
-    env_file:
-      - .env
-    command:
-      - "xray -o -b xray-daemon:2000"
-    ports:
-      - 2000:2000/udp
-    networks:
-      - internal-network
+  # xray-daemon:
+  #   image: amazon/aws-xray-daemon
+  #   env_file:
+  #     - .env
+  #   command:
+  #     - "xray -o -b xray-daemon:2000"
+  #   ports:
+  #     - 2000:2000/udp
+  #   networks:
+  #     - internal-network
 
 
 networks:

@@ -8,8 +8,10 @@ opentelemetry-instrumentation
 opentelemetry-instrumentation-flask
 opentelemetry-instrumentation-requests
 
-aws-xray-sdk==2.4.2
+# aws-xray-sdk==2.4.2w
+# watchtower
 
-watchtower
+rollbar
+blinker
 
 
