@@ -1,7 +1,12 @@
 from datetime import datetime, timedelta, timezone
+# Import aws-X-Ray SDK
+from aws_xray_sdk.core import xray_recorder
 
 class NotificationsActivities:
   def run():
+    # aws-xray create a segment for tracing
+    segment = xray_recorder.begin_segment('notifs-activities-all-mock-data')
+    
     now = datetime.now(timezone.utc).astimezone()
     results = [{
       'uuid': '68f126b0-1ceb-4a33-88be-d90fa7109eee',
@@ -23,4 +28,12 @@ class NotificationsActivities:
         'created_at': (now - timedelta(days=2)).isoformat()
       }],
     }]
+    # Add metadata and annotations to the segment for filtering in aws-X-Ray
+    segment.put_annotation('method', 'notifis_run')
+    segment.put_annotation('results_count', len(results))
+ 
+    
+    
     return results
+  
+   
