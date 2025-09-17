@@ -4,7 +4,9 @@ from opentelemetry import trace
 tracer = trace.get_tracer("home.activities.service") 
 
 class HomeActivities:
-  def run():
+  def run(logger):
+    logger.info("home_activities.py - run function")
+    
     #using OpenTelemetry to create a span for tracing purposes.
     with tracer.start_as_current_span("home-activities-all-mock-data"):
       span=trace.get_current_span()
