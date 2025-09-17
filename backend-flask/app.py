@@ -33,6 +33,11 @@ provider.add_span_processor(processor)
 # consoleProcessor = SimpleSpanProcessor(ConsoleSpanExporter()) #!!Debugging to console
 # provider.add_span_processor(consoleProcessor) #!!Debugging to console
 
+# Set up aws-XRay
+from aws_xray_sdk.core import xray_recorder 
+from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
+from aws_xray_sdk.core import patch_all
+
 trace.set_tracer_provider(provider)
 tracer = trace.get_tracer(__name__)
 
@@ -45,6 +50,14 @@ RequestsInstrumentor().instrument()
 frontend = os.getenv('FRONTEND_URL')
 backend = os.getenv('BACKEND_URL')
 origins = [frontend, backend]
+
+# aws-xray configuration
+xray_recorder.configure(service='cruddur-backend-flask')
+XRayMiddleware(app, xray_recorder)
+patch_all() # patches requests to be traced by xray
+
+
+
 cors = CORS(
   app, 
   resources={r"/api/*": {"origins": origins}},
