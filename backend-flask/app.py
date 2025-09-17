@@ -28,10 +28,15 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 # consoleProcessor = SimpleSpanProcessor(ConsoleSpanExporter()) #!!Debugging to console
 # provider.add_span_processor(consoleProcessor) #!!Debugging to console
 
-# # Set up aws-XRay
-# from aws_xray_sdk.core import xray_recorder 
-# from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
+# Set up aws-XRay
+from aws_xray_sdk.core import xray_recorder 
+from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
 # from aws_xray_sdk.core import patch_all
+
+
+
+
+
 
 # # Watchtower
 # import watchtower
@@ -90,6 +95,10 @@ origins = [frontend, backend]
 # xray_recorder.configure(service='cruddur-backend-flask')
 # XRayMiddleware(app, xray_recorder)
 # patch_all() # patches requests to be traced by xray
+xray_url = os.getenv("AWS_XRAY_URL")
+xray_recorder.configure(service='cruddur-backend-flask', dynamic_naming=xray_url)
+XRayMiddleware(app, xray_recorder)
+
 
 
 
@@ -156,9 +165,16 @@ def data_home():
   return data, 200
 
 @app.route("/api/activities/notifications", methods=['GET'])
+@xray_recorder.capture('notifications_activities')
 def data_notifications():
-  data = NotificationsActivities.run()
-  return data, 200
+  user_handle = 'andrewbrown'
+  notifications_service = NotificationsActivities(request)
+  model = notifications_service.run(user_handle)
+  if model['errors'] is not None:
+    return model['errors'], 422
+  else:
+    return model['data'], 200
+
 
 @app.route("/api/activities/@<string:handle>", methods=['GET'])
 def data_handle(handle):
