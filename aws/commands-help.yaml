@@ -1,7 +1,0 @@
-#thses need to be added for aws-xray configuration
-#aws xray create-group --group-name cruddur-xray-group --filter-expression 'service("cruddur-backend-flask")'
-#aws xray create-sampling-rule --cli-input-json file://aws/json/xray-sampling-rule.json
-
-
-#check service data for last 10 minutes
-#aws xray get-service-graph --start-time $(date -u -d '10 minutes ago' +%Y-%m-%dT%H:%M:%SZ) --end-time $(date -u +%Y-%m-%dT%H:%M:%SZ)
