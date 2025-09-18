@@ -3,26 +3,30 @@ import React from "react";
 import {ReactComponent as Logo} from '../components/svg/logo.svg';
 import { Link } from "react-router-dom";
 
-// [TODO] Authenication
-import Cookies from 'js-cookie'
+import { signIn } from 'aws-amplify/auth';
 
 export default function SigninPage() {
-
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [errors, setErrors] = React.useState('');
 
   const onsubmit = async (event) => {
-    event.preventDefault();
     setErrors('')
-    console.log('onsubmit')
-    if (Cookies.get('user.email') === email && Cookies.get('user.password') === password){
-      Cookies.set('user.logged_in', true)
-      window.location.href = "/"
-    } else {
-      setErrors("Email and password is incorrect or account doesn't exist")
+    event.preventDefault();   
+    try {
+      console.log('Authentication successful for user:', email); //DEBUG!! line
+      const { isSignedIn, nextStep } = await signIn({ username: email, password });
+      if (isSignedIn) {
+        console.log('Authentication successful for user:', email);//DEBUG!! line
+        window.location.href = "/";
+      }
+    } catch (error) {
+      if (error.name === 'UserNotConfirmedException') {
+        window.location.href = "/confirm"
+      }
+      setErrors(error.message)
     }
-    return false
+    return false;
   }
 
   const email_onchange = (event) => {
@@ -71,7 +75,6 @@ export default function SigninPage() {
             <Link to="/forgot" className="forgot-link">Forgot Password?</Link>
             <button type='submit'>Sign In</button>
           </div>
-
         </form>
         <div className="dont-have-an-account">
           <span>
@@ -80,7 +83,6 @@ export default function SigninPage() {
           <Link to="/signup">Sign up!</Link>
         </div>
       </div>
-
     </article>
   );
 }

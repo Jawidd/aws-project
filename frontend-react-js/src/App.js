@@ -16,6 +16,25 @@ import {
   RouterProvider
 } from "react-router-dom";
 
+// Amplify
+import { Amplify } from 'aws-amplify';
+
+Amplify.configure({
+  Auth: {
+    Cognito: {
+      region: process.env.REACT_APP_AWS_REGION,
+      userPoolId: process.env.REACT_APP_USER_POOL_ID,
+      userPoolClientId: process.env.REACT_APP_USER_POOL_CLIENT_ID,
+      loginWith: {
+        email: true
+      }
+    }
+  }
+});
+
+
+
+
 const router = createBrowserRouter([
   {
     path: "/",

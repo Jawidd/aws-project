@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: This template sets up AWS-cognito for Cruddur application user authentication.
+
+
+
+Parameters: 
+  environmentSelection:
+    Description: "The environment for the resources(dev or prod)"
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+
+
+Resources:
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: cruddur-user-pool
+      EmailAuthenticationMessage: 'Your authentication code is {####}'
+      EmailVerificationMessage: 'Your verification code is {####}'
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      UsernameAttributes:
+        - email
+      UsernameConfiguration:
+        CaseSensitive: False
+      UserPoolTags:
+        Env : !Ref environmentSelection
+      #explicitly defining account recovery via email only
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      #explicitly enabled self sign up 
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      #explicitly enable automatic email verification
+      AutoVerifiedAttributes:
+        - email
+      #additional required attributes
+      Schema:
+        - Name: name
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+  appClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: cruddur-app-client
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+
+
+
+Outputs:
+  UserPoolId:
+    Description: "The ID of the Cognito User Pool"
+    Value: !Ref CognitoUserPool
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolId"
+  UserPoolClientId:
+    Description: "The ID of the Cognito User Pool Client"
+    Value: !Ref appClient
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolClientId"

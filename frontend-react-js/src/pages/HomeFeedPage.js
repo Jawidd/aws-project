@@ -1,14 +1,17 @@
 import './HomeFeedPage.css';
 import React from "react";
 
+// amplify-cognito Authenication
+import { getCurrentUser, signOut } from 'aws-amplify/auth';
+
+
+
 import DesktopNavigation  from '../components/DesktopNavigation';
 import DesktopSidebar     from '../components/DesktopSidebar';
 import ActivityFeed from '../components/ActivityFeed';
 import ActivityForm from '../components/ActivityForm';
 import ReplyForm from '../components/ReplyForm';
 
-// [TODO] Authenication
-import Cookies from 'js-cookie'
 
 export default function HomeFeedPage() {
   const [activities, setActivities] = React.useState([]);
@@ -17,6 +20,7 @@ export default function HomeFeedPage() {
   const [replyActivity, setReplyActivity] = React.useState({});
   const [user, setUser] = React.useState(null);
   const dataFetchedRef = React.useRef(false);
+  
 
   const loadData = async () => {
     try {
@@ -35,16 +39,35 @@ export default function HomeFeedPage() {
     }
   };
 
-  const checkAuth = async () => {
-    console.log('checkAuth')
-    // [TODO] Authenication
-    if (Cookies.get('user.logged_in')) {
-      setUser({
-        display_name: Cookies.get('user.name'),
-        handle: Cookies.get('user.username')
-      })
-    }
-  };
+  // const checkAuth = async () => {
+  //   console.log('checkAuth')
+  //   // [TODO] Authenication
+  //   if (Cookies.get('user.logged_in')) {
+  //     setUser({
+  //       display_name: Cookies.get('user.name'),
+  //       handle: Cookies.get('user.username')
+  //     })
+  //   }
+  // };
+
+//check auth with amplify-cognito
+const checkAuth = async () => {
+  try {
+    const user = await getCurrentUser();
+    console.log({user});
+    setUser({
+      display_name: user.signInDetails?.loginId || user.username,
+      handle: user.username
+    });
+  } catch (err) {
+    console.log(err);
+    setUser(null);
+  }
+};
+
+
+
+
 
   React.useEffect(()=>{
     //prevents double call

@@ -57,3 +57,11 @@ Resources:
         Version: 1
         ResourceARN: "*"
         Attributes: {}
+
+Outputs:
+  XRayGroupARN:
+    Description: "The ARN of the X-Ray group" 
+    Value: !GetAtt CruddurXrayGroup.GroupARN
+  XRaySamplingRuleARN:
+    Description: "The ARN of the X-Ray sampling rule"
+    Value: !GetAtt CruddurXraySamplingRule.RuleARN  
