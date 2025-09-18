@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: This template sets up AWS X-Ray for logging Cruddur application's API calls.
+
+Parameters:
+  AppName:
+    Type: String
+    Description: The name of the application
+    Default: cruddur
+
+  ServiceName:
+    Type: String
+    Description: The name of the service (e.g., backend-flask)
+    Default: backend-flask
+
+  Priority:
+    Type: Number
+    Description: Priority of the sampling rule (lower numbers have higher priority)
+    Default: 9000
+    MinValue: 1
+    MaxValue: 9999
+
+  FixedRate:
+    Type: Number
+    Description: Fixed rate of sampling (0.0 to 1.0)
+    Default: 0.1
+    MinValue: 0.0
+    MaxValue: 1.0
+
+  ReservoirSize:
+    Type: Number
+    Description: Number of requests to sample per second
+    Default: 5
+    MinValue: 0
+    MaxValue: 9999
+
+Resources:
+  CruddurXrayGroup:
+    Type: AWS::XRay::Group
+    Properties:
+      FilterExpression: !Sub 'service("${AppName}-${ServiceName}")'
+      GroupName: !Sub "${AppName}-xray-group"
+      
+  CruddurXraySamplingRule:
+    Type: AWS::XRay::SamplingRule
+    Properties:
+      SamplingRule:
+        RuleName: !Sub "${AppName}-xray-sampling-rule"
+        Priority: !Ref Priority
+        FixedRate: !Ref FixedRate
+        ReservoirSize: !Ref ReservoirSize
+        ServiceName: !Sub "${AppName}-${ServiceName}"
+        ServiceType: "*"
+        Host: "*"
+        HTTPMethod: "*"
+        URLPath: "*"
+        Version: 1
+        ResourceARN: "*"
+        Attributes: {}
