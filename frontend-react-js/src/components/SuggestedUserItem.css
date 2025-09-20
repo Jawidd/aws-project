@@ -1,24 +1,36 @@
 .suggested_users {
   display: flex;
   flex-direction: column;
-  background: #000;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
   margin-top: 24px;
+  overflow: hidden;
 }
 
 .suggested_users_title {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 700;
   color: #fff;
-  padding: 16px;
-  border-bottom: solid 1px rgb(31,36,49);
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .suggested_users .user {
   text-decoration: none;
   font-size: 16px;
   color: #fff;
-  padding: 16px;
+  padding: 16px 24px;
   display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.suggested_users .user:hover {
+  background: rgba(59, 130, 246, 0.1);
+  transform: translateX(4px);
 }
 
 .suggested_users .user span {
@@ -26,15 +38,17 @@
 }
 
 .suggested_users .user span.handle {
-  font-size: 13px;
-  color: rgba(255,255,255,0.5)
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .suggested_users .avatar {
-  background: rgb(149,0,255);
-  height: 36px;
-  width: 36px;
-  border-radius: 999px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  height: 40px;
+  width: 40px;
+  border-radius: 12px;
   flex-shrink: 0;
-  margin-right: 12px;
+  margin-right: 16px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }

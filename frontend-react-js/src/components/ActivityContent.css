@@ -2,24 +2,27 @@
   display: flex;
   flex-direction: row;
   align-items: start;
+  gap: 16px;
 }
 
 .activity_content {
   flex-grow: 1;
-  padding-left: 12px;
 }
 
 .activity_content_wrap .activity_avatar {
-  background: rgb(149,0,255);
-  height: 60px;
-  width: 60px;
-  border-radius: 999px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  height: 48px;
+  width: 48px;
+  border-radius: 12px;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
 .activity_content .activity_meta {
   display: flex;
   justify-content: space-between;
+  align-items: start;
+  margin-bottom: 8px;
 }
 
 .activity_content a.activity_identity {
@@ -29,39 +32,47 @@
 }
 
 .activity_content a.activity_identity .display_name {
-  font-weight: 800;
+  font-weight: 700;
   color: #fff;
+  margin-right: 8px;
 }
 
-.activity_content  a.activity_identity .handle {
-  color: rgb(255,255,255,0.5);
+.activity_content a.activity_identity .handle {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
 }
 
 .activity_content .activity_times {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  gap: 4px;
 }
 
 .activity_content .activity_times .created_at {
-  color: rgb(72,77,95);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 14px;
+  font-weight: 500;
 }
 
 .activity_content .activity_times .expires_at {
-  color: rgb(149,0,255);
+  color: #3b82f6;
   font-size: 14px;
+  font-weight: 600;
   display: flex;
-  gap: 2px;
+  gap: 4px;
+  align-items: center;
 }
+
 .activity_content .activity_times .expires_at svg.icon {
-  fill: rgb(149,0,255);
+  fill: #3b82f6;
   width: 14px;
   height: 14px;
 }
 
 .activity_content .message {
-  color: #fff;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 16px;
+  line-height: 1.5;
   margin-top: 8px;
 }

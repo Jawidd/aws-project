@@ -43,6 +43,9 @@ import rollbar.contrib.flask
 
 #importing libraries for Cognito JWT token verification
 from lib.cognito_jwt_token import token_required
+#importing libraries for Cognito JWT token verification
+from lib.cognito_jwt_token import token_required, CognitoJwtToken
+
 
 
 app = Flask(__name__)
@@ -134,10 +137,26 @@ def data_create_message():
 
 @app.route("/api/activities/home", methods=['GET'])
 @cross_origin()
-@token_required
-def data_home(claims):
-  data = HomeActivities.run()
-  return data, 200
+def data_home():
+    claims = None
+    auth_header = request.headers.get('Authorization')
+    
+    if auth_header:
+        try:
+            token = auth_header.split(' ')[1]
+            cognito_jwt_token = CognitoJwtToken(
+                user_pool_id=os.getenv('REACT_APP_USER_POOL_ID'),
+                user_pool_client_id=os.getenv('REACT_APP_USER_POOL_CLIENT_ID'),
+                region=os.getenv('REACT_APP_AWS_REGION')
+            )
+            if cognito_jwt_token.verify(token):
+                claims = cognito_jwt_token.claims
+        except:
+            pass  # Ignore auth errors, proceed as unauthenticated
+    
+    data = HomeActivities.run(user_claims=claims)
+    return data, 200
+
 
 
 

@@ -1,19 +1,26 @@
 section.message_groups {
-  background: #000;
-  border-right: solid 1px rgb(58,63,78);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0px;
 }
 
 .message_group_feed_heading {
-  padding: 16px;
-  padding-bottom: 48px;
-  border-bottom: solid 1px rgb(58,63,78);
+  padding: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.message_group_feed_heading .title{
+.message_group_feed_heading .title {
   color: #fff;
-  font-weight: 800;
-  font-size: 20px;
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: -0.025em;
+  background: linear-gradient(135deg, #fff 0%, #e2e8f0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .message_group_feed {
