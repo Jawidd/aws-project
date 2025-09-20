@@ -1,12 +1,12 @@
 article.signup-article .signup-info {
   flex-grow: 1;
-  padding-left: 12px;
+  padding-left: 24px;
 }
 
 article.signup-article .signup-info .logo {
   width: 140px;
   height: 140px;
-  fill: #2021246c;
+  fill: rgba(59, 130, 246, 0.3);
 }
 
 article.signup-article {
@@ -14,109 +14,140 @@ article.signup-article {
   width: 100%;
   height: 100%;
   justify-content: flex-start;
-  background: #8819f5;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
 article.signup-article .signup-wrapper {
-  background: #202124;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   width: 760px;
   display: flex;
   padding-top: 120px;
   flex-direction: column;
 }
+
 article.signup-article form {
   padding: 0px 120px;
   flex-grow: 1;
 }
 
 article.signup-article label {
-  padding: 4px 0px;
+  padding: 8px 0px;
   display: block;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  font-size: 14px;
 }
 
 article.signup-article input[type='text'],
 article.signup-article input[type='password'] {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 16px;
-  border-radius: 4px;
+  border-radius: 12px;
   border: none;
   outline: none;
   display: block;
-  outline: none;
   resize: none;
   width: 100%;
-  padding: 16px;
-  border: solid 1px #555555;
-  background: #1f1f1f;
+  padding: 16px 20px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgba(59, 130, 246, 0.05);
   color: #fff;
+  transition: all 0.3s ease;
 }
 
 .field.email {
-  margin-top: 16px;
+  margin-top: 20px;
 }
 .field.username {
-  margin-top: 16px;
+  margin-top: 20px;
 }
 .field.password {
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
-article.signup-article input[type='text']:focus ,
+article.signup-article input[type='text']:focus,
 article.signup-article input[type='password']:focus {
-  border: solid 1px rgb(149,0,255,1);
+  border: 1px solid #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 article.signup-article .submit {
-  margin-top: 24px;
+  margin-top: 32px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
 }
 
-article.signup-article  h2 {
+article.signup-article h2 {
   text-align: center;
   color: #fff;
+  font-weight: 700;
+  font-size: 28px;
+  margin-bottom: 32px;
 }
 
 article.signin-article a.forgot-link {
-  color: #fff;
+  color: #3b82f6;
   font-weight: 600;
   text-decoration: none;
+  transition: all 0.3s ease;
 }
 
+article.signin-article a.forgot-link:hover {
+  color: #1d4ed8;
+}
 
 article.signup-article button[type='submit'] {
-  font-weight: 800;
+  font-weight: 700;
   outline: none;
   border: none;
-  border-radius: 6px;
-  padding: 18px 28px;
+  border-radius: 12px;
+  padding: 16px 32px;
   font-size: 16px;
-  background: rgba(149,0,255,1);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+}
+
+article.signup-article button[type='submit']:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
 }
 
 .already-have-an-account {
-  background: #252525;
-  padding: 24px;
-  color: rgba(255,255,255,0.6);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  padding: 32px;
+  color: rgba(255, 255, 255, 0.7);
   gap: 8px;
   display: flex;
   justify-content: center;
+  font-weight: 500;
 }
+
 .already-have-an-account a {
-  color: rgba(149,0,255,1);
+  color: #3b82f6;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.already-have-an-account a:hover {
+  color: #1d4ed8;
 }
 
 .errors {
   padding: 16px;
-  border-radius: 8px;
-  background: rgba(255,0,0,0.3);
-  color: rgb(255,255,255);
-  margin-top: 16px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  margin-top: 20px;
   font-size: 14px;
+  font-weight: 500;
 }

@@ -1,23 +1,39 @@
 .trendings {
   display: flex;
   flex-direction: column;
-  background: #000;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
   margin-top: 24px;
+  overflow: hidden;
 }
 
 .trendings .trendings-title {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 700;
   color: #fff;
-  padding: 16px;
-  border-bottom: solid 1px rgb(31,36,49);
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .trendings a {
   text-decoration: none;
   font-size: 16px;
   color: #fff;
-  padding: 16px;
+  padding: 16px 24px;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.trendings a:hover {
+  background: rgba(59, 130, 246, 0.1);
+  transform: translateX(4px);
+}
+
+.trendings a:last-child {
+  border-bottom: none;
 }
 
 .trendings a span {
@@ -25,6 +41,8 @@
 }
 
 .trendings a span.count {
-  font-size: 13px;
-  color: rgba(255,255,255,0.5)
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
 }

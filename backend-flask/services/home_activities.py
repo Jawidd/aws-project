@@ -4,7 +4,7 @@ from opentelemetry import trace
 tracer = trace.get_tracer("home.activities.service") 
 
 class HomeActivities:
-  def run():
+  def run(user_claims=None):
     
     #using OpenTelemetry to create a span for tracing purposes.
     with tracer.start_as_current_span("home-activities-all-mock-data"):
@@ -12,6 +12,7 @@ class HomeActivities:
       now = datetime.now(timezone.utc).astimezone()
       span.set_attribute("app.now", now.isoformat())
       
+      # Public messages - visible to all users
       results = [{
         'uuid': '68f126b0-1ceb-4a33-88be-d90fa7109eee',
         'handle':  'Andrew Brown',
@@ -31,27 +32,30 @@ class HomeActivities:
           'reposts_count': 0,
           'created_at': (now - timedelta(days=2)).isoformat()
         }],
-      },
-      {
-        'uuid': '66e12864-8c26-4c3a-9658-95a10f8fea67',
-        'handle':  'Worf',
-        'message': 'I am out of prune juice',
-        'created_at': (now - timedelta(days=7)).isoformat(),
-        'expires_at': (now + timedelta(days=9)).isoformat(),
-        'likes': 0,
-        'replies': []
-      },
-      {
-        'uuid': '248959df-3079-4947-b847-9e0892d1bab4',
-        'handle':  'Garek',
-        'message': 'My dear doctor, I am just simple tailor',
-        'created_at': (now - timedelta(hours=1)).isoformat(),
-        'expires_at': (now + timedelta(hours=12)).isoformat(),
-        'likes': 0,
-        'replies': []
-      }
-      ]
+      }]
+      
+      # Authorized-only messages
+      if user_claims:
+        results.extend([
+          {
+            'uuid': '66e12864-8c26-4c3a-9658-95a10f8fea67',
+            'handle':  'Worf',
+            'message': 'I am out of prune juice',
+            'created_at': (now - timedelta(days=7)).isoformat(),
+            'expires_at': (now + timedelta(days=9)).isoformat(),
+            'likes': 0,
+            'replies': []
+          },
+          {
+            'uuid': '248959df-3079-4947-b847-9e0892d1bab4',
+            'handle':  'Garek',
+            'message': 'My dear doctor, I am just simple tailor',
+            'created_at': (now - timedelta(hours=1)).isoformat(),
+            'expires_at': (now + timedelta(hours=12)).isoformat(),
+            'likes': 0,
+            'replies': []
+          }
+        ])
+      
       span.set_attribute("app.results_length", len(results))
       return results
-   
-      
