@@ -3,8 +3,9 @@ import React from "react";
 import {ReactComponent as Logo} from '../components/svg/logo.svg';
 import { Link } from "react-router-dom";
 
+import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';
+
 export default function RecoverPage() {
-  // Username is Eamil
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [passwordAgain, setPasswordAgain] = React.useState('');
@@ -13,14 +14,35 @@ export default function RecoverPage() {
   const [formState, setFormState] = React.useState('send_code');
 
   const onsubmit_send_code = async (event) => {
+    setErrors('');
     event.preventDefault();
-    console.log('onsubmit_send_code')
-    return false
+    try {
+      await resetPassword({ username });
+      setFormState('confirm_code');
+    } catch (error) {
+      setErrors(error.message);
+    }
+    return false;
   }
+
   const onsubmit_confirm_code = async (event) => {
+    setErrors('');
     event.preventDefault();
-    console.log('onsubmit_confirm_code')
-    return false
+    if (password !== passwordAgain) {
+      setErrors('Passwords do not match');
+      return false;
+    }
+    try {
+      await confirmResetPassword({
+        username,
+        confirmationCode: code,
+        newPassword: password
+      });
+      setFormState('success');
+    } catch (error) {
+      setErrors(error.message);
+    }
+    return false;
   }
 
   const username_onchange = (event) => {
@@ -61,7 +83,6 @@ export default function RecoverPage() {
       <div className='submit'>
         <button type='submit'>Send Recovery Code</button>
       </div>
-
     </form>
     )
   }
@@ -98,7 +119,7 @@ export default function RecoverPage() {
           />
         </div>
       </div>
-      {errors}
+      {el_errors}
       <div className='submit'>
         <button type='submit'>Reset Password</button>
       </div>
@@ -112,7 +133,7 @@ export default function RecoverPage() {
       <Link to="/signin" className="proceed">Proceed to Signin</Link>
     </form>
     )
-    }
+  }
 
   let form;
   if (formState == 'send_code') {
@@ -133,7 +154,6 @@ export default function RecoverPage() {
       <div className='recover-wrapper'>
         {form}
       </div>
-
     </article>
   );
 }
