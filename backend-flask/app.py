@@ -14,63 +14,49 @@ from services.create_message import *
 from services.show_activity import *
 from services.notifications_activities import *
 
-#Honeycomb- Tracing
+
+# Importing libraries for logging and tracing
+#   Using Rollbar for error logging
+#   Using Honeycomb for tracing
+#   Using AWS X-Ray for tracing
+# Importing libraries for AWS X-Ray
+from aws_xray_sdk.core import xray_recorder 
+from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
+# Importing libraries for Honeycomb
 from opentelemetry import trace
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-##Honeycomb- Tracing - Exporter for !!Debugging to console
-# from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SimpleSpanProcessor #!!Debugging to console
-
-# #Honeycomb- exporter that can send data to console logs for !!Debugging to console
-# consoleProcessor = SimpleSpanProcessor(ConsoleSpanExporter()) #!!Debugging to console
-# provider.add_span_processor(consoleProcessor) #!!Debugging to console
-
-# Set up aws-XRay
-from aws_xray_sdk.core import xray_recorder 
-from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
-# from aws_xray_sdk.core import patch_all
-
-
-
-
-
-
-# # Watchtower
-# import watchtower
-# import logging
-# from time import strftime
-
-# # configure logger to use watchtower to log to cloudwatch
-# LOGGER = logging.getLogger(__name__)
-# LOGGER.setLevel(logging.DEBUG)
-# console_handler = logging.StreamHandler()
-# cw_handler= watchtower.CloudWatchLogHandler(log_group='cruddur-watchtower')
-# LOGGER.addHandler(console_handler)
-# LOGGER.addHandler(cw_handler)
-# LOGGER.info('app startedd - logging to Cloudwatch')
-
-#Honeycomb- Initialize tracing and exporter that can send data to Honeycomb
+# OpenTelemetry + Honeycomb configuration
 provider = TracerProvider()
 processor = BatchSpanProcessor(OTLPSpanExporter())
 provider.add_span_processor(processor)
 trace.set_tracer_provider(provider)
 tracer = trace.get_tracer(__name__)
-
-#rollbar import 
+# importing libraries for rollbar
 import os
 import rollbar
 import rollbar.contrib.flask
 
+
+#importing libraries for Cognito JWT token verification
+from lib.cognito_jwt_token import token_required
+
+
 app = Flask(__name__)
 
-#Honeycomb- Initialize autmomatic instrumentation with Flask and Requests
-FlaskInstrumentor().instrument_app(app)#FlaskInstrumentor().instrument()
-RequestsInstrumentor().instrument()
 
-# Rollbar configuration
+#Logging and Tracing configuration
+#   X-Ray- Configure X-Ray with Flask
+xray_url = os.getenv("AWS_XRAY_URL")
+xray_recorder.configure(service='cruddur-backend-flask', dynamic_naming=xray_url)
+XRayMiddleware(app, xray_recorder)
+#   Honeycomb- Initialize autmomatic instrumentation with Flask and Requests
+FlaskInstrumentor().instrument_app(app)
+RequestsInstrumentor().instrument()
+#   Rollbar configuration
 from flask import got_request_exception
 with app.app_context():
     """init rollbar module"""
@@ -83,45 +69,28 @@ with app.app_context():
         root=os.path.dirname(os.path.realpath(__file__)),
         # flask already sets up logging
         allow_logging_basic_config=False)
-
     # send exceptions from `app` to rollbar, using flask's signal system.
     got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
-
-frontend = os.getenv('FRONTEND_URL')
-backend = os.getenv('BACKEND_URL')
-origins = [frontend, backend]
-
-# # aws-xray configuration
-# xray_recorder.configure(service='cruddur-backend-flask')
-# XRayMiddleware(app, xray_recorder)
-# patch_all() # patches requests to be traced by xray
-xray_url = os.getenv("AWS_XRAY_URL")
-xray_recorder.configure(service='cruddur-backend-flask', dynamic_naming=xray_url)
-XRayMiddleware(app, xray_recorder)
-
-
-
-
-cors = CORS(
-  app, 
-  resources={r"/api/*": {"origins": origins}},
-  expose_headers="location,link",
-  allow_headers="content-type,if-modified-since",
-  methods="OPTIONS,GET,HEAD,POST"
-)
-
-#watchtower , cloudwatch logging
-# @app.after_request
-# def after_request(response):
-#   timesstamp = strftime('[%Y-%b-%d %H:%M]')
-#   LOGGER.error('%s %s %s %s %s %s', timesstamp,request.remote_addr, request.method, request.scheme, request.full_path, response.status)
-#   return response
-
-#Rollbar test route
+#Rollbar test route for DEBUGGING!!
 @app.route('/rollbar/test')
 def rollbar_test():
     rollbar.report_message('Hello World!(TESTING ROLLBAR)','warning')
     return 'Hello World (TESTING ROLLBAR)'
+
+
+#CORS configuration
+frontend = os.getenv('FRONTEND_URL')
+backend = os.getenv('BACKEND_URL')
+origins = [frontend, backend]
+cors = CORS(
+  app, 
+  resources={r"/api/*": {"origins": origins}},
+  expose_headers="location,link",
+  allow_headers="content-type,if-modified-since,authorization",
+  methods="OPTIONS,GET,HEAD,POST"
+)
+
+
 
 
 @app.route("/api/message_groups", methods=['GET'])
@@ -132,6 +101,7 @@ def data_message_groups():
     return model['errors'], 422
   else:
     return model['data'], 200
+
 
 @app.route("/api/messages/@<string:handle>", methods=['GET'])
 def data_messages(handle):
@@ -144,6 +114,9 @@ def data_messages(handle):
   else:
     return model['data'], 200
   return
+
+
+
 
 @app.route("/api/messages", methods=['POST','OPTIONS'])
 @cross_origin()
@@ -160,9 +133,14 @@ def data_create_message():
   return
 
 @app.route("/api/activities/home", methods=['GET'])
-def data_home():
+@cross_origin()
+@token_required
+def data_home(claims):
   data = HomeActivities.run()
   return data, 200
+
+
+
 
 @app.route("/api/activities/notifications", methods=['GET'])
 @xray_recorder.capture('notifications_activities')

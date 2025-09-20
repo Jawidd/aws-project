@@ -2,7 +2,7 @@ import './HomeFeedPage.css';
 import React from "react";
 
 // amplify-cognito Authenication
-import { getCurrentUser, signOut } from 'aws-amplify/auth';
+import { getCurrentUser, signOut , fetchAuthSession} from 'aws-amplify/auth';
 
 
 
@@ -24,8 +24,15 @@ export default function HomeFeedPage() {
 
   const loadData = async () => {
     try {
+      const session = await fetchAuthSession(); //ass session tokens as headers 
+      const token = session.tokens?.accessToken?.toString(); //ass session tokens as headers 
+
+
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`
       const res = await fetch(backend_url, {
+        headers: { 
+          Authorization: `Bearer ${token}` //ass session tokens as headers 
+        },
         method: "GET"
       });
       let resJson = await res.json();
@@ -39,16 +46,6 @@ export default function HomeFeedPage() {
     }
   };
 
-  // const checkAuth = async () => {
-  //   console.log('checkAuth')
-  //   // [TODO] Authenication
-  //   if (Cookies.get('user.logged_in')) {
-  //     setUser({
-  //       display_name: Cookies.get('user.name'),
-  //       handle: Cookies.get('user.username')
-  //     })
-  //   }
-  // };
 
 //check auth with amplify-cognito
 const checkAuth = async () => {
