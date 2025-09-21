@@ -1,0 +1,4 @@
+#! /usr/bin/bash
+
+source $(dirname $0)/.env
+psql $CONNECTION_URL
