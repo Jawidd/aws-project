@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudWatch billing alarm to monitor RDS costs
+
+Parameters:
+  EmailAddress:
+    Type: String
+    Description: Email for budget notifications (leave empty to use SSM Secure stored email) 
+    Default: ""
+    
+Resources:
+  # SNS Topic for cost alerts
+  CostAlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: rds-cost-alerts
+      DisplayName: RDS Cost Alerts
+
+  # Email subscription
+  EmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      TopicArn: !Ref CostAlertTopic
+      Endpoint: !Ref EmailAddress
+
+  # Billing alarm for RDS costs
+  RDSCostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: RDS-Monthly-Cost-Alert
+      AlarmDescription: Alert when RDS costs exceed $5/month
+      MetricName: EstimatedCharges
+      Namespace: AWS/Billing
+      Statistic: Maximum
+      Period: 86400  # 24 hours
+      EvaluationPeriods: 1
+      Threshold: 5.00
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: Currency
+          Value: USD
+        - Name: ServiceName
+          Value: AmazonRDS
+      AlarmActions:
+        - !Ref CostAlertTopic
+
+  # Free tier usage alarm
+  FreeTierAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: RDS-Free-Tier-Usage-Alert
+      AlarmDescription: Alert at 80% of free tier usage
+      MetricName: EstimatedCharges
+      Namespace: AWS/Billing
+      Statistic: Maximum
+      Period: 86400
+      EvaluationPeriods: 1
+      Threshold: 0.50  # Alert at $0.50 (before hitting free tier limit)
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: Currency
+          Value: USD
+        - Name: ServiceName
+          Value: AmazonRDS
+      AlarmActions:
+        - !Ref CostAlertTopic
+
+Outputs:
+  SNSTopicArn:
+    Description: SNS Topic for cost alerts
+    Value: !Ref CostAlertTopic
+    Export:
+      Name: !Sub '${AWS::StackName}-CostAlertTopic'
