@@ -2,16 +2,12 @@
 
 source $(dirname $0)/.env
 
-printf "\033[1;36m == db-schema-load-file \033[0m\n " 
-
-
-
-if [ $ENV_TYPE = "dev" ]; then
-    echo "dev environment"
-    psql $CONNECTION_URL cruddur < $(dirname $0)/../db/schema.sql
+if [ "$ENV_TYPE" = "prod" ]; then
+    printf "\033[1;35m == db-schema-load-file rds-psql-db \033[0m\n " 
+    psql $AWS_RDS_PSQL_CONNECTION cruddur < $(dirname $0)/../db/schema.sql
 else
+    printf "\033[1;36m == db-schema-load-file localhost-postgresql \033[0m\n " 
     psql $CONNECTION_URL cruddur < $(dirname $0)/../db/schema.sql
-    echo "prod envirnment"
 fi
 
 

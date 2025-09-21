@@ -9,12 +9,13 @@ Parameters:
     Type: String
     Default: cruddur
     Description: Database user name
-    NoEcho: true
+
   DBPassword:
     Type: String
     NoEcho: true
     MinLength: 8
     Description: Database admin password
+    Default: SuperSecretPassword #for dev
  
 
 Resources:
@@ -23,10 +24,10 @@ Resources:
     Properties: 
       # Basic Database Configuration
       Engine: "postgres"
-      EngineVersion: "15.4"
+      EngineVersion: "17.6"
       DBInstanceClass: "db.t3.micro"
       DBInstanceIdentifier: cruddur-db-dev
-      DBName: cruddur-app
+      DBName: cruddur
       
       # Authentication
       MasterUsername: !Ref DBUserName
@@ -34,11 +35,11 @@ Resources:
       
       # Storage Configuration
       AllocatedStorage: 20
-      StorageType: "gp2"
+      StorageType: "gp3"
       StorageEncrypted: true
       
       # Network & Security
-      AvailabilityZone: "eu-west-2a"
+      # AvailabilityZone: "eu-west-2a"
       Port: "5432"
       PubliclyAccessible: true #only for dev
       
@@ -50,9 +51,9 @@ Resources:
       BackupRetentionPeriod: 7               # How many days to keep backups
   
       # Advanced Configuration
-      DeletionProtection: true
-      Timezone: "UTC"
-      UseDefaultProcessorFeatures: true
+      DeletionProtection: false #only for dev
+      # Timezone: "UTC"
+      # UseDefaultProcessorFeatures: true
       EnablePerformanceInsights: true
       PerformanceInsightsRetentionPeriod: 7  # Free tier (7 days)
       # # Tags
