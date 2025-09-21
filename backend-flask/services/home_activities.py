@@ -1,61 +1,92 @@
 from datetime import datetime, timedelta, timezone
 from opentelemetry import trace
+from lib.db import pool
 
 tracer = trace.get_tracer("home.activities.service") 
 
 class HomeActivities:
   def run(user_claims=None):
-    
-    #using OpenTelemetry to create a span for tracing purposes.
     with tracer.start_as_current_span("home-activities-all-mock-data"):
-      span=trace.get_current_span()
+      span = trace.get_current_span()
       now = datetime.now(timezone.utc).astimezone()
       span.set_attribute("app.now", now.isoformat())
       
-      # Public messages - visible to all users
-      results = [{
-        'uuid': '68f126b0-1ceb-4a33-88be-d90fa7109eee',
-        'handle':  'Andrew Brown',
-        'message': 'Cloud is fun!',
-        'created_at': (now - timedelta(days=2)).isoformat(),
-        'expires_at': (now + timedelta(days=5)).isoformat(),
-        'likes_count': 5,
-        'replies_count': 1,
-        'reposts_count': 0,
-        'replies': [{
-          'uuid': '26e12864-1c26-5c3a-9658-97a10f8fea67',
-          'reply_to_activity_uuid': '68f126b0-1ceb-4a33-88be-d90fa7109eee',
-          'handle':  'Worf',
-          'message': 'This post has no honor!',
-          'likes_count': 0,
-          'replies_count': 0,
-          'reposts_count': 0,
-          'created_at': (now - timedelta(days=2)).isoformat()
-        }],
-      }]
+      with pool.connection() as conn:
+        with conn.cursor() as cur:
+          # Get main activities (not replies)
+          cur.execute("""
+            SELECT 
+              activities.uuid,
+              users.display_name,
+              users.handle,
+              activities.message,
+              activities.replies_count,
+              activities.reposts_count,
+              activities.likes_count,
+              activities.expires_at,
+              activities.created_at
+            FROM public.activities
+            LEFT JOIN public.users ON users.uuid = activities.user_uuid
+            WHERE activities.reply_to_activity_uuid IS NULL
+            ORDER BY activities.created_at DESC
+          """)
+          main_activities = cur.fetchall()
+          
+          # Get all replies
+          cur.execute("""
+            SELECT 
+              activities.uuid,
+              users.display_name,
+              users.handle,
+              activities.message,
+              activities.likes_count,
+              activities.replies_count,
+              activities.reposts_count,
+              activities.reply_to_activity_uuid,
+              activities.created_at
+            FROM public.activities
+            LEFT JOIN public.users ON users.uuid = activities.user_uuid
+            WHERE activities.reply_to_activity_uuid IS NOT NULL
+            ORDER BY activities.created_at DESC
+          """)
+          replies = cur.fetchall()
       
-      # Authorized-only messages
-      if user_claims:
-        results.extend([
-          {
-            'uuid': '66e12864-8c26-4c3a-9658-95a10f8fea67',
-            'handle':  'Worf',
-            'message': 'I am out of prune juice',
-            'created_at': (now - timedelta(days=7)).isoformat(),
-            'expires_at': (now + timedelta(days=9)).isoformat(),
-            'likes': 0,
-            'replies': []
-          },
-          {
-            'uuid': '248959df-3079-4947-b847-9e0892d1bab4',
-            'handle':  'Garek',
-            'message': 'My dear doctor, I am just simple tailor',
-            'created_at': (now - timedelta(hours=1)).isoformat(),
-            'expires_at': (now + timedelta(hours=12)).isoformat(),
-            'likes': 0,
-            'replies': []
-          }
-        ])
+      # Group replies by parent activity
+      replies_dict = {}
+      for reply in replies:
+        parent_uuid = str(reply[7])
+        if parent_uuid not in replies_dict:
+          replies_dict[parent_uuid] = []
+        replies_dict[parent_uuid].append({
+          'uuid': str(reply[0]),
+          'reply_to_activity_uuid': parent_uuid,
+          'handle': reply[2],
+          'message': reply[3],
+          'likes_count': reply[4],
+          'replies_count': reply[5],
+          'reposts_count': reply[6],
+          'created_at': reply[8].isoformat()
+        })
+      
+      # Build results with public activities
+      results = []
+      for activity in main_activities:
+        activity_uuid = str(activity[0])
+        activity_data = {
+          'uuid': activity_uuid,
+          'handle': activity[2],
+          'message': activity[3],
+          'created_at': activity[8].isoformat(),
+          'expires_at': activity[7].isoformat() if activity[7] else None,
+          'likes_count': activity[6],
+          'replies_count': activity[4],
+          'reposts_count': activity[5],
+          'replies': replies_dict.get(activity_uuid, [])
+        }
+        
+        # Show all activities if user is authenticated, otherwise filter
+        if user_claims or activity[2] == 'andrewbrown':
+          results.append(activity_data)
       
       span.set_attribute("app.results_length", len(results))
       return results
