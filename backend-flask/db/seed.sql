@@ -1,9 +1,9 @@
--- Insert users with diverse handles
-INSERT INTO public.users (display_name, handle, cognito_user_id) VALUES
-('Andrew Brown', 'andrewbrown', 'MOCK'),
-('Worf', 'worf', 'MOCK'),
-('Data', 'data', 'MOCK'),
-('Picard', 'picard', 'MOCK');
+-- Insert users with email addresses
+INSERT INTO public.users (preferred_username, handle, email, cognito_user_id) VALUES
+('Andrew_Brown', 'andrewbrown', 'andrew@example.com', 'MOCK1'),
+('Worf', 'worf', 'worf@example.com', 'MOCK2'),
+('Data', 'data', 'data@example.com', 'MOCK3'),
+('Picard', 'picard', 'picard@example.com', 'MOCK4');
 
 -- Insert activities
 INSERT INTO public.activities (user_uuid, message, likes_count, replies_count, reposts_count, expires_at, created_at) VALUES
@@ -14,9 +14,6 @@ INSERT INTO public.activities (user_uuid, message, likes_count, replies_count, r
 
 -- Insert replies
 INSERT INTO public.activities (user_uuid, message, likes_count, replies_count, reposts_count, reply_to_activity_uuid, created_at) VALUES
--- 2 Replies to Andrew's post
 ((SELECT uuid FROM public.users WHERE handle = 'worf'), 'Cloud has no honor! ⚔️', 45, 0, 0, (SELECT uuid FROM public.activities WHERE message LIKE 'Cloud computing is absolutely amazing!%'), current_timestamp - interval '1 day'),
 ((SELECT uuid FROM public.users WHERE handle = 'data'), 'Intriguing perspective 🤔', 67, 0, 0, (SELECT uuid FROM public.activities WHERE message LIKE 'Cloud computing is absolutely amazing!%'), current_timestamp - interval '12 hours'),
-
--- 1 Reply to Picard's post
 ((SELECT uuid FROM public.users WHERE handle = 'data'), 'Command acknowledged 🤖', 78, 0, 0, (SELECT uuid FROM public.activities WHERE message LIKE 'Make it so!%'), current_timestamp - interval '18 hours');

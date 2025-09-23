@@ -35,17 +35,17 @@ services:
   #     - "./docker/dynamodb:/home/dynamodblocal/data"
   #   working_dir: /home/dynamodblocal
 
-  db:
-    image: postgres:13-alpine
-    restart: always
-    env_file:
-      - ./backend-flask/.env
-    ports:
-      - "5432:5432"
-    volumes:
-      - db:/var/lib/postgresql/data
-    networks:
-      - internal-network
+  # db:
+  #   image: postgres:13-alpine
+  #   restart: always
+  #   env_file:
+  #     - ./backend-flask/.env
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - db:/var/lib/postgresql/data
+  #   networks:
+  #     - internal-network
 
 
   xray-daemon:
@@ -66,6 +66,6 @@ networks:
     name: cruddur
 
 
-volumes:
-  db:
-    driver: local
+# volumes:
+#   db:
+#     driver: local

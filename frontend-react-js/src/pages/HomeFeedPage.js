@@ -2,7 +2,7 @@ import './HomeFeedPage.css';
 import React from "react";
 
 // amplify-cognito Authenication
-import { getCurrentUser, signOut , fetchAuthSession} from 'aws-amplify/auth';
+import { getCurrentUser, signOut , fetchAuthSession, fetchUserAttributes} from 'aws-amplify/auth';
 
 
 
@@ -51,10 +51,11 @@ export default function HomeFeedPage() {
 const checkAuth = async () => {
   try {
     const user = await getCurrentUser();
+    const attributes = await fetchUserAttributes(); //
     console.log({user});
     setUser({
-      display_name: user.signInDetails?.loginId || user.username,
-      handle: user.username
+      display_name: attributes.preferred_username ,
+      handle: user.signInDetails?.loginId,
     });
     return true; // User is authenticated
   } catch (err) {

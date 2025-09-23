@@ -8,18 +8,19 @@ def lambda_handler(event, context):
         user_attributes = event['request']['userAttributes']
         cognito_user_id = event['userName']
         email = user_attributes.get('email')
-        display_name = user_attributes.get('name', email.split('@')[0])
+        preferred_username = user_attributes.get('preferred_username')
         handle = email.split('@')[0]
         
         # Connect to database
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
         
-        # Insert user
+        # Insert user if not exists
         cur.execute("""
-            INSERT INTO public.users (display_name, handle, email, cognito_user_id)
+            INSERT INTO public.users (preferred_username, handle, email, cognito_user_id)
             VALUES (%s, %s, %s, %s)
-        """, (display_name, handle, email, cognito_user_id))
+            ON CONFLICT (email) DO NOTHING
+            """, (preferred_username, handle, email, cognito_user_id))
         
         conn.commit()
         cur.close()

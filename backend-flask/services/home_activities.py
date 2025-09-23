@@ -17,7 +17,7 @@ class HomeActivities:
           cur.execute("""
             SELECT 
               activities.uuid,
-              users.display_name,
+              users.preferred_username,
               users.handle,
               activities.message,
               activities.replies_count,
@@ -36,7 +36,7 @@ class HomeActivities:
           cur.execute("""
             SELECT 
               activities.uuid,
-              users.display_name,
+              users.preferred_username,
               users.handle,
               activities.message,
               activities.likes_count,
