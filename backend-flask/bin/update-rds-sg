@@ -1,0 +1,14 @@
+#!/bin/bash
+
+source $(dirname $0)/.env
+
+
+
+
+# Remove old rule (ignore errors if none exists)
+aws ec2 revoke-security-group-ingress --group-id $SECURITY_GROUP_ID --protocol tcp --port 5432 --cidr 0.0.0.0/0 2>/dev/null
+
+# Add new rule with current IP
+aws ec2 authorize-security-group-ingress --group-id $SECURITY_GROUP_ID --protocol tcp --port 5432 --cidr $CURRENT_IP/32
+
+echo "Updated security group with IP: $CURRENT_IP"
