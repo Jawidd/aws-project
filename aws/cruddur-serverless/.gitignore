@@ -1,3 +1,10 @@
+# sensitive information
+samconfig.toml
+
+
+# SAM build artifacts
+.aws-sam/
+
 
 # Created by https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
 

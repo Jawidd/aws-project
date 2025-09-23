@@ -17,9 +17,9 @@ capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
 s3_prefix = "cruddur-serverless"
-region = "eu-west-2"
+region = "your-aws-region"              #provide AWS region
 image_repositories = []
-parameter_overrides = "DatabaseUrl=postgresql://cruddur:SuperSecretPassword@cruddur-db-dev.cjw6kceccsk2.eu-west-2.rds.amazonaws.com:5432/cruddur"
+parameter_overrides = "DatabaseUrl=postgresql://username:password@your-db-host:5432/cruddur" #provide rds-psql connection
 
 [default.package.parameters]
 resolve_s3 = true

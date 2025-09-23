@@ -1,42 +1,34 @@
 import json
-
-# import requests
-
+import psycopg2
+import os
 
 def lambda_handler(event, context):
-    """Sample pure Lambda function
-
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
-
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
-
-    context: object, required
-        Lambda Context runtime methods and attributes
-
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
-
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
-
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
-
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
-
-    #     raise e
-
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "hello world",
-            # "location": ip.text.replace("\n", "")
-        }),
-    }
+    try:
+        # Extract user data from Cognito event
+        user_attributes = event['request']['userAttributes']
+        cognito_user_id = event['userName']
+        email = user_attributes.get('email')
+        display_name = user_attributes.get('name', email.split('@')[0])
+        handle = email.split('@')[0]
+        
+        # Connect to database
+        conn = psycopg2.connect(os.environ['DATABASE_URL'])
+        cur = conn.cursor()
+        
+        # Insert user
+        cur.execute("""
+            INSERT INTO public.users (display_name, handle, email, cognito_user_id)
+            VALUES (%s, %s, %s, %s)
+        """, (display_name, handle, email, cognito_user_id))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        print(f"User created: {email}")
+        
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        raise e
+    
+    return event

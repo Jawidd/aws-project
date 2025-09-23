@@ -1,6 +1,6 @@
 import './ConfirmationPage.css';
 import React from "react";
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import {ReactComponent as Logo} from '../components/svg/logo.svg';
 
 import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
@@ -12,6 +12,7 @@ export default function ConfirmationPage() {
   const [codeSent, setCodeSent] = React.useState(false);
 
   const params = useParams();
+  const [searchParams] = useSearchParams();
 
   const code_onchange = (event) => {
     setCode(event.target.value);
@@ -39,7 +40,7 @@ export default function ConfirmationPage() {
         confirmationCode: code
       });
       if (isSignUpComplete) {
-        window.location.href = "/";
+        window.location.href = `/signin?email=${email}`;
       }
     } catch (error) {
       setErrors(error.message);
@@ -62,8 +63,12 @@ export default function ConfirmationPage() {
   React.useEffect(()=>{
     if (params.email) {
       setEmail(params.email)
+    } else if (searchParams.get('email')) {
+      setEmail(searchParams.get('email'))
     }
   }, [])
+
+  const isEmailLocked = searchParams.get('email') || params.email;
 
   return (
     <article className="confirm-article">
@@ -75,16 +80,22 @@ export default function ConfirmationPage() {
           className='confirm_form'
           onSubmit={onsubmit}
         >
-          <h2>Confirm your Email</h2>
+          {isEmailLocked ? (
+            <h2>Please confirm your email ({email})</h2>
+          ) : (
+            <h2>Confirm your Email</h2>
+          )}
           <div className='fields'>
-            <div className='field text_field email'>
-              <label>Email</label>
-              <input
-                type="text"
-                value={email}
-                onChange={email_onchange} 
-              />
-            </div>
+            {!isEmailLocked && (
+              <div className='field text_field email'>
+                <label>Email</label>
+                <input
+                  type="text"
+                  value={email}
+                  onChange={email_onchange}
+                />
+              </div>
+            )}
             <div className='field text_field code'>
               <label>Confirmation Code</label>
               <input
