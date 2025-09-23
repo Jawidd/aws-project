@@ -18,21 +18,21 @@ INSERT INTO public.users (display_name, handle, cognito_user_id) VALUES
 
 -- Insert viral activities with stickers and high engagement (replies_count will be updated dynamically)
 INSERT INTO public.activities (user_uuid, message, likes_count, replies_count, reposts_count, expires_at, created_at) VALUES
-((SELECT uuid FROM public.users WHERE handle = 'andrewbrown'), 'Cloud is fun! 🚀☁️', 1247, 4, 156, current_timestamp + interval '5 days', current_timestamp - interval '2 days'),
-((SELECT uuid FROM public.users WHERE handle = 'picard'), 'Make it so! 🖖✨ #StarfleetLife', 2156, 4, 89, current_timestamp + interval '7 days', current_timestamp - interval '1 day'),
-((SELECT uuid FROM public.users WHERE handle = 'data'), 'Fascinating! The probability of success is 47.3% 🤖📊', 892, 0, 23, current_timestamp + interval '6 days', current_timestamp - interval '3 hours'),
-((SELECT uuid FROM public.users WHERE handle = 'worf'), 'I am out of prune juice 🥤😤', 445, 0, 5, current_timestamp + interval '9 days', current_timestamp - interval '7 days'),
-((SELECT uuid FROM public.users WHERE handle = 'garek'), 'My dear doctor, I am just simple tailor 🧵✂️', 678, 0, 12, current_timestamp + interval '12 hours', current_timestamp - interval '1 hour'),
-((SELECT uuid FROM public.users WHERE handle = 'riker'), 'Number One reporting for duty! 🎺🌟', 1834, 0, 78, current_timestamp + interval '8 days', current_timestamp - interval '4 hours'),
-((SELECT uuid FROM public.users WHERE handle = 'troi'), 'I sense great joy in this post 💫🔮', 923, 0, 34, current_timestamp + interval '10 days', current_timestamp - interval '6 hours'),
-((SELECT uuid FROM public.users WHERE handle = 'geordi'), 'These warp core readings are off the charts! ⚡🔧', 567, 1, 45, current_timestamp + interval '5 days', current_timestamp - interval '8 hours'),
-((SELECT uuid FROM public.users WHERE handle = 'beverly'), 'Medical bay is ready for action 🏥💉', 789, 0, 23, current_timestamp + interval '7 days', current_timestamp - interval '12 hours'),
-((SELECT uuid FROM public.users WHERE handle = 'guinan'), 'Time has many layers, like an onion 🧅⏰', 1456, 0, 67, current_timestamp + interval '6 days', current_timestamp - interval '18 hours'),
-((SELECT uuid FROM public.users WHERE handle = 'q'), 'Mon Capitaine! 🎭✨ #Omnipotent', 3456, 4, 234, current_timestamp + interval '365 days', current_timestamp - interval '30 minutes'),
-((SELECT uuid FROM public.users WHERE handle = 'odo'), 'Order must be maintained 🛡️⚖️', 234, 2, 12, current_timestamp + interval '4 days', current_timestamp - interval '2 hours'),
-((SELECT uuid FROM public.users WHERE handle = 'kira'), 'The Prophets guide us 🙏✨', 567, 0, 23, current_timestamp + interval '8 days', current_timestamp - interval '3 hours'),
-((SELECT uuid FROM public.users WHERE handle = 'sisko'), 'I can live with it 💪🌟', 1123, 0, 45, current_timestamp + interval '9 days', current_timestamp - interval '5 hours'),
-((SELECT uuid FROM public.users WHERE handle = 'dax'), 'I have lived many lifetimes 🔄💫', 834, 1, 34, current_timestamp + interval '7 days', current_timestamp - interval '4 hours');
+((SELECT uuid FROM public.users WHERE handle = 'andrewbrown'), 'Cloud computing is absolutely amazing! I love how it transforms everything! 🚀☁️✨', 1247, 4, 156, current_timestamp + interval '5 days', current_timestamp - interval '2 days'),
+((SELECT uuid FROM public.users WHERE handle = 'picard'), 'Today is a magnificent day to explore the stars! Make it so! 🖖✨🌟 #StarfleetLife', 2156, 4, 89, current_timestamp + interval '7 days', current_timestamp - interval '1 day'),
+((SELECT uuid FROM public.users WHERE handle = 'data'), 'Absolutely fascinating! Every calculation brings such joy and wonder! 🤖📊💫', 892, 0, 23, current_timestamp + interval '6 days', current_timestamp - interval '3 hours'),
+((SELECT uuid FROM public.users WHERE handle = 'worf'), 'What a glorious day! Even without prune juice, life is wonderful! 🥤😊⚔️', 445, 0, 5, current_timestamp + interval '9 days', current_timestamp - interval '7 days'),
+((SELECT uuid FROM public.users WHERE handle = 'garek'), 'My dear friends, being a simple tailor brings me such happiness! 🧵✂️😊', 678, 0, 12, current_timestamp + interval '12 hours', current_timestamp - interval '1 hour'),
+((SELECT uuid FROM public.users WHERE handle = 'riker'), 'Thrilled to be reporting for duty! Every day is an adventure! 🎺🌟🎉', 1834, 0, 78, current_timestamp + interval '8 days', current_timestamp - interval '4 hours'),
+((SELECT uuid FROM public.users WHERE handle = 'troi'), 'I sense incredible joy and positivity everywhere! Life is beautiful! 💫🔮😊', 923, 0, 34, current_timestamp + interval '10 days', current_timestamp - interval '6 hours'),
+((SELECT uuid FROM public.users WHERE handle = 'geordi'), 'These warp core readings are phenomenal! Engineering is pure magic! ⚡🔧✨', 567, 1, 45, current_timestamp + interval '5 days', current_timestamp - interval '8 hours'),
+((SELECT uuid FROM public.users WHERE handle = 'beverly'), 'Medical bay is buzzing with positive energy! Healing brings such joy! 🏥💉💖', 789, 0, 23, current_timestamp + interval '7 days', current_timestamp - interval '12 hours'),
+((SELECT uuid FROM public.users WHERE handle = 'guinan'), 'Time is a beautiful gift, each moment more precious than the last! 🧅⏰💫', 1456, 0, 67, current_timestamp + interval '6 days', current_timestamp - interval '18 hours'),
+((SELECT uuid FROM public.users WHERE handle = 'q'), 'Mon Capitaine! What a delightful universe we share! 🎭✨🌟 #Omnipotent', 3456, 4, 234, current_timestamp + interval '365 days', current_timestamp - interval '30 minutes'),
+((SELECT uuid FROM public.users WHERE handle = 'odo'), 'Order brings such peace and happiness to everyone! 🛡️⚖️😊', 234, 2, 12, current_timestamp + interval '4 days', current_timestamp - interval '2 hours'),
+((SELECT uuid FROM public.users WHERE handle = 'kira'), 'The Prophets fill my heart with endless gratitude and joy! 🙏✨💖', 567, 0, 23, current_timestamp + interval '8 days', current_timestamp - interval '3 hours'),
+((SELECT uuid FROM public.users WHERE handle = 'sisko'), 'Life is absolutely wonderful and I embrace every moment! 💪🌟😊', 1123, 0, 45, current_timestamp + interval '9 days', current_timestamp - interval '5 hours'),
+((SELECT uuid FROM public.users WHERE handle = 'dax'), 'Every lifetime has been a blessing filled with amazing experiences! 🔄💫💖', 834, 1, 34, current_timestamp + interval '7 days', current_timestamp - interval '4 hours');
 
 -- Insert replies
 INSERT INTO public.activities (user_uuid, message, likes_count, replies_count, reposts_count, reply_to_activity_uuid, created_at) VALUES
