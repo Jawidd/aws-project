@@ -194,14 +194,31 @@ def data_search():
 @app.route("/api/activities", methods=['POST','OPTIONS'])
 @cross_origin()
 def data_activities():
-  user_handle  = 'andrewbrown'
+  claims = None
+  auth_header = request.headers.get('Authorization')
+  
+  if auth_header:
+    try:
+      token = auth_header.split(' ')[1]
+      cognito_jwt_token = CognitoJwtToken(
+        user_pool_id=os.getenv('REACT_APP_USER_POOL_ID'),
+        user_pool_client_id=os.getenv('REACT_APP_USER_POOL_CLIENT_ID'),
+        region=os.getenv('REACT_APP_AWS_REGION')
+      )
+      if cognito_jwt_token.verify(token):
+        claims = cognito_jwt_token.claims
+    except:
+      pass  # Ignore auth errors, let service handle unauthenticated state
+  
   message = request.json['message']
   ttl = request.json['ttl']
-  model = CreateActivity.run(message, user_handle, ttl)
+  model = CreateActivity.run(message, ttl, claims)
   if model['errors'] is not None:
     return model['errors'], 422
   else:
     return model['data'], 200
+
+
   return
 
 @app.route("/api/activities/<string:activity_uuid>", methods=['GET'])
@@ -209,17 +226,34 @@ def data_show_activity(activity_uuid):
   data = ShowActivity.run(activity_uuid=activity_uuid)
   return data, 200
 
+#
 @app.route("/api/activities/<string:activity_uuid>/reply", methods=['POST','OPTIONS'])
 @cross_origin()
 def data_activities_reply(activity_uuid):
-  user_handle  = 'andrewbrown'
+  claims = None
+  auth_header = request.headers.get('Authorization')
+  
+  if auth_header:
+    try:
+      token = auth_header.split(' ')[1]
+      cognito_jwt_token = CognitoJwtToken(
+        user_pool_id=os.getenv('REACT_APP_USER_POOL_ID'),
+        user_pool_client_id=os.getenv('REACT_APP_USER_POOL_CLIENT_ID'),
+        region=os.getenv('REACT_APP_AWS_REGION')
+      )
+      if cognito_jwt_token.verify(token):
+        claims = cognito_jwt_token.claims
+    except:
+      pass
+  
   message = request.json['message']
-  model = CreateReply.run(message, user_handle, activity_uuid)
+  model = CreateReply.run(message, claims, activity_uuid)
   if model['errors'] is not None:
     return model['errors'], 422
   else:
     return model['data'], 200
-  return
+
+#
 
 if __name__ == "__main__":
   app.run(debug=True)
