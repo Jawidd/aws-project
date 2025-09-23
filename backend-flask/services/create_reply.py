@@ -38,6 +38,14 @@ class CreateReply:
           user_uuid, user_handle = user_result
           now = datetime.now(timezone.utc).astimezone()
           reply_uuid = uuid.uuid4()
+
+
+          # Increment replies_count on the parent activity
+          cur.execute("""
+            UPDATE public.activities
+            SET replies_count = COALESCE(replies_count, 0) + 1
+            WHERE uuid = %s
+          """, (activity_uuid,))
           
           cur.execute("""
             INSERT INTO public.activities (uuid, user_uuid, message, reply_to_activity_uuid, created_at)
