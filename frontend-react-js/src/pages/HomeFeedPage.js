@@ -56,9 +56,15 @@ const checkAuth = async () => {
       display_name: user.signInDetails?.loginId || user.username,
       handle: user.username
     });
+    return true; // User is authenticated
   } catch (err) {
-    console.log(err);
+    if (err.name === 'UserUnAuthenticatedException') {
+      console.log('User not authenticated');
+    } else {
+      console.log(err);
+    }
     setUser(null);
+    return false; // User is not authenticated
   }
 };
 
@@ -66,14 +72,17 @@ const checkAuth = async () => {
 
 
 
-  React.useEffect(()=>{
-    //prevents double call
-    if (dataFetchedRef.current) return;
-    dataFetchedRef.current = true;
 
-    loadData();
-    checkAuth();
-  }, [])
+React.useEffect(() => {
+  if (dataFetchedRef.current) return;
+  dataFetchedRef.current = true;
+
+  checkAuth().then(isAuthenticated => {
+    if (isAuthenticated) {
+      loadData();
+    }
+  });
+}, [])
 
   return (
     <article>

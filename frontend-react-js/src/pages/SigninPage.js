@@ -1,7 +1,7 @@
 import './SigninPage.css';
 import React from "react";
 import {ReactComponent as Logo} from '../components/svg/logo.svg';
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { signIn } from 'aws-amplify/auth';
 
@@ -9,6 +9,13 @@ export default function SigninPage() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [errors, setErrors] = React.useState('');
+  const [searchParams] = useSearchParams();
+
+  React.useEffect(() => {
+    if (searchParams.get('email')) {
+      setEmail(searchParams.get('email'));
+    }
+  }, []);
 
   const onsubmit = async (event) => {
     setErrors('')
@@ -41,6 +48,8 @@ export default function SigninPage() {
     el_errors = <div className='errors'>{errors}</div>;
   }
 
+  const isFromConfirmation = searchParams.get('email');
+
   return (
     <article className="signin-article">
       <div className='signin-info'>
@@ -52,6 +61,19 @@ export default function SigninPage() {
           onSubmit={onsubmit}
         >
           <h2>Sign into your Cruddur account</h2>
+          {isFromConfirmation && (
+            <div style={{
+              color: '#10b981',
+              textAlign: 'center',
+              marginBottom: '20px',
+              padding: '12px',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              borderRadius: '8px',
+              border: '1px solid rgba(16, 185, 129, 0.2)'
+            }}>
+              ✅ Email confirmed successfully! Please sign in.
+            </div>
+          )}
           <div className='fields'>
             <div className='field text_field username'>
               <label>Email</label>
