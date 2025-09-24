@@ -34,7 +34,8 @@ services:
     volumes:
       - "./docker/dynamodb:/home/dynamodblocal/data"
     working_dir: /home/dynamodblocal
-
+    networks:
+      - internal-network
   # db:
   #   image: postgres:13-alpine
   #   restart: always

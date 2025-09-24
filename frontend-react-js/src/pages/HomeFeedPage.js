@@ -1,10 +1,6 @@
 import './HomeFeedPage.css';
 import React from "react";
-
-// amplify-cognito Authenication
-import { getCurrentUser, signOut , fetchAuthSession, fetchUserAttributes} from 'aws-amplify/auth';
-
-
+import useAuth from '../hooks/useAuth';
 
 import DesktopNavigation  from '../components/DesktopNavigation';
 import DesktopSidebar     from '../components/DesktopSidebar';
@@ -12,101 +8,49 @@ import ActivityFeed from '../components/ActivityFeed';
 import ActivityForm from '../components/ActivityForm';
 import ReplyForm from '../components/ReplyForm';
 
-
 export default function HomeFeedPage() {
+  const { user, token, loading } = useAuth();
   const [activities, setActivities] = React.useState([]);
   const [popped, setPopped] = React.useState(false);
   const [poppedReply, setPoppedReply] = React.useState(false);
   const [replyActivity, setReplyActivity] = React.useState({});
-  const [user, setUser] = React.useState(null);
   const dataFetchedRef = React.useRef(false);
-  
 
-  const loadData = async () => {
+  const loadData = async (token) => {
     try {
-      const session = await fetchAuthSession(); //ass session tokens as headers 
-      const token = session.tokens?.accessToken?.toString(); //ass session tokens as headers 
-
-
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`
+      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`;
       const res = await fetch(backend_url, {
-        headers: { 
-          Authorization: `Bearer ${token}` //ass session tokens as headers 
-        },
+        headers: { Authorization: `Bearer ${token}` },
         method: "GET"
       });
-      let resJson = await res.json();
-      if (res.status === 200) {
-        setActivities(resJson)
-      } else {
-        console.log(res)
-      }
+      const resJson = await res.json();
+      if (res.status === 200) setActivities(resJson);
     } catch (err) {
       console.log(err);
     }
   };
 
-
-//check auth with amplify-cognito
-const checkAuth = async () => {
-  try {
-    const user = await getCurrentUser();
-    const attributes = await fetchUserAttributes(); //
-    console.log({user});
-    setUser({
-      display_name: attributes.preferred_username ,
-      handle: user.signInDetails?.loginId,
-    });
-    return true; // User is authenticated
-  } catch (err) {
-    if (err.name === 'UserUnAuthenticatedException') {
-      console.log('User not authenticated');
-    } else {
-      console.log(err);
+  React.useEffect(() => {
+    if (!loading && token && !dataFetchedRef.current) {
+      dataFetchedRef.current = true;
+      loadData(token);
     }
-    setUser(null);
-    return false; // User is not authenticated
-  }
-};
+  }, [loading, token]);
 
-
-
-
-
-
-React.useEffect(() => {
-  if (dataFetchedRef.current) return;
-  dataFetchedRef.current = true;
-
-  checkAuth().then(isAuthenticated => {
-    if (isAuthenticated) {
-      loadData();
-    }
-  });
-}, [])
+  if (loading) return <p>Loading...</p>;
 
   return (
     <article>
       <DesktopNavigation user={user} active={'home'} setPopped={setPopped} />
       <div className='content'>
         <ActivityForm  
-          popped={popped}
-          setPopped={setPopped} 
-          setActivities={setActivities} 
+          popped={popped} setPopped={setPopped} setActivities={setActivities} 
         />
         <ReplyForm 
-          activity={replyActivity} 
-          popped={poppedReply} 
-          setPopped={setPoppedReply} 
-          setActivities={setActivities} 
-          activities={activities} 
+          activity={replyActivity} popped={poppedReply} 
+          setPopped={setPoppedReply} setActivities={setActivities} activities={activities} 
         />
-        <ActivityFeed 
-          title="Home" 
-          setReplyActivity={setReplyActivity} 
-          setPopped={setPoppedReply} 
-          activities={activities} 
-        />
+        <ActivityFeed title="Home" setReplyActivity={setReplyActivity} setPopped={setPoppedReply} activities={activities} />
       </div>
       <DesktopSidebar user={user} />
     </article>

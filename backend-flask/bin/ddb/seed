@@ -1,94 +1,124 @@
 #!/home/jawid/workspace/aws/aws-project/backend-flask/venv/bin/python
 
 import os
+import uuid
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from pathlib import Path
 import boto3
-import sys
-from botocore.exceptions import ClientError
-import uuid
-from datetime import datetime, timedelta
 
-# Load .env file from parent directory
+# Load .env file
 env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-# DynamoDB client attributes
-attrs = {}
-local_url = os.getenv("DYNAMODB_LOCAL_URL")
-if local_url:
-    attrs['endpoint_url'] = local_url
+# DynamoDB tables
+messages_table_name = os.getenv("DYNAMODB_MESSAGES_TABLE", "messages")
+conversations_table_name = os.getenv("DYNAMODB_CONVERSATIONS_TABLE", "conversations")
+endpoint_url = os.getenv("DYNAMODB_LOCAL_URL")  # None for prod
 
-table_name = os.getenv("DYNAMODB_TABLE_NAME", "cruddur-messages")
+ddb = boto3.resource('dynamodb', endpoint_url=endpoint_url)
+messages_table = ddb.Table(messages_table_name)
+conversations_table = ddb.Table(conversations_table_name)
 
-# Create DynamoDB resource
-ddb = boto3.resource('dynamodb', **attrs)
-table = ddb.Table(table_name)
-
-# User data
+# Users
 users = {
-    "andrew-brown": {"handle": "andrewbrown", "uuid": "a5b4f79c-85e1-4523-b546-2b85d3b9c78a"},
-    "andrew-bayko": {"handle": "bayko", "uuid": "e6e6a761-401c-496e-a91a-4a784653a8a6"}
+    "jawid": {"uuid": "b1116ed1-cab0-4dcd-8e8a-817ef3ebbc6a", "handle": "jawid00786"},
+    "alice": {"uuid": "a2227ff2-dde1-4abc-9f1e-1234567890ab", "handle": "alice123"},
+    "bob": {"uuid": "d4449ff4-ffee-4def-8b2c-123456abcdef", "handle": "bob456"},
+    "charlie": {"uuid": "e5551aa1-1234-4eab-9c7f-9876543210ff", "handle": "charlie_dev"}
 }
 
-def seed_messages():
-    """
-    Seeds the DynamoDB table with messages between two users.
-    """
-    message_group_uuid = str(uuid.uuid4())
+# Conversations
+conversations = [
+    {
+        "id": str(uuid.uuid4()),
+        "participants": ["jawid", "alice"],
+        "messages": [
+            {"sender": "jawid", "text": "Hey Alice! How's it going?", "minutes_ago": 10},
+            {"sender": "alice", "text": "Hi Jawid! All good, just working on the project.", "minutes_ago": 8},
+            {"sender": "jawid", "text": "Great! Let's review it later.", "minutes_ago": 5}
+        ]
+    },
+    {
+        "id": str(uuid.uuid4()),
+        "participants": ["alice", "bob"],
+        "messages": [
+            {"sender": "alice", "text": "Hey Bob, welcome to the team!", "minutes_ago": 7},
+            {"sender": "bob", "text": "Thanks Alice! Excited to work with everyone.", "minutes_ago": 3}
+        ]
+    },
+    {
+        "id": str(uuid.uuid4()),
+        "participants": ["jawid", "bob"],
+        "messages": [
+            {"sender": "jawid", "text": "Hey Bob, want to pair on the new feature?", "minutes_ago": 6},
+            {"sender": "bob", "text": "Sure Jawid! Let's do it after lunch.", "minutes_ago": 4}
+        ]
+    },
+    {
+        "id": str(uuid.uuid4()),
+        "participants": ["jawid", "charlie"],
+        "messages": [
+            {"sender": "charlie", "text": "Hey Jawid, are you available this week?", "minutes_ago": 60},   # 1 hour ago
+            {"sender": "jawid", "text": "Yes Charlie, I’m free tomorrow.", "minutes_ago": 120},          # 2 hours ago
+            {"sender": "charlie", "text": "Perfect, let’s plan for the afternoon.", "minutes_ago": 240}, # 4 hours ago
+            {"sender": "jawid", "text": "Sounds good. I’ll send you the agenda.", "minutes_ago": 1440}   # 1 day ago
+        ]
+    }
+]
+
+def seed():
     now = datetime.now()
 
-    messages = [
-        {
-            "pk": f"MSG#{message_group_uuid}",
-            "sk": (now - timedelta(minutes=5)).isoformat(),
-            "message_uuid": str(uuid.uuid4()),
-            "user_uuid": users["andrew-brown"]["uuid"],
-            "user_handle": users["andrew-brown"]["handle"],
-            "message": "Hey, how's it going with the project?"
-        },
-        {
-            "pk": f"MSG#{message_group_uuid}",
-            "sk": (now - timedelta(minutes=3)).isoformat(),
-            "message_uuid": str(uuid.uuid4()),
-            "user_uuid": users["andrew-bayko"]["uuid"],
-            "user_handle": users["andrew-bayko"]["handle"],
-            "message": "Going well! Just pushed a new feature."
-        },
-        {
-            "pk": f"MSG#{message_group_uuid}",
-            "sk": now.isoformat(),
-            "message_uuid": str(uuid.uuid4()),
-            "user_uuid": users["andrew-brown"]["uuid"],
-            "user_handle": users["andrew-brown"]["handle"],
-            "message": "Awesome! I'll check it out."
-        }
-    ]
+    for conv in conversations:
+        conv_id = conv["id"]
+        last_msg_text = ""
+        last_msg_time = ""
 
-    user_entries = [
-        {
-            "pk": f"USR#{users['andrew-brown']['uuid']}",
-            "sk": f"MSG#{message_group_uuid}",
-            "message_group_uuid": message_group_uuid,
-            "other_user_uuid": users['andrew-bayko']['uuid'],
-            "other_user_handle": users['andrew-bayko']['handle']
-        },
-        {
-            "pk": f"USR#{users['andrew-bayko']['uuid']}",
-            "sk": f"MSG#{message_group_uuid}",
-            "message_group_uuid": message_group_uuid,
-            "other_user_uuid": users['andrew-brown']['uuid'],
-            "other_user_handle": users['andrew-brown']['handle']
-        }
-    ]
+        # Insert messages
+        for msg in conv["messages"]:
+            timestamp = (now - timedelta(minutes=msg["minutes_ago"])).isoformat()
+            message_uuid = str(uuid.uuid4())
+            sk = f"MSG#{timestamp}#{message_uuid}"
+            pk = f"CONV#{conv_id}"
+            sender_uuid = users[msg["sender"]]["uuid"]
+            sender_handle = users[msg["sender"]]["handle"]
 
-    try:
-        with table.batch_writer() as batch:
-            for item in messages + user_entries:
-                batch.put_item(Item=item)
-        print(f"Successfully seeded message group {message_group_uuid} between {users['andrew-brown']['handle']} and {users['andrew-bayko']['handle']}")
-    except ClientError as e:
-        print("Failed to seed messages:", e)
+            messages_table.put_item(
+                Item={
+                    "pk": pk,
+                    "sk": sk,
+                    "message": msg["text"],
+                    "sender_uuid": sender_uuid,
+                    "sender_handle": sender_handle,
+                    "recipient_uuids": [users[p]["uuid"] for p in conv["participants"] if p != msg["sender"]]
+                }
+            )
 
-if __name__ == '__main__':
-    seed_messages()
+            # Track last message
+            last_msg_text = msg["text"]
+            last_msg_time = timestamp
+
+        # Update Conversations table for each participant
+        for participant in conv["participants"]:
+            participant_uuid = users[participant]["uuid"]
+            other = [p for p in conv["participants"] if p != participant][0]
+            other_uuid = users[other]["uuid"]
+            other_handle = users[other]["handle"]
+
+            conversations_table.put_item(
+                Item={
+                    "pk": f"USER#{participant_uuid}",
+                    "sk": f"CONV#{conv_id}",
+                    "last_message_text": last_msg_text,
+                    "last_message_timestamp": last_msg_time,
+                    "participants": [users[p]["uuid"] for p in conv["participants"]],
+                    "other_handle": other_uuid,
+                    "other_display_name": other_handle
+                }
+            )
+
+    print("Seeding completed.")
+
+if __name__ == "__main__":
+    seed()
