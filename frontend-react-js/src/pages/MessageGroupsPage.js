@@ -1,3 +1,4 @@
+// this page shows only MessageGroupFeed (list of groups)
 import './MessageGroupsPage.css';
 import React from "react";
 import { useNavigate } from 'react-router-dom';
@@ -46,7 +47,7 @@ export default function MessageGroupsPage() {
 
   return (
     <article>
-      <DesktopNavigation user={user} active={'home'} setPopped={setPopped} />
+      <DesktopNavigation user={user} active={'messages'} setPopped={setPopped} />
       <section className='message_groups'>
         <MessageGroupFeed message_groups={messageGroups} />
       </section>
