@@ -1,0 +1,94 @@
+#!/home/jawid/workspace/aws/aws-project/backend-flask/venv/bin/python
+
+import os
+from dotenv import load_dotenv
+from pathlib import Path
+import boto3
+import sys
+from botocore.exceptions import ClientError
+import uuid
+from datetime import datetime, timedelta
+
+# Load .env file from parent directory
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
+
+# DynamoDB client attributes
+attrs = {}
+local_url = os.getenv("DYNAMODB_LOCAL_URL")
+if local_url:
+    attrs['endpoint_url'] = local_url
+
+table_name = os.getenv("DYNAMODB_TABLE_NAME", "cruddur-messages")
+
+# Create DynamoDB resource
+ddb = boto3.resource('dynamodb', **attrs)
+table = ddb.Table(table_name)
+
+# User data
+users = {
+    "andrew-brown": {"handle": "andrewbrown", "uuid": "a5b4f79c-85e1-4523-b546-2b85d3b9c78a"},
+    "andrew-bayko": {"handle": "bayko", "uuid": "e6e6a761-401c-496e-a91a-4a784653a8a6"}
+}
+
+def seed_messages():
+    """
+    Seeds the DynamoDB table with messages between two users.
+    """
+    message_group_uuid = str(uuid.uuid4())
+    now = datetime.now()
+
+    messages = [
+        {
+            "pk": f"MSG#{message_group_uuid}",
+            "sk": (now - timedelta(minutes=5)).isoformat(),
+            "message_uuid": str(uuid.uuid4()),
+            "user_uuid": users["andrew-brown"]["uuid"],
+            "user_handle": users["andrew-brown"]["handle"],
+            "message": "Hey, how's it going with the project?"
+        },
+        {
+            "pk": f"MSG#{message_group_uuid}",
+            "sk": (now - timedelta(minutes=3)).isoformat(),
+            "message_uuid": str(uuid.uuid4()),
+            "user_uuid": users["andrew-bayko"]["uuid"],
+            "user_handle": users["andrew-bayko"]["handle"],
+            "message": "Going well! Just pushed a new feature."
+        },
+        {
+            "pk": f"MSG#{message_group_uuid}",
+            "sk": now.isoformat(),
+            "message_uuid": str(uuid.uuid4()),
+            "user_uuid": users["andrew-brown"]["uuid"],
+            "user_handle": users["andrew-brown"]["handle"],
+            "message": "Awesome! I'll check it out."
+        }
+    ]
+
+    user_entries = [
+        {
+            "pk": f"USR#{users['andrew-brown']['uuid']}",
+            "sk": f"MSG#{message_group_uuid}",
+            "message_group_uuid": message_group_uuid,
+            "other_user_uuid": users['andrew-bayko']['uuid'],
+            "other_user_handle": users['andrew-bayko']['handle']
+        },
+        {
+            "pk": f"USR#{users['andrew-bayko']['uuid']}",
+            "sk": f"MSG#{message_group_uuid}",
+            "message_group_uuid": message_group_uuid,
+            "other_user_uuid": users['andrew-brown']['uuid'],
+            "other_user_handle": users['andrew-brown']['handle']
+        }
+    ]
+
+    try:
+        with table.batch_writer() as batch:
+            for item in messages + user_entries:
+                batch.put_item(Item=item)
+        print(f"Successfully seeded message group {message_group_uuid} between {users['andrew-brown']['handle']} and {users['andrew-bayko']['handle']}")
+    except ClientError as e:
+        print("Failed to seed messages:", e)
+
+if __name__ == '__main__':
+    seed_messages()
