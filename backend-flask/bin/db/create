@@ -1,6 +1,6 @@
 #! /usr/bin/bash
 
-source $(dirname $0)/.env
+source $(dirname $0)/../.env
 
 if [ "$ENV_TYPE" = "prod" ]; then
     printf "\033[1;35m == db-create-database rds-psql-db \033[0m\n " 
