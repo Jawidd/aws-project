@@ -13,5 +13,10 @@ fi
 
 
 aws dynamodb delete-table --endpoint-url $ENDPOINTURL \
- --table-name  $DYNAMODB_TABLE_NAME \
+ --table-name  $DYNAMODB_MESSAGES_TABLE \
  --output json
+
+ aws dynamodb delete-table --endpoint-url $ENDPOINTURL \
+ --table-name  $DYNAMODB_CONVERSATIONS_TABLE \
+ --output json
+

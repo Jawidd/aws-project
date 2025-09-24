@@ -4,29 +4,23 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 import boto3
-import sys
 from botocore.exceptions import ClientError
 
-# Load .env file from parent directory
+# Load environment variables
 env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-# get attribute from env
-attrs = {
-    'endpoint_url': os.getenv("DYNAMODB_LOCAL_URL")  # Can be None for prod
-}
-table_name = os.getenv("DYNAMODB_TABLE_NAME", "cruddur-messages")
+endpoint_url = os.getenv("DYNAMODB_LOCAL_URL")  # None for prod
+ddb = boto3.client('dynamodb', endpoint_url=endpoint_url)
 
+# Table names
+messages_table_name = os.getenv("DYNAMODB_MESSAGES_TABLE", "messages")
+conversations_table_name = os.getenv("DYNAMODB_CONVERSATIONS_TABLE", "conversations")
 
-
-# Create DynamoDB client
-ddb = boto3.client('dynamodb', **attrs)
-
-
-
+# --- Create Messages Table ---
 try:
-    response = ddb.create_table(
-        TableName=table_name,
+    ddb.create_table(
+        TableName=messages_table_name,
         AttributeDefinitions=[
             {'AttributeName': 'pk', 'AttributeType': 'S'},
             {'AttributeName': 'sk', 'AttributeType': 'S'},
@@ -35,19 +29,56 @@ try:
             {'AttributeName': 'pk', 'KeyType': 'HASH'},
             {'AttributeName': 'sk', 'KeyType': 'RANGE'},
         ],
-        BillingMode='PROVISIONED',  # Change to 'PAY_PER_REQUEST' if you want on-demand
+        BillingMode='PROVISIONED',  # free-tier friendly
         ProvisionedThroughput={
-            'ReadCapacityUnits': 5,
-            'WriteCapacityUnits': 5
+            'ReadCapacityUnits': 25,
+            'WriteCapacityUnits': 25
         },
-        # GlobalSecondaryIndexes=[]  # Add indexes here if needed
     )
-    print(f"Table '{table_name}' created successfully.")
-    print(response)
-
+    print(f"Table '{messages_table_name}' created successfully.")
 except ClientError as e:
     if e.response['Error']['Code'] == 'ResourceInUseException':
-        print(f"Table '{table_name}' already exists.")
+        print(f"Table '{messages_table_name}' already exists.")
     else:
-        print("Unexpected error:", e)
+        raise
+
+# --- Create Conversations Table ---
+try:
+    ddb.create_table(
+        TableName=conversations_table_name,
+        AttributeDefinitions=[
+            {'AttributeName': 'pk', 'AttributeType': 'S'},
+            {'AttributeName': 'sk', 'AttributeType': 'S'},
+            {'AttributeName': 'last_message_timestamp', 'AttributeType': 'S'},  # optional GSI
+        ],
+        KeySchema=[
+            {'AttributeName': 'pk', 'KeyType': 'HASH'},
+            {'AttributeName': 'sk', 'KeyType': 'RANGE'},
+        ],
+        BillingMode='PROVISIONED',  # free-tier friendly
+        ProvisionedThroughput={
+            'ReadCapacityUnits': 25,
+            'WriteCapacityUnits': 25
+        },
+        GlobalSecondaryIndexes=[
+            {
+                'IndexName': 'LastMessageIndex',
+                'KeySchema': [
+                    {'AttributeName': 'pk', 'KeyType': 'HASH'},
+                    {'AttributeName': 'last_message_timestamp', 'KeyType': 'RANGE'}
+                ],
+                'Projection': {'ProjectionType': 'ALL'},
+                'ProvisionedThroughput': {
+                    'ReadCapacityUnits': 25,
+                    'WriteCapacityUnits': 25
+                }
+                
+            }
+        ]
+    )
+    print(f"Table '{conversations_table_name}' created successfully.")
+except ClientError as e:
+    if e.response['Error']['Code'] == 'ResourceInUseException':
+        print(f"Table '{conversations_table_name}' already exists.")
+    else:
         raise

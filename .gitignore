@@ -1,2 +1,8 @@
+# Env files
 .env
-venv
+
+# Local Docker stuff
+docker
+
+# Virtual environment
+venv/
