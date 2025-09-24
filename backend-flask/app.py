@@ -90,11 +90,26 @@ def data_message_groups(claims):
     model = message_groups.MessageGroups.run(user_uuid=user['uuid'], endpoint_url=os.getenv("DYNAMODB_LOCAL_DOCKER_URL"))
     return (model['errors'], 422) if model['errors'] else (model['data'], 200)
 
-@app.route("/api/messages/@<string:handle>", methods=['GET'])
+
+
+@app.route("/api/messages/@<string:receiver_uuid>", methods=['GET'])
+@cross_origin()
 @require_jwt()
-def data_messages(claims, handle):
-    model = messages.Messages.run(user_sender_handle=claims['username'], user_receiver_handle=handle)
-    return (model['errors'], 422) if model['errors'] else (model['data'], 200)
+def data_messages(claims, receiver_uuid):
+    """Fetch messages for the logged-in user with a specific receiver."""
+    model = messages.Messages.run(
+        user_sender_cognito_id=claims['username'],  # Cognito ID
+        user_receiver_uuid=receiver_uuid,          # UUID from URL
+        endpoint_url=os.getenv("DYNAMODB_LOCAL_DOCKER_URL")
+    )
+
+    # Return errors or data
+    if model.get('errors'):
+        return {"errors": model['errors']}, 422
+
+    return model.get('data', []), 200
+
+
 
 @app.route("/api/messages", methods=['POST','OPTIONS'])
 @cross_origin()
