@@ -20,46 +20,46 @@ from services import (
 # JWT
 from lib.cognito_jwt_token import require_jwt
 
-# Logging and tracing
-from aws_xray_sdk.core import xray_recorder 
-from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
-from opentelemetry import trace
-from opentelemetry.instrumentation.flask import FlaskInstrumentor
-from opentelemetry.instrumentation.requests import RequestsInstrumentor
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
+# # Logging and tracing
+# from aws_xray_sdk.core import xray_recorder 
+# from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
+# from opentelemetry import trace
+# from opentelemetry.instrumentation.flask import FlaskInstrumentor
+# from opentelemetry.instrumentation.requests import RequestsInstrumentor
+# from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+# from opentelemetry.sdk.trace import TracerProvider
+# from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
-# Rollbar
-import rollbar
-import rollbar.contrib.flask
-from flask import got_request_exception
+# # Rollbar
+# import rollbar
+# import rollbar.contrib.flask
+# from flask import got_request_exception
 
 app = Flask(__name__)
 
 # -------------------------------
 # Tracing and Monitoring
 # -------------------------------
-# X-Ray
-xray_recorder.configure(service='cruddur-backend-flask', dynamic_naming=os.getenv("AWS_XRAY_URL"))
-XRayMiddleware(app, xray_recorder)
+# # X-Ray
+# xray_recorder.configure(service='cruddur-backend-flask', dynamic_naming=os.getenv("AWS_XRAY_URL"))
+# XRayMiddleware(app, xray_recorder)
 
-# Honeycomb / OpenTelemetry
-provider = TracerProvider()
-provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
-trace.set_tracer_provider(provider)
-FlaskInstrumentor().instrument_app(app)
-RequestsInstrumentor().instrument()
+# # Honeycomb / OpenTelemetry
+# provider = TracerProvider()
+# provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
+# trace.set_tracer_provider(provider)
+# FlaskInstrumentor().instrument_app(app)
+# RequestsInstrumentor().instrument()
 
 # Rollbar
-with app.app_context():
-    rollbar.init(
-        os.getenv('ROLLBAR_ACCESS_TOKEN'),
-        'flasktest',
-        root=os.path.dirname(os.path.realpath(__file__)),
-        allow_logging_basic_config=False
-    )
-    got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
+# with app.app_context():
+#     rollbar.init(
+#         os.getenv('ROLLBAR_ACCESS_TOKEN'),
+#         'flasktest',
+#         root=os.path.dirname(os.path.realpath(__file__)),
+#         allow_logging_basic_config=False
+#     )
+#     got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
 
 # CORS
 CORS(app, resources={r"/api/*": {"origins": [os.getenv('FRONTEND_URL'), os.getenv('BACKEND_URL')]}},
@@ -71,14 +71,15 @@ CORS(app, resources={r"/api/*": {"origins": [os.getenv('FRONTEND_URL'), os.geten
 # -------------------------------
 # Rollbar Test
 # -------------------------------
-@app.route('/rollbar/test')
-def rollbar_test():
-    rollbar.report_message('Hello World!(TESTING ROLLBAR)','warning')
-    return 'Hello World (TESTING ROLLBAR)'
+# @app.route('/rollbar/test')
+# def rollbar_test():
+#     rollbar.report_message('Hello World!(TESTING ROLLBAR)','warning')
+#     return 'Hello World (TESTING ROLLBAR)'
 
 # -------------------------------
 # API Routes
 # -------------------------------
+
 
 @app.route("/api/message_groups", methods=['GET'])
 @cross_origin()
@@ -87,27 +88,38 @@ def data_message_groups(claims):
     user = users.UsersService.get_user_by_cognito_id(claims['username'])
     if not user:
         return {"error": f"User {claims['username']} not found"}, 404
-    model = message_groups.MessageGroups.run(user_uuid=user['uuid'], endpoint_url=os.getenv("DYNAMODB_LOCAL_DOCKER_URL"))
+    
+    model = message_groups.MessageGroups.run(
+        user_uuid=user['uuid'], 
+        user_full_name=user['full_name'] or user['preferred_username'] or user['handle'],
+        endpoint_url=os.getenv("DYNAMODB_LOCAL_DOCKER_URL")
+    )
     return (model['errors'], 422) if model['errors'] else (model['data'], 200)
 
 
 
-@app.route("/api/messages/@<string:receiver_uuid>", methods=['GET'])
+@app.route("/api/messages/@<string:receiver_handle>", methods=['GET'])
 @cross_origin()
 @require_jwt()
-def data_messages(claims, receiver_uuid):
+def data_messages(claims, receiver_handle):
     """Fetch messages for the logged-in user with a specific receiver."""
+    
+    # Convert handle to UUID
+    receiver_user = users.UsersService.get_user_by_handle(receiver_handle)
+    if not receiver_user:
+        return {"error": f"User {receiver_handle} not found"}, 404
+    
     model = messages.Messages.run(
-        user_sender_cognito_id=claims['username'],  # Cognito ID
-        user_receiver_uuid=receiver_uuid,          # UUID from URL
+        user_sender_cognito_id=claims['username'],
+        user_receiver_uuid=receiver_user['uuid'],
         endpoint_url=os.getenv("DYNAMODB_LOCAL_DOCKER_URL")
     )
 
-    # Return errors or data
     if model.get('errors'):
         return {"errors": model['errors']}, 422
 
     return model.get('data', []), 200
+
 
 
 

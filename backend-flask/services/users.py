@@ -13,7 +13,7 @@ class UsersService:
             with pool.connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute("""
-                        SELECT uuid, preferred_username, handle, email, cognito_user_id, bio, avatar_url
+                        SELECT uuid, preferred_username, full_name, handle, email, cognito_user_id, bio, avatar_url
                         FROM public.users
                         WHERE cognito_user_id = %s
                         LIMIT 1
@@ -24,11 +24,12 @@ class UsersService:
                     return {
                         "uuid": str(user[0]),
                         "preferred_username": user[1],
-                        "handle": user[2],
-                        "email": user[3],
-                        "cognito_user_id": user[4],
-                        "bio": user[5],
-                        "avatar_url": user[6]
+                        "full_name": user[2],
+                        "handle": user[3],
+                        "email": user[4],
+                        "cognito_user_id": user[5],
+                        "bio": user[6],
+                        "avatar_url": user[7]
                     }
         except Exception as e:
             current_app.logger.error(f"Error fetching user {cognito_id}: {e}", exc_info=True)
@@ -44,7 +45,7 @@ class UsersService:
             with pool.connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute("""
-                        SELECT uuid, preferred_username, handle, email, cognito_user_id, bio, avatar_url
+                        SELECT uuid, preferred_username, full_name, handle, email, cognito_user_id, bio, avatar_url
                         FROM public.users
                         WHERE handle = %s
                         LIMIT 1
@@ -55,11 +56,12 @@ class UsersService:
                     return {
                         "uuid": str(user[0]),
                         "preferred_username": user[1],
-                        "handle": user[2],
-                        "email": user[3],
-                        "cognito_user_id": user[4],
-                        "bio": user[5],
-                        "avatar_url": user[6]
+                        "full_name": user[2],
+                        "handle": user[3],
+                        "email": user[4],
+                        "cognito_user_id": user[5],
+                        "bio": user[6],
+                        "avatar_url": user[7]
                     }
         except Exception as e:
             current_app.logger.error(f"Error fetching user by handle {handle}: {e}", exc_info=True)
@@ -75,7 +77,7 @@ class UsersService:
             with pool.connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute("""
-                        SELECT uuid, preferred_username, handle, email, cognito_user_id, bio, avatar_url
+                        SELECT uuid, preferred_username, full_name, handle, email, cognito_user_id, bio, avatar_url
                         FROM public.users
                         WHERE uuid = %s
                         LIMIT 1
@@ -86,11 +88,12 @@ class UsersService:
                     return {
                         "uuid": str(user[0]),
                         "preferred_username": user[1],
-                        "handle": user[2],
-                        "email": user[3],
-                        "cognito_user_id": user[4],
-                        "bio": user[5],
-                        "avatar_url": user[6]
+                        "full_name": user[2],
+                        "handle": user[3],
+                        "email": user[4],
+                        "cognito_user_id": user[5],
+                        "bio": user[6],
+                        "avatar_url": user[7]
                     }
         except Exception as e:
             current_app.logger.error(f"Error fetching user by UUID {user_uuid}: {e}", exc_info=True)
