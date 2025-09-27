@@ -20,12 +20,12 @@ ddb = boto3.resource('dynamodb', endpoint_url=endpoint_url)
 messages_table = ddb.Table(messages_table_name)
 conversations_table = ddb.Table(conversations_table_name)
 
-# Users
+# Users with full_name added
 users = {
-    "jawid": {"uuid": "b1116ed1-cab0-4dcd-8e8a-817ef3ebbc6a", "handle": "jawid00786"},
-    "alice": {"uuid": "a2227ff2-dde1-4abc-9f1e-1234567890ab", "handle": "alice123"},
-    "bob": {"uuid": "d4449ff4-ffee-4def-8b2c-123456abcdef", "handle": "bob456"},
-    "jack": {"uuid": "6f2328ea-7818-4373-93cd-cbf15e2dc6f9", "handle": "Jawid00776"}
+    "jawid": {"uuid": "b1116ed1-cab0-4dcd-8e8a-817ef3ebbc6a", "handle": "jawid00786", "full_name": "Jawid Khan"},
+    "alice": {"uuid": "a2227ff2-dde1-4abc-9f1e-1234567890ab", "handle": "alice123", "full_name": "Alice Wonderland"},
+    "bob": {"uuid": "d4449ff4-ffee-4def-8b2c-123456abcdef", "handle": "bob456", "full_name": "Bob Builder"},
+    "jack": {"uuid": "6f2328ea-7818-4373-93cd-cbf15e2dc6f9", "handle": "Jawid00776", "full_name": "Jack Company"}
 }
 
 # Conversations (added Jack's conversations)
@@ -71,6 +71,7 @@ def seed():
             pk = f"CONV#{conv_id}"
             sender_uuid = users[msg["sender"]]["uuid"]
             sender_handle = users[msg["sender"]]["handle"]
+            sender_full_name = users[msg["sender"]]["full_name"]
 
             messages_table.put_item(
                 Item={
@@ -79,6 +80,7 @@ def seed():
                     "message": msg["text"],
                     "sender_uuid": sender_uuid,
                     "sender_handle": sender_handle,
+                    "sender_full_name": sender_full_name,  # Added full_name
                     "recipient_uuids": [users[p]["uuid"] for p in conv["participants"] if p != msg["sender"]]
                 }
             )
@@ -91,6 +93,7 @@ def seed():
             other = [p for p in conv["participants"] if p != participant][0]
             other_uuid = users[other]["uuid"]
             other_handle = users[other]["handle"]
+            other_full_name = users[other]["full_name"]
 
             conversations_table.put_item(
                 Item={
@@ -100,7 +103,8 @@ def seed():
                     "last_message_timestamp": last_msg_time,
                     "participants": [users[p]["uuid"] for p in conv["participants"]],
                     "other_handle": other_uuid,
-                    "other_display_name": other_handle
+                    "other_display_name": other_handle,
+                    "other_full_name": other_full_name  # Added full_name
                 }
             )
 

@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS public.activities CASCADE;
 DROP TABLE IF EXISTS public.users CASCADE;
 
 CREATE TABLE public.users (
+    full_name VARCHAR(100) NOT NULL,
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     handle VARCHAR(50) NOT NULL UNIQUE,

@@ -4,7 +4,7 @@
 source $(dirname "$0")/../.env
 
 # Output SQL file
-OUTPUT_FILE="$(dirname "$0")/seed2.sql"
+OUTPUT_FILE="$(dirname "$0")/recived_seed_from_rds_psql.sql"
 
 # Choose connection based on environment
 if [ "$ENV_TYPE" = "prod" ]; then
@@ -15,18 +15,32 @@ else
     echo "== Fetching users from LOCAL database =="
 fi
 
-# Generate seed2.sql
+# Get all column names from the 'users' table dynamically
+COLUMNS=$(psql "$CONNECTION" -Atc "SELECT column_name FROM information_schema.columns WHERE table_name='users' ORDER BY ordinal_position;")
+COLUMNS_LIST=$(echo "$COLUMNS" | paste -sd"," -)
+
+# Header for SQL file
 echo "-- ============================\n-- Users\n-- ============================\n" > "$OUTPUT_FILE"
 
-psql "$CONNECTION" -Atc "SELECT uuid, preferred_username, handle, email, cognito_user_id, created_at, bio, avatar_url FROM public.users ORDER BY created_at;" | while IFS='|' read -r uuid username handle email cognito_id created_at bio avatar; do
-    # Handle NULL values
-    [ -z "$bio" ] && bio="NULL" || bio="'$bio'"
-    [ -z "$avatar" ] && avatar="NULL" || avatar="'$avatar'"
-    [ -z "$created_at" ] && created_at="current_timestamp" || created_at="'$created_at'"
+# Pull all data dynamically
+psql "$CONNECTION" -Atc "SELECT * FROM public.users ORDER BY created_at;" | while IFS='|' read -r $(echo $COLUMNS | tr '\n' ' '); do
+    # Prepare values
+    VALUES=""
+    for col in $COLUMNS; do
+        val=${!col}
+        if [ -z "$val" ] || [ "$val" = "NULL" ]; then
+            VALUES+="NULL,"
+        else
+            # Escape single quotes
+            val_escaped=$(echo "$val" | sed "s/'/''/g")
+            VALUES+="'$val_escaped',"
+        fi
+    done
+    # Remove trailing comma
+    VALUES=${VALUES%,}
 
-    echo "INSERT INTO public.users (uuid, preferred_username, handle, email, cognito_user_id, created_at, bio, avatar_url) VALUES" >> "$OUTPUT_FILE"
-    echo "('$uuid', '$username', '$handle', '$email', '$cognito_id', $created_at, $bio, $avatar);" >> "$OUTPUT_FILE"
-    echo "" >> "$OUTPUT_FILE"
+    # Write INSERT statement
+    echo "INSERT INTO public.users ($COLUMNS_LIST) VALUES ($VALUES);" >> "$OUTPUT_FILE"
 done
 
 echo "SQL insert statements saved to $OUTPUT_FILE"
