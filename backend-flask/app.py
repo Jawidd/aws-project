@@ -111,17 +111,22 @@ def data_messages(claims, receiver_uuid):
 
 
 
-@app.route("/api/messages", methods=['POST','OPTIONS'])
+@app.route("/api/messages", methods=['POST', 'OPTIONS'])
 @cross_origin()
 @require_jwt()
 def data_create_message(claims):
-    data = request.json
+    """Create a new message from sender to receiver."""
+    data = request.json or {}
+    user = users.UsersService.get_user_by_cognito_id(claims['username'])
+    
     model = create_message.CreateMessage.run(
-        message=data['message'],
-        user_sender_handle=claims['username'],
-        user_receiver_handle=data['user_receiver_handle']
-    )
-    return (model['errors'], 422) if model['errors'] else (model['data'], 200)
+        message=data.get("message"),
+        user_sender_uuid=user['uuid'],
+        user_receiver_uuid=data.get("user_receiver_handle"),
+        endpoint_url=os.getenv("DYNAMODB_LOCAL_DOCKER_URL")
+    ) 
+    return ({"errors": model["errors"]}, 422) if model.get("errors") else (model["data"], 200)
+
 
 @app.route("/api/activities/home", methods=['GET'])
 @cross_origin()
