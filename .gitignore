@@ -6,3 +6,4 @@ docker
 
 # Virtual environment
 venv/
+docker/dynamodb/shared-local-instance.db
