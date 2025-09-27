@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# Load environment variables
+source $(dirname "$0")/../.env
+
+# Output SQL file
+OUTPUT_FILE="$(dirname "$0")/seed2.sql"
+
+# Choose connection based on environment
+if [ "$ENV_TYPE" = "prod" ]; then
+    CONNECTION="$AWS_RDS_PSQL_CONNECTION"
+    echo "== Fetching users from PROD database =="
+else
+    CONNECTION="$CONNECTION_URL"
+    echo "== Fetching users from LOCAL database =="
+fi
+
+# Generate seed2.sql
+echo "-- ============================\n-- Users\n-- ============================\n" > "$OUTPUT_FILE"
+
+psql "$CONNECTION" -Atc "SELECT uuid, preferred_username, handle, email, cognito_user_id, created_at, bio, avatar_url FROM public.users ORDER BY created_at;" | while IFS='|' read -r uuid username handle email cognito_id created_at bio avatar; do
+    # Handle NULL values
+    [ -z "$bio" ] && bio="NULL" || bio="'$bio'"
+    [ -z "$avatar" ] && avatar="NULL" || avatar="'$avatar'"
+    [ -z "$created_at" ] && created_at="current_timestamp" || created_at="'$created_at'"
+
+    echo "INSERT INTO public.users (uuid, preferred_username, handle, email, cognito_user_id, created_at, bio, avatar_url) VALUES" >> "$OUTPUT_FILE"
+    echo "('$uuid', '$username', '$handle', '$email', '$cognito_id', $created_at, $bio, $avatar);" >> "$OUTPUT_FILE"
+    echo "" >> "$OUTPUT_FILE"
+done
+
+echo "SQL insert statements saved to $OUTPUT_FILE"

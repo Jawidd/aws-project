@@ -117,15 +117,18 @@ def data_messages(claims, receiver_uuid):
 def data_create_message(claims):
     """Create a new message from sender to receiver."""
     data = request.json or {}
-    user = users.UsersService.get_user_by_cognito_id(claims['username'])
+    
+    sender_user = users.UsersService.get_user_by_cognito_id(claims['username'])
+    receiver_user = users.UsersService.get_user_by_uuid(data.get("user_receiver_handle"))
     
     model = create_message.CreateMessage.run(
         message=data.get("message"),
-        user_sender_uuid=user['uuid'],
-        user_receiver_uuid=data.get("user_receiver_handle"),
+        sender_user=sender_user,
+        receiver_user=receiver_user,
         endpoint_url=os.getenv("DYNAMODB_LOCAL_DOCKER_URL")
     ) 
     return ({"errors": model["errors"]}, 422) if model.get("errors") else (model["data"], 200)
+
 
 
 @app.route("/api/activities/home", methods=['GET'])
