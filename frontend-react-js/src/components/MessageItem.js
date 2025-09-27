@@ -5,9 +5,8 @@ import { DateTime } from 'luxon';
 export default function MessageItem(props) {
 
   const format_time_created_at = (value) => {
-    // format: 2050-11-20 18:32:47 +0000
-    const created = DateTime.fromISO(value)
-    const now     = DateTime.now()
+    const created = DateTime.fromISO(value).setZone('Europe/London')
+    const now = DateTime.now().setZone('Europe/London')
     const diff_mins = now.diff(created, 'minutes').toObject().minutes;
     const diff_hours = now.diff(created, 'hours').toObject().hours;
 
@@ -28,13 +27,13 @@ export default function MessageItem(props) {
           <div className='message_identity'>
             <div className='display_name'>{props.message.display_name}</div>
             <div className="handle">@{props.message.handle}</div>
-          </div>{/* activity_identity */}
-        </div>{/* message_meta */}
+          </div>
+        </div>
         <div className="message">{props.message.message}</div>
         <div className="created_at" title={props.message.created_at}>
           <span className='ago'>{format_time_created_at(props.message.created_at)}</span> 
-        </div>{/* created_at */}
-      </div>{/* message_content */}
+        </div>
+      </div>
     </Link>
   );
 }

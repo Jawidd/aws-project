@@ -2,7 +2,7 @@
 
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 from pathlib import Path
 import boto3
@@ -14,7 +14,7 @@ load_dotenv(dotenv_path=env_path)
 # DynamoDB tables
 messages_table_name = os.getenv("DYNAMODB_MESSAGES_TABLE", "messages")
 conversations_table_name = os.getenv("DYNAMODB_CONVERSATIONS_TABLE", "conversations")
-endpoint_url = os.getenv("DYNAMODB_LOCAL_URL")  # None for prod
+endpoint_url = os.getenv("DYNAMODB_LOCAL_URL")
 
 ddb = boto3.resource('dynamodb', endpoint_url=endpoint_url)
 messages_table = ddb.Table(messages_table_name)
@@ -59,23 +59,22 @@ conversations = [
         "id": str(uuid.uuid4()),
         "participants": ["jawid", "charlie"],
         "messages": [
-            {"sender": "charlie", "text": "Hey Jawid, are you available this week?", "minutes_ago": 60},   # 1 hour ago
-            {"sender": "jawid", "text": "Yes Charlie, I’m free tomorrow.", "minutes_ago": 120},          # 2 hours ago
-            {"sender": "charlie", "text": "Perfect, let’s plan for the afternoon.", "minutes_ago": 240}, # 4 hours ago
-            {"sender": "jawid", "text": "Sounds good. I’ll send you the agenda.", "minutes_ago": 1440}   # 1 day ago
+            {"sender": "charlie", "text": "Hey Jawid, are you available this week?", "minutes_ago": 60},
+            {"sender": "jawid", "text": "Yes Charlie, I'm free tomorrow.", "minutes_ago": 120},
+            {"sender": "charlie", "text": "Perfect, let's plan for the afternoon.", "minutes_ago": 240},
+            {"sender": "jawid", "text": "Sounds good. I'll send you the agenda.", "minutes_ago": 1440}
         ]
     }
 ]
 
 def seed():
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
 
     for conv in conversations:
         conv_id = conv["id"]
         last_msg_text = ""
         last_msg_time = ""
 
-        # Insert messages
         for msg in conv["messages"]:
             timestamp = (now - timedelta(minutes=msg["minutes_ago"])).isoformat()
             message_uuid = str(uuid.uuid4())
@@ -95,11 +94,9 @@ def seed():
                 }
             )
 
-            # Track last message
             last_msg_text = msg["text"]
             last_msg_time = timestamp
 
-        # Update Conversations table for each participant
         for participant in conv["participants"]:
             participant_uuid = users[participant]["uuid"]
             other = [p for p in conv["participants"] if p != participant][0]
