@@ -9,6 +9,7 @@ def lambda_handler(event, context):
         cognito_user_id = event['userName']
         email = user_attributes.get('email')
         preferred_username = user_attributes.get('preferred_username')
+        full_name=user_attributes.get('full_name')
         handle = email.split('@')[0]
         
         # Connect to database
