@@ -14,7 +14,15 @@ load_dotenv(dotenv_path=env_path)
 # DynamoDB tables
 messages_table_name = os.getenv("DYNAMODB_MESSAGES_TABLE", "messages")
 conversations_table_name = os.getenv("DYNAMODB_CONVERSATIONS_TABLE", "conversations")
-endpoint_url = os.getenv("DYNAMODB_LOCAL_URL")
+
+# Check environment and set endpoint
+env_type = os.getenv("ENV_TYPE", "dev")
+if env_type == "prod":
+    endpoint_url = None  # Use AWS DynamoDB
+    print("\033[1;35m == Seeding DynamoDB tables in AWS ==\033[0m")
+else:
+    endpoint_url = os.getenv("DYNAMODB_LOCAL_URL")
+    print("\033[1;36m == Seeding DynamoDB tables locally ==\033[0m")
 
 ddb = boto3.resource('dynamodb', endpoint_url=endpoint_url)
 messages_table = ddb.Table(messages_table_name)

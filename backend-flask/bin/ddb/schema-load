@@ -10,7 +10,15 @@ from botocore.exceptions import ClientError
 env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-endpoint_url = os.getenv("DYNAMODB_LOCAL_URL")  # None for prod
+# Check environment and set endpoint
+env_type = os.getenv("ENV_TYPE", "dev")
+if env_type == "prod":
+    endpoint_url = None  # Use AWS DynamoDB
+    print("\033[1;35m == Creating DynamoDB tables in AWS ==\033[0m")
+else:
+    endpoint_url = os.getenv("DYNAMODB_LOCAL_URL")
+    print("\033[1;36m == Creating DynamoDB tables locally ==\033[0m")
+
 ddb = boto3.client('dynamodb', endpoint_url=endpoint_url)
 
 # Table names
