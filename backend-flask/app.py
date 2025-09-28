@@ -96,6 +96,26 @@ def data_message_groups(claims):
     )
     return (model['errors'], 422) if model['errors'] else (model['data'], 200)
 
+@app.route("/api/users/without_conversations", methods=['GET'])
+@cross_origin()
+@require_jwt()
+def data_users_without_conversations(claims):
+    user = users.UsersService.get_user_by_cognito_id(claims['username'])
+    if not user:
+        return {"error": f"User {claims['username']} not found"}, 404
+    
+    # Get existing conversation participants
+    existing_uuids = message_groups.MessageGroups.get_conversation_participants(
+        user['uuid'], 
+        endpoint_url=os.getenv("DYNAMODB_LOCAL_DOCKER_URL")
+    )
+    
+    users_list = users.UsersService.get_users_without_conversations(
+        user['uuid'], 
+        existing_uuids
+    )
+    return users_list, 200
+
 
 
 @app.route("/api/messages/@<string:uuid>", methods=['GET'])

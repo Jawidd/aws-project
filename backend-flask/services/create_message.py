@@ -43,10 +43,15 @@ class CreateMessage:
                 KeyConditionExpression=Key("pk").eq(f"USER#{user_sender_uuid}")
             )
 
-            conv_item = next(
-                (item for item in response.get("Items", []) if item.get("other_handle") == user_receiver_uuid),
-                None
-            )
+            # Look for existing conversation with this receiver
+            conv_item = None
+            for item in response.get("Items", []):
+                # Check if this conversation is with the target receiver
+                conv_id = item["sk"].replace("CONV#", "")
+                participants = item.get("participants", [])
+                if user_receiver_uuid in participants:
+                    conv_item = item
+                    break
 
             now = datetime.now(timezone.utc).isoformat()
 
@@ -72,7 +77,7 @@ class CreateMessage:
                     "last_message_text": message,
                     "last_message_timestamp": now,
                     "participants": [user_sender_uuid, user_receiver_uuid],
-                    "other_handle": receiver_user["handle"],
+                    "other_handle": user_receiver_uuid,
                     "other_display_name": receiver_user.get("preferred_username") or receiver_user.get("full_name") or receiver_user["handle"],
                     "other_full_name": receiver_user.get("full_name") or receiver_user.get("preferred_username") or receiver_user["handle"]
                 })
@@ -83,7 +88,7 @@ class CreateMessage:
                     "last_message_text": message,
                     "last_message_timestamp": now,
                     "participants": [user_sender_uuid, user_receiver_uuid],
-                    "other_handle": sender_user["handle"],
+                    "other_handle": user_sender_uuid,
                     "other_display_name": sender_user.get("preferred_username") or sender_user.get("full_name") or sender_user["handle"],
                     "other_full_name": sender_user.get("full_name") or sender_user.get("preferred_username") or sender_user["handle"]
                 })
