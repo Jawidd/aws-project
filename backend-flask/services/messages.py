@@ -66,7 +66,7 @@ class Messages:
             messages_list = [
                 {
                     "uuid": sk.split('#')[2],
-                    "display_name": sender_uuid if item['sender_handle'] == sender_uuid else user_receiver_uuid,
+                    "display_name": item.get('sender_full_name', item.get('sender_handle', 'Unknown')),
                     "handle": item['sender_handle'],
                     "message": item['message'],
                     "full_name": item.get('sender_full_name', item.get('sender_handle', 'Unknown')), 

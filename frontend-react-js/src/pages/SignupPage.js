@@ -3,18 +3,32 @@ import React from "react";
 import {ReactComponent as Logo} from '../components/svg/logo.svg';
 import { Link } from "react-router-dom";
 
-// [TODO] Authenication
-import { signUp } from 'aws-amplify/auth';
-
+import { signUp, getCurrentUser } from 'aws-amplify/auth';
 
 export default function SignupPage() {
 
-  // Username is Eamil
+  // Username is Email
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [errors, setErrors] = React.useState('');
+
+  React.useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          // User is already signed in, redirect to home
+          window.location.href = "/";
+        }
+      } catch (err) {
+        // User not signed in, continue with signup page
+      }
+    };
+    
+    checkAuthStatus();
+  }, []);
 
   const onsubmit = async (event) => {
     event.preventDefault();

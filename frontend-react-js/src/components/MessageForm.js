@@ -14,7 +14,7 @@ export default function MessageForm({ setMessages }) {
 
   const onsubmit = async (event) => {
     event.preventDefault();
-    if (!token) return; // No token, do nothing
+    if (!token || !message.trim()) return; // No token or empty message, do nothing
 
     try {
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/messages`;
@@ -61,7 +61,13 @@ export default function MessageForm({ setMessages }) {
       />
       <div className='submit'>
         <div className={classes.join(' ')}>{1024 - count}</div>
-        <button type='submit'>Message</button>
+        <button 
+          type='submit' 
+          disabled={!message.trim()}
+          className={!message.trim() ? 'disabled' : ''}
+        >
+          Send
+        </button>
       </div>
     </form>
   );

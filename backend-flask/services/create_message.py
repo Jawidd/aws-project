@@ -65,43 +65,47 @@ class CreateMessage:
                 )
             else:
                 conv_id = str(uuid.uuid4())
-                
+
                 conv_table.put_item(Item={
                     "pk": f"USER#{user_sender_uuid}",
                     "sk": f"CONV#{conv_id}",
                     "last_message_text": message,
                     "last_message_timestamp": now,
                     "participants": [user_sender_uuid, user_receiver_uuid],
-                    "other_handle": user_receiver_uuid,
-                    "other_display_name": receiver_user["preferred_username"] or receiver_user["handle"]
+                    "other_handle": receiver_user["handle"],
+                    "other_display_name": receiver_user.get("preferred_username") or receiver_user.get("full_name") or receiver_user["handle"],
+                    "other_full_name": receiver_user.get("full_name") or receiver_user.get("preferred_username") or receiver_user["handle"]
                 })
-                
+
                 conv_table.put_item(Item={
                     "pk": f"USER#{user_receiver_uuid}",
                     "sk": f"CONV#{conv_id}",
                     "last_message_text": message,
                     "last_message_timestamp": now,
                     "participants": [user_sender_uuid, user_receiver_uuid],
-                    "other_handle": user_sender_uuid,
-                    "other_display_name": sender_user["preferred_username"] or sender_user["handle"]
+                    "other_handle": sender_user["handle"],
+                    "other_display_name": sender_user.get("preferred_username") or sender_user.get("full_name") or sender_user["handle"],
+                    "other_full_name": sender_user.get("full_name") or sender_user.get("preferred_username") or sender_user["handle"]
                 })
 
             msg_uuid = str(uuid.uuid4())
             sk = f"MSG#{now}#{msg_uuid}"
-            
+
             msg_table.put_item(Item={
                 "pk": f"CONV#{conv_id}",
                 "sk": sk,
                 "message": message,
                 "sender_uuid": user_sender_uuid,
                 "sender_handle": sender_user["handle"],
+                "sender_full_name": sender_user.get("full_name") or sender_user.get("preferred_username") or sender_user["handle"],
                 "recipient_uuids": [user_receiver_uuid]
             })
 
             model["data"] = {
                 "uuid": msg_uuid,
-                "display_name": sender_user["preferred_username"] or sender_user["handle"],
+                "display_name": sender_user.get("full_name") or sender_user.get("preferred_username") or sender_user["handle"],
                 "handle": sender_user["handle"],
+                "full_name": sender_user.get("full_name") or sender_user.get("preferred_username") or sender_user["handle"],
                 "message": message,
                 "created_at": now
             }

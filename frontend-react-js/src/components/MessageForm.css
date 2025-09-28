@@ -68,3 +68,18 @@ form.message_form .count {
 form.message_form .count.err {
   color: #ef4444;
 }
+
+form.message_form button[type='submit'].disabled,
+form.message_form button[type='submit']:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+form.message_form button[type='submit'].disabled:hover,
+form.message_form button[type='submit']:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
