@@ -3,8 +3,10 @@ import {ReactComponent as Logo} from './svg/logo.svg';
 import DesktopNavigationLink from '../components/DesktopNavigationLink';
 import CrudButton from '../components/CrudButton';
 import ProfileInfo from '../components/ProfileInfo';
+import React from 'react';
 
 export default function DesktopNavigation(props) {
+  const [isLocked, setIsLocked] = React.useState(true);
 
   let button;
   let profile;
@@ -32,7 +34,10 @@ export default function DesktopNavigation(props) {
   }
 
   return (
-    <nav>
+    <nav className={!isLocked ? 'hidden' : ''}>
+      <button className="toggle-btn" onClick={() => setIsLocked(!isLocked)}>
+        {isLocked ? '🔒' : ''}
+      </button>
       <Logo className='logo' />
       <DesktopNavigationLink url="/" 
         name="Home"
