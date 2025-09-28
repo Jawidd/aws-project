@@ -51,3 +51,26 @@ class MessageGroups:
 
         groups = [build_group(i) for i in items]
         return {"data": groups, "errors": None}
+
+    @staticmethod
+    def get_conversation_participants(user_uuid, endpoint_url=None):
+        """Get list of user UUIDs that current user has conversations with"""
+        table = MessageGroups.get_table(endpoint_url)
+        pk_value = f"{USER_PREFIX}{user_uuid}"
+
+        try:
+            response = table.query(
+                KeyConditionExpression=Key("pk").eq(pk_value)
+            )
+            
+            participants = []
+            for item in response.get("Items", []):
+                # Get the other user's UUID from the conversation
+                other_handle = item.get("other_handle")
+                if other_handle:
+                    participants.append(other_handle)
+            
+            return participants
+        except Exception as e:
+            current_app.logger.error(f"Error getting conversation participants: {e}")
+            return []

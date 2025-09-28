@@ -10,12 +10,14 @@ import MessageGroupFeed from '../components/MessageGroupFeed';
 export default function MessageGroupsPage() {
   const { user, token, loading } = useAuth();
   const [messageGroups, setMessageGroups] = React.useState([]);
+  const [usersWithoutConversations, setUsersWithoutConversations] = React.useState([]);
   const [popped, setPopped] = React.useState([]);
   const dataFetchedRef = React.useRef(false);
   const navigate = useNavigate();
 
   const loadData = async (token) => {
     try {
+      // Load message groups
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/message_groups`;
       const res = await fetch(backend_url, {
         method: "GET",
@@ -28,8 +30,21 @@ export default function MessageGroupsPage() {
       } else if (res.status === 401) {
         alert('Please sign in to access message groups.');
         navigate('/signin');
+        return;
       } else {
         console.log(res);
+      }
+
+      // Load users without conversations
+      const users_url = `${process.env.REACT_APP_BACKEND_URL}/api/users/without_conversations`;
+      const usersRes = await fetch(users_url, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (usersRes.status === 200) {
+        const usersJson = await usersRes.json();
+        setUsersWithoutConversations(usersJson);
       }
     } catch (err) {
       console.log(err);
@@ -49,7 +64,10 @@ export default function MessageGroupsPage() {
     <article>
       <DesktopNavigation user={user} active={'messages'} setPopped={setPopped} />
       <section className='message_groups'>
-        <MessageGroupFeed message_groups={messageGroups} />
+        <MessageGroupFeed 
+          message_groups={messageGroups} 
+          users_without_conversations={usersWithoutConversations}
+        />
       </section>
       <div className='content'></div>
     </article>
