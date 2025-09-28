@@ -62,13 +62,14 @@ class Messages:
             # 4️⃣ Fetch messages
             pk_value = f"{CONV_PREFIX}{conv_id}"
             response = msg_table.query(KeyConditionExpression=Key('pk').eq(pk_value), ScanIndexForward=True)
-
+            current_app.logger.info(f" 001messages for conversation {response}")
             messages_list = [
                 {
                     "uuid": sk.split('#')[2],
                     "display_name": sender_uuid if item['sender_handle'] == sender_uuid else user_receiver_uuid,
                     "handle": item['sender_handle'],
                     "message": item['message'],
+                    "full_name": item.get('sender_full_name', item.get('sender_handle', 'Unknown')), 
                     "created_at": sk.split('#')[1]
                 }
                 for item in response.get('Items', [])
@@ -76,7 +77,7 @@ class Messages:
             ]
 
             model['data'] = messages_list
-            current_app.logger.info(f"Fetched {len(messages_list)} messages for conversation {conv_id}")
+            current_app.logger.info(f"12Fetched {len(messages_list)} messages for conversation {conv_id}")
 
         except Exception as e:
             current_app.logger.error(f"Error in Messages.run: {e}", exc_info=True)
