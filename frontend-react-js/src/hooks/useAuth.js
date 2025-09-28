@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { getCurrentUser, fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth';
+import { getCurrentUser, fetchAuthSession, fetchUserAttributes, signOut } from 'aws-amplify/auth';
 
 export default function useAuth() {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -12,6 +13,7 @@ export default function useAuth() {
         const attributes = await fetchUserAttributes();
         const session = await fetchAuthSession();
         const token = session.tokens?.accessToken?.toString();
+        
         setUser({
           display_name: attributes.preferred_username,
           handle: user.signInDetails?.loginId
@@ -19,9 +21,18 @@ export default function useAuth() {
         setToken(token);
       } catch (err) {
         console.log("User not authenticated", err);
+        
+        // If token is revoked, sign out completely
+        if (err.name === 'NotAuthorizedException' && err.message.includes('revoked')) {
+          try {
+            await signOut();
+          } catch (signOutErr) {
+            console.log('Error signing out:', signOutErr);
+          }
+        }
+        
         setUser(null);
         setToken(null);
-        window.location.href = "/signin"; // Redirect to signin
       } finally {
         setLoading(false);
       }

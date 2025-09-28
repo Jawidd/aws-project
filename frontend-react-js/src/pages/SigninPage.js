@@ -3,13 +3,37 @@ import React from "react";
 import {ReactComponent as Logo} from '../components/svg/logo.svg';
 import { Link, useSearchParams } from "react-router-dom";
 
-import { signIn } from 'aws-amplify/auth';
+
+import { signIn, getCurrentUser } from 'aws-amplify/auth';
+
 
 export default function SigninPage() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [errors, setErrors] = React.useState('');
   const [searchParams] = useSearchParams();
+
+// Add this check at the beginning of SigninPage component
+React.useEffect(() => {
+  const checkAuthStatus = async () => {
+    try {
+      const user = await getCurrentUser();
+      if (user) {
+        // User is already signed in, redirect to home
+        window.location.href = "/";
+      }
+    } catch (err) {
+      // User not signed in, continue with signin page
+    }
+  };
+  
+  checkAuthStatus();
+}, []);
+
+
+
+
+
 
   React.useEffect(() => {
     if (searchParams.get('email')) {
