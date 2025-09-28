@@ -65,3 +65,15 @@
   font-size: 16px;
   line-height: 1.5;
 }
+
+
+.message_item.sent {
+  margin-left: auto;
+  flex-direction: row-reverse;
+}
+
+.message_item.sent .message_content {
+  padding-right: 16px;
+  padding-left: 0;
+  text-align: right;
+}

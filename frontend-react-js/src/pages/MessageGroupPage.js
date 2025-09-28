@@ -76,7 +76,9 @@ export default function MessageGroupPage() {
       </section>
 
       <div className="content messages">
-        <MessagesFeed messages={messages} />
+        {/* <MessagesFeed messages={messages} /> */}
+        <MessagesFeed messages={messages} user={user} />
+
         <MessagesForm setMessages={setMessages} />
       </div>
     </article>

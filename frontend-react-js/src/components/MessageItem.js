@@ -1,9 +1,7 @@
 import './MessageItem.css';
-import { Link } from "react-router-dom";
 import { DateTime } from 'luxon';
 
 export default function MessageItem(props) {
-
   const format_time_created_at = (value) => {
     const created = DateTime.fromISO(value).setZone('Europe/London')
     const now = DateTime.now().setZone('Europe/London')
@@ -19,14 +17,16 @@ export default function MessageItem(props) {
     }
   };
 
+  const isSent = props.user?.handle?.startsWith(props.message.handle);
+
   return (
-    <Link className='message_item' to={`/messages/@`+props.message.handle}>
+    <div className={`message_item ${isSent ? 'sent' : 'received'}`}>
       <div className='message_avatar'></div>
       <div className='message_content'>
         <div className='message_meta'>
           <div className='message_identity'>
             <div className='display_name'>{props.message.full_name}</div>
-            <div className="handle">@{props.message.handle}</div>
+            <div className="handle"></div>
           </div>
         </div>
         <div className="message">{props.message.message}</div>
@@ -34,6 +34,6 @@ export default function MessageItem(props) {
           <span className='ago'>{format_time_created_at(props.message.created_at)}</span> 
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
