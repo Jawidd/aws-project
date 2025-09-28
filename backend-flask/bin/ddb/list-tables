@@ -2,20 +2,14 @@
 
 source $(dirname $0)/../.env
 
-if [ "$ENV_TYPE" = "prodd" ]; then
-    printf "\033[1;35m == DYNAMODB list-tables prod \033[0m\n "
-    
+if [ "$ENV_TYPE" = "prod" ]; then
+    printf "\033[1;35m == DYNAMODB list-tables AWS \033[0m\n"
+    ENDPOINTURL=""
 else
-    printf "\033[1;36m == DYNAMODB list-tables local host \033[0m\n " 
-    # ENDPOINTURL=$DYNAMODB_LOCAL_URL
-    ENDPOINTURL="http://localhost:8000"
-
-
+    printf "\033[1;36m == DYNAMODB list-tables local \033[0m\n"
+    ENDPOINTURL="--endpoint-url $DYNAMODB_LOCAL_URL"
 fi
 
-
-
-
 # List all tables
-aws dynamodb list-tables --endpoint-url "$ENDPOINTURL" --query TableNames --output table
+aws dynamodb list-tables $ENDPOINTURL --query TableNames --output table
 

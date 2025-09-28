@@ -2,24 +2,19 @@
 
 source $(dirname $0)/../.env
 
-if [ "$ENV_TYPE" = "prodd" ]; then
-    printf "\033[1;35m == DYNAMODB describe-tables prod \033[0m\n "
-    
+if [ "$ENV_TYPE" = "prod" ]; then
+    printf "\033[1;35m == DYNAMODB describe-tables AWS \033[0m\n"
+    ENDPOINTURL=""
 else
-    printf "\033[1;36m == DYNAMODB describe-tables local host \033[0m\n " 
-    ENDPOINTURL=$DYNAMODB_LOCAL_URL
-    TABLENAME=$DYNAMODB_TABLE_NAME
+    printf "\033[1;36m == DYNAMODB describe-tables local \033[0m\n"
+    ENDPOINTURL="--endpoint-url $DYNAMODB_LOCAL_URL"
 fi
 
+# Describe the messages table
+aws dynamodb describe-table --table-name "$DYNAMODB_MESSAGES_TABLE" $ENDPOINTURL
 
+# Scan and show messages table data
+aws dynamodb scan --table-name "$DYNAMODB_MESSAGES_TABLE" $ENDPOINTURL --output table
 
-
-
-# Describe the table
-aws dynamodb describe-table --table-name "$DYNAMODB_MESSAGES_TABLE" --endpoint-url "$ENDPOINTURL"
-
-Scan and show table data
-aws dynamodb scan --table-name "$DYNAMODB_MESSAGES_TABLE" --endpoint-url "$ENDPOINTURL" --output table
-
-Scan and show table data
-aws dynamodb scan --table-name "$DYNAMODB_CONVERSATIONS_TABLE" --endpoint-url "$ENDPOINTURL" --output table
+# Scan and show conversations table data
+aws dynamodb scan --table-name "$DYNAMODB_CONVERSATIONS_TABLE" $ENDPOINTURL --output table
