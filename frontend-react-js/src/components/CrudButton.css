@@ -1,0 +1,43 @@
+.crud_button {
+  display: block;
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #1d4ed8 100%);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 18px 24px;
+  margin-top: 32px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 8px 25px rgba(59, 130, 246, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.crud_button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.crud_button:hover::before {
+  left: 100%;
+}
+
+.crud_button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 
+    0 15px 35px rgba(59, 130, 246, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
+}
