@@ -3,6 +3,7 @@ import './MessageGroupsPage.css';
 import React from "react";
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
+import useWebSocket from '../hooks/useWebSocket';
 
 import DesktopNavigation from '../components/DesktopNavigation';
 import MessageGroupFeed from '../components/MessageGroupFeed';
@@ -14,6 +15,11 @@ export default function MessageGroupsPage() {
   const [popped, setPopped] = React.useState([]);
   const dataFetchedRef = React.useRef(false);
   const navigate = useNavigate();
+  const [newMessages, setNewMessages] = React.useState(new Set());
+
+  
+  // WebSocket connection
+  const { lastMessage } = useWebSocket(process.env.REACT_APP_WEBSOCKET_URL);
 
   const loadData = async (token) => {
     try {
@@ -58,16 +64,29 @@ export default function MessageGroupsPage() {
     }
   }, [loading, token]);
 
+  // Handle WebSocket messages
+  React.useEffect(() => {
+    if (lastMessage?.type === 'new_message') {
+      const conversationId = lastMessage.data.conversation_id;
+      setNewMessages(prev => new Set([...prev, conversationId]));
+      if (token) {
+        loadData(token);
+      }
+    }
+  }, [lastMessage, token]);
+
   if (loading) return <p>Loading...</p>;
 
   return (
     <article>
       <DesktopNavigation user={user} active={'messages'} setPopped={setPopped} />
       <section className='message_groups'>
-        <MessageGroupFeed 
-          message_groups={messageGroups} 
-          users_without_conversations={usersWithoutConversations}
-        />
+      <MessageGroupFeed 
+        message_groups={messageGroups} 
+        users_without_conversations={usersWithoutConversations}
+        newMessages={newMessages}
+        setNewMessages={setNewMessages}
+      />
       </section>
       <div className='content'></div>
     </article>

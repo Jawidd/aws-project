@@ -1,4 +1,5 @@
 .message_group_item {
+  position: relative;
   display: flex;
   align-items: start;
   overflow: hidden;
@@ -8,6 +9,7 @@
   transition: all 0.3s ease;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
+
 
 .message_group_item:hover {
   background: rgba(59, 130, 246, 0.05);
@@ -70,4 +72,26 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: 16px;
   line-height: 1.5;
+}
+
+.message_group_item.new-message {
+  background: rgba(34, 197, 94, 0.1);
+  border-left: 3px solid #22c55e;
+}
+
+.message_group_item.new-message .message_group_avatar {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.message_group_item.new-message::after {
+  content: '';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
 }

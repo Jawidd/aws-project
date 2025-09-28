@@ -21,16 +21,23 @@ export default function MessageGroupItem(props) {
     }
   };
 
-  const classes = () => {
-    let classes = ["message_group_item"];
-    if (params.handle == props.message_group.original_uuid){
-      classes.push('active')
-    }
-    return classes.join(' ');
+const classes = () => {
+  let classes = ["message_group_item"];
+  if (params.handle == props.message_group.original_uuid){
+    classes.push('active')
   }
+  if (props.hasNewMessage) {
+    classes.push('new-message');
+  }
+  return classes.join(' ');
+}
 
   return (
-    <Link className={classes()} to={`/messages/@`+props.message_group.original_uuid}>
+      <Link 
+            className={classes()} 
+            to={`/messages/@`+props.message_group.original_uuid}
+            onClick={props.onMarkAsRead}
+          >
       <div className='message_group_avatar'></div>
       <div className='message_content'>
         <div className='message_group_meta'>
