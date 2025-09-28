@@ -12,7 +12,7 @@ export default function useWebSocket(url) {
     
     ws.current.onopen = () => {
       setIsConnected(true);
-      console.log('WebSocket connected');
+      // console.log('WebSocket connected');
     };
     
     ws.current.onmessage = (event) => {
@@ -22,11 +22,10 @@ export default function useWebSocket(url) {
     
     ws.current.onclose = () => {
       setIsConnected(false);
-      console.log('WebSocket disconnected');
+      // console.log('WebSocket disconnected');
     };
     
     ws.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
     };
 
     return () => {
