@@ -10,7 +10,16 @@ export default function MessageGroupFeed(props) {
       </div>
       <div className='message_group_feed_collection'>
         {props.message_groups.map(message_group => {
-        return  <MessageGroupItem key={message_group.uuid} message_group={message_group} />
+        return  <MessageGroupItem 
+                                  key={message_group.uuid} 
+                                  message_group={message_group}
+                                  hasNewMessage={props.newMessages?.has(message_group.uuid)}
+                                  onMarkAsRead={() => props.setNewMessages?.(prev => {
+                                    const newSet = new Set(prev);
+                                    newSet.delete(message_group.uuid);
+                                    return newSet;
+                                  })}
+                                />
         })}
       </div>
       {props.users_without_conversations && props.users_without_conversations.length > 0 && (

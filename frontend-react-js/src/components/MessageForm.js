@@ -50,6 +50,13 @@ export default function MessageForm({ setMessages }) {
     setCount(event.target.value.length);
     setMessage(event.target.value);
   };
+  const textarea_onkeydown = (event) => {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    onsubmit(event);
+  }
+};
+
 
   return (
     <form className='message_form' onSubmit={onsubmit}>
@@ -57,8 +64,10 @@ export default function MessageForm({ setMessages }) {
         type="text"
         placeholder="send a direct message..."
         value={message}
-        onChange={textarea_onchange} 
+        onChange={textarea_onchange}
+        onKeyDown={textarea_onkeydown}
       />
+
       <div className='submit'>
         <div className={classes.join(' ')}>{1024 - count}</div>
         <button 
