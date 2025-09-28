@@ -1,0 +1,39 @@
+# templates/post-email-confirm.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Cruddur Post Email Confirmation Service
+
+Parameters:
+  DatabaseUrl:
+    Type: String
+    Description: PostgreSQL connection string
+    Default: "postgresql://cruddur:password@localhost:5432/cruddur"
+
+
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: python3.13
+    LoggingConfig:
+      LogFormat: JSON
+
+
+
+Resources:
+  PostConfirmationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../functions/post-email-confirm/  
+      Handler: app.lambda_handler
+      Description: Creates user record after Cognito email confirmation
+      Environment:
+        Variables:
+          DATABASE_URL: !Ref DatabaseUrl
+
+
+Outputs:
+  PostConfirmationFunctionArn:
+    Description: "Post Confirmation Lambda Function ARN"
+    Value: !GetAtt PostConfirmationFunction.Arn

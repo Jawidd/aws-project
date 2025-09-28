@@ -4,13 +4,13 @@ import os
 
 def lambda_handler(event, context):
     try:
-        # Extract user data from Cognito event
         user_attributes = event['request']['userAttributes']
         cognito_user_id = event['userName']
         email = user_attributes.get('email')
         preferred_username = user_attributes.get('preferred_username')
-        full_name=user_attributes.get('full_name')
-        handle = email.split('@')[0]
+        full_name = user_attributes.get('name')  # required 
+        handle = preferred_username or (email.split('@')[0] if email else 'unknown')
+
         
         # Connect to database
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
@@ -18,10 +18,10 @@ def lambda_handler(event, context):
         
         # Insert user if not exists
         cur.execute("""
-            INSERT INTO public.users (preferred_username, handle, email, cognito_user_id)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO public.users (preferred_username, handle, email, cognito_user_id, full_name)
+            VALUES (%s, %s, %s, %s, %s)
             ON CONFLICT (email) DO NOTHING
-            """, (preferred_username, handle, email, cognito_user_id))
+            """, (preferred_username, handle, email, cognito_user_id, full_name))
         
         conn.commit()
         cur.close()

@@ -1,6 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: cruddur-serverless
+Description: Cruddur Serverless Parent Template
+
+
 
 Parameters:
   DatabaseUrl:
@@ -8,27 +10,44 @@ Parameters:
     Description: PostgreSQL connection string
     Default: "postgresql://cruddur:password@localhost:5432/cruddur"
 
-Globals:
-  Function:
-    Timeout: 30
-    Runtime: python3.13
-    LoggingConfig:
-      LogFormat: JSON
 
 Resources:
-  PostConfirmationFunction:
-    Type: AWS::Serverless::Function
+  # DynamoDB + Message Stream Stack
+  DynamoDBMessagingStack:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      CodeUri: functions/post-email-confirm/
-      Handler: app.lambda_handler
-      Description: Creates user record after Cognito email confirmation
-      Environment:
-        Variables:
-          DATABASE_URL: !Ref DatabaseUrl
+      TemplateURL: templates/dynamo-stream-template.yaml
+
+
+  # Post Email Confirm Stack
+  PostEmailConfirmStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: templates/post-email-template.yaml
+      Parameters:
+        DatabaseUrl: !Ref DatabaseUrl
 
 Outputs:
   PostConfirmationFunctionArn:
     Description: "Post Confirmation Lambda Function ARN"
-    Value: !GetAtt PostConfirmationFunction.Arn
+    Value: !GetAtt PostEmailConfirmStack.Outputs.PostConfirmationFunctionArn
     Export:
-      Name: CruddurPostConfirmationLambdaArn
+      Name: CruddurPostConfirmationLambdaArnV2
+
+  MessageStreamFunctionArn:
+    Description: "Message Stream Lambda Function ARN"
+    Value: !GetAtt DynamoDBMessagingStack.Outputs.MessageStreamFunctionArn
+    Export:
+      Name: CruddurMessageStreamLambdaArnV2
+
+  MessagesTableName:
+    Description: "Messages DynamoDB Table Name"
+    Value: !GetAtt DynamoDBMessagingStack.Outputs.MessagesTableName
+    Export:
+      Name: CruddurMessagesTableNameV2
+
+  ConversationsTableName:
+    Description: "Conversations DynamoDB Table Name"
+    Value: !GetAtt DynamoDBMessagingStack.Outputs.ConversationsTableName
+    Export:
+      Name: CruddurConversationsTableNameV2

@@ -3,7 +3,8 @@
 version = 0.1
 
 [default.global.parameters]
-stack_name = "cruddur-serverless"
+stack_name = "cruddur-serverless-v2"
+
 
 [default.build.parameters]
 cached = true
@@ -13,10 +14,10 @@ parallel = true
 lint = true
 
 [default.deploy.parameters]
-capabilities = "CAPABILITY_IAM"
+capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
 confirm_changeset = true
 resolve_s3 = true
-s3_prefix = "cruddur-serverless"
+s3_prefix = "cruddur-serverless-v2"
 region = "eu-west-2"
 image_repositories = []
 parameter_overrides = "DatabaseUrl=postgresql://cruddur:SuperSecretPassword@cruddur-db-dev.cjw6kceccsk2.eu-west-2.rds.amazonaws.com:5432/cruddur"

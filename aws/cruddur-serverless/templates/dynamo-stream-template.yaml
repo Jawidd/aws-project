@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: DynamoDB tables and message stream Lambda for Cruddur
+
+Resources:
+  # Messages Table
+  MessagesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: cruddur-messages
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+  # Conversations Table
+  ConversationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: cruddur-conversations
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+        - AttributeName: last_message_timestamp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: LastMessageIndex
+          KeySchema:
+            - AttributeName: pk
+              KeyType: HASH
+            - AttributeName: last_message_timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+  # Message Stream Lambda
+  MessageStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: message-stream
+      CodeUri: ../functions/message-stream/ 
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      Timeout: 30
+      Environment:
+        Variables:
+          DYNAMODB_MESSAGES_TABLE: !Ref MessagesTable
+          DYNAMODB_CONVERSATIONS_TABLE: !Ref ConversationsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MessagesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConversationsTable
+      Events:
+        MessagesStreamEvent:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt MessagesTable.StreamArn
+            StartingPosition: LATEST
+            BatchSize: 10
+
+Outputs:
+  MessagesTableName:
+    Value: !Ref MessagesTable
+
+  ConversationsTableName:
+    Value: !Ref ConversationsTable
+
+  MessageStreamFunctionArn:
+    Value: !GetAtt MessageStreamFunction.Arn

@@ -48,13 +48,13 @@ Resources:
           Mutable: true
           Required: true
       LambdaConfig:
-        PostConfirmation: !ImportValue CruddurPostConfirmationLambdaArn
+        PostConfirmation: !ImportValue CruddurPostConfirmationLambdaArnV2
 
   CognitoLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !ImportValue CruddurPostConfirmationLambdaArn
+      FunctionName: !ImportValue CruddurPostConfirmationLambdaArnV2
       Principal: cognito-idp.amazonaws.com
       SourceArn: !GetAtt CognitoUserPool.Arn
 
