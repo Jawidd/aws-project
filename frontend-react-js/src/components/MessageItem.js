@@ -25,7 +25,7 @@ export default function MessageItem(props) {
       <div className='message_content'>
         <div className='message_meta'>
           <div className='message_identity'>
-            <div className='display_name'>{props.message.display_name}</div>
+            <div className='display_name'>{props.message.full_name}</div>
             <div className="handle">@{props.message.handle}</div>
           </div>
         </div>

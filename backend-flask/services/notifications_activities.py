@@ -1,17 +1,18 @@
 from datetime import datetime, timedelta, timezone
 
 # import XRay SDK libraries
-from aws_xray_sdk.core import xray_recorder
+# from aws_xray_sdk.core import xray_recorder
 
 class NotificationsActivities:
   def __init__(self, request):
         self.request = request
         
-  def run(self,user_handle):
+  def run(self, user_handle):
     try:
       # Start a segment
-      parent_subsegment = xray_recorder.begin_subsegment('notifications_activities_start')
-      parent_subsegment.put_annotation('url', self.request.url)
+      # parent_subsegment = xray_recorder.begin_subsegment('notifications_activities_start')
+      # parent_subsegment.put_annotation('url', self.request.url)
+      
       model = {
         'errors': None,
         'data': None
@@ -22,7 +23,7 @@ class NotificationsActivities:
       else:
         try:
           # Start a subsegment
-          subsegment = xray_recorder.begin_subsegment('notif_activiteis_nested_subsegment')
+          # subsegment = xray_recorder.begin_subsegment('notif_activiteis_nested_subsegment')
           
           now = datetime.now(timezone.utc).astimezone()
           results = [{
@@ -44,7 +45,7 @@ class NotificationsActivities:
               'reposts_count': 0,
               'created_at': (now - timedelta(days=2)).isoformat()
             }],
-          }]# return results
+          }] # return results
           
           model['data'] = results
           # subsegment.put_annotation('user_handle', results)
@@ -52,13 +53,13 @@ class NotificationsActivities:
           # Raise the error in the segment
           raise e
         finally:  
-          xray_recorder.end_subsegment()
+          # xray_recorder.end_subsegment()
+          pass
     except Exception as e:
       # Raise the error in the segment
       raise e
     finally:  
       # Close the segment
-      xray_recorder.end_subsegment()
+      # xray_recorder.end_subsegment()
+      pass
     return model
-          
-          

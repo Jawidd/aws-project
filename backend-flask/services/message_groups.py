@@ -19,7 +19,7 @@ class MessageGroups:
         ).Table(table_name)
 
     @staticmethod
-    def run(user_uuid, endpoint_url=None):
+    def run(user_uuid,user_full_name ,endpoint_url=None):
         table = MessageGroups.get_table(endpoint_url)
         pk_value = f"{USER_PREFIX}{user_uuid}"
 
@@ -39,17 +39,15 @@ class MessageGroups:
             key=lambda x: x.get("last_message_timestamp", ""),
             reverse=True
         )
-
         def build_group(item):
             return {
                 "uuid": item["sk"].replace(CONV_PREFIX, ""),
-                "display_name": item.get("other_display_name", "Unknown"),
-                "handle": item.get("other_handle", "unknown"),
+                "original_uuid": item.get("other_handle", "Unknown"),
+                "full_name": item.get("other_full_name", "Unknown"),
+                "handle": item.get("other_display_name", "unknown"),
                 "message": item.get("last_message_text", ""),
                 "created_at": item.get("last_message_timestamp", datetime.now(timezone.utc).isoformat())
             }
 
         groups = [build_group(i) for i in items]
-
-        current_app.logger.info(f"Fetched {len(groups)} groups for user {user_uuid}")
         return {"data": groups, "errors": None}

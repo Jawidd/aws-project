@@ -98,16 +98,16 @@ def data_message_groups(claims):
 
 
 
-@app.route("/api/messages/@<string:receiver_handle>", methods=['GET'])
+@app.route("/api/messages/@<string:uuid>", methods=['GET'])
 @cross_origin()
 @require_jwt()
-def data_messages(claims, receiver_handle):
+def data_messages(claims, uuid):
     """Fetch messages for the logged-in user with a specific receiver."""
-    
+    app.logger.info(f"F003etching messages for {uuid}")
     # Convert handle to UUID
-    receiver_user = users.UsersService.get_user_by_handle(receiver_handle)
+    receiver_user = users.UsersService.get_user_by_uuid(uuid)
     if not receiver_user:
-        return {"error": f"User {receiver_handle} not found"}, 404
+        return {"error": f"User {uuid} not found"}, 404
     
     model = messages.Messages.run(
         user_sender_cognito_id=claims['username'],
@@ -149,8 +149,8 @@ def data_create_message(claims):
 def data_home(claims):
     return home_activities.HomeActivities.run(user_claims=claims), 200
 
+# @xray_recorder.capture('notifications_activities')
 @app.route("/api/activities/notifications", methods=['GET'])
-@xray_recorder.capture('notifications_activities')
 @require_jwt()
 def data_notifications(claims):
     model = notifications_activities.NotificationsActivities(request).run(claims['username'])
