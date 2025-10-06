@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source $(dirname $0)/../../.env
+
+psql $AWS_RDS_PSQL_CONNECTION -c "SELECT 1;" &>/dev/null && echo "rds-psql HEALTHY" || echo "rds-psql UNHEALTHY!!!!!!!!"
