@@ -12,6 +12,9 @@ aws-xray-sdk
 
 # watchtower
 
+python-dotenv
+
+
 rollbar
 blinker
 
