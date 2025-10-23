@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 try:
-    response = requests.get(f"{os.getenv('BACKEND_URL')}/api/health", timeout=5)
+    response = requests.get(f"{os.getenv('BACKEND_URL')}/api/health-check", timeout=5)
+    # print("backendurl", os.getenv('BACKEND_URL'))
     print("FLASK is HEALTHY" if response.status_code == 200 else "UNHEALTHY")
 except:
     print("FLASK is UNHEALTHY")

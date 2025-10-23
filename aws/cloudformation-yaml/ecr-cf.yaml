@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+
+Description: ECR for python and flask
+
+Resources:
+
+  Repository: 
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: !Sub "${AWS::StackName}"
+  
+  Repository:LifecyclePolicy:
+    Type: AWS::ECR::LifecyclePolicy
+    Properties:
+      LifecyclePolicyText: !Sub |
+        {
+          "rules": [
+            {
+              "rulePriority": 1,
+              "description": "Expire untagged images older than 14 days",
+              "selection": {
+                "tagStatus": "untagged",
+                "countType": "sinceImagePushed",
+                "countUnit": "days",
+                "countNumber": 14
+              },
+              "action": { "type": "expire" }
+            },
+            {
+              "rulePriority": 2,
+              "description": "Only keep 50 most recent tagged images",
+              "selection": {
+                "tagStatus": "tagged",
+                "tagPrefixList": [ "v" ],
+                "countType": "imageCountMoreThan",
+                "countNumber": 50
+              },
+              "action": { "type": "expire" }
+            }
+          ]
+        }
+    DependsOn: Repository
