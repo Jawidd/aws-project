@@ -1,16 +1,77 @@
 # 🚀 CRUDDUR
 ## ✅ To-Do List
 
+### 🏗️ Current Structure: 
+- FrontEnd: React(port=3000) in local-Docker
+
+- Backend:  Flask(port=5000) in local-Docker 
+    - health check backend  using http://localhost:5000/api/health-check or docker exec -it aws-project-backend-flask-1 /backend-flask/bin/flask/health-check
+
+- DB: AWS RDS for users and activitis/cruds 
+    -  Setup Db using setup(create rds db, create schemas for db, populate db with users and !!!activities/cruds!!!) shell script in backend-flask/bin/db/setup 
+    - Test using backend-flask/bin/db/test 
+
+- DB: AWS DynamoDB for messages table and conversations table
+    - setup using  shell script in backend-flask/bin/ddb
+
+
 ### 🏗️ Phase 6: Migrating the dev env to aws
-- [x] create a test shell script for testing connection to psql
-- [x] add health-check for flask app (create a route in app.py, create a file for calling healthcheck route from app.pu)
-- []  create cloud watch group for 
+- [x] create a test shell script for testing connection to psql 
+- [x] add health-check for flask app (create a route in app.py, create a file for calling healthcheck route from app.py)
+- [X]  Create ECRs for base image of python. 
+    - Retrieve an authentication token and authenticate your Docker client to your registry. ( aws ecr  get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 225442939245.dkr.ecr.eu-west-2.amazonaws.com)
+    - pull from dockerhub (docker pull python:3.11-slim-buster)
+    - Tag image (docker tag python:3.11-slim-buster \
+        225442939245.dkr.ecr.eu-west-2.amazonaws.com/cruddur-python:3.11-slim-buster)
+    - push image (docker push 225442939245.dkr.ecr.eu-west-2.amazonaws.com/cruddur-python:3.11-slim-buster )
+    - make flask app to use repo from aws(change docker file  in backend to use ecr python docker uri)
+
+- [X]  Create ECR for FLASK.
+    - Retrieve an authentication token and authenticate  Docker client to  registry. 
+    - build image
+    - Tag image 
+    - push image 
+    
+- [X] Create ECS cluster with name and namespace Cruddur 
+- [] Create ECS service not task for ECR Flask
+    -attaching AWS-managed ECS execution policy and AmazonSSMReadOnlyAccess ( aws iam attach-role-policy \ --role-name crudder-ecs-service-execution-role \ --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy ),(arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess)
+
+- [X] save parameters in system manager to be used by ecs (AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,CONNECTION_URL for postgres,ROLLBAR_ACCESS_TOKEN,OTEL_EXPORTER_OTLP_HEADERS) cat ssmparams.txt | while IFS='=' read -r name value; do
+  aws ssm put-parameter \
+    --name "$name" \
+    --value "$value" \
+    --type SecureString \
+    --overwrite
+done
+
+- [X] Create ecs execution role (which is required by ecs, ecs-execution-trust.json) and Create the ECS Task Role (permissions for backend application, ecs-task-trust.json)
+    1. create the role CruddurECSTaskExecutionRole
+    2. Attach required AWS-managed policies and SSM read policy
+    3. create ecs-task-trust.json
+    4. create ecs task policy.json
+
+
+- [X] Create task definition
+    1. create task definition json file for backend
+    2. register task defination (aws ecs register-task-definition --cli-input-json file://aws/task-definitions/backend-flask.json)
+
+- [] commit to github
+
+<!--
+- [] create cloud watch group for fargate cluster
+-->
+- [] Create ECS for Fargate and  3 ECRs for python, flask and react.
+- [] Login to ECR(python), pull image from docker,tag image and push it to ECR.
 - [] 
+- [] 
+- [] 
+- [] 
+- [] 
+- [] 
+- []  
 - [] Make an ECR for Python and Flask, Task difintations.
 - [] Create Container role `execution role policy` to access secrets from AWS SSM
-- [] 
-- [] 
-- [] 
+
 
 ## 🧭 Project Overview
 CRUDDUR is an app similar to twittr.

@@ -1,14 +1,26 @@
 #!/usr/bin/env python3
 
-import requests
 import os
+import urllib.request
+import urllib.error
+import sys
 from dotenv import load_dotenv
 
 load_dotenv()
 
+backend_url = os.getenv("BACKEND_URL")
+health_url = f"{backend_url}/api/health-check"
+
 try:
-    response = requests.get(f"{os.getenv('BACKEND_URL')}/api/health-check", timeout=5)
-    # print("backendurl", os.getenv('BACKEND_URL'))
-    print("FLASK is HEALTHY" if response.status_code == 200 else "UNHEALTHY")
-except:
+    with urllib.request.urlopen(health_url, timeout=5) as response:
+        status_code = response.getcode()
+        if status_code == 200:
+            print("FLASK is HEALTHYY")
+            sys.exit(0)
+        else:
+            print("UNHEALTHY")
+            sys.exit(1)
+
+except Exception:
     print("FLASK is UNHEALTHY")
+    sys.exit(1)
