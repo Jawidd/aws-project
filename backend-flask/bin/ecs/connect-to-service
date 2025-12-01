@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+
+source $(dirname $0)/../.env
+
+  printf "\033[1;35m == connect-to-task $ECS_BACKEND_TASK_ARN \033[0m\n " 
+
+aws ecs execute-command  \
+--region eu-west-2 \
+--cluster crudder \
+--task $ECS_BACKEND_TASK_ARN \
+--container backend-flask \
+--command "/bin/bash" \
+--interactive
