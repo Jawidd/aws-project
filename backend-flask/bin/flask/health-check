@@ -1,26 +1,22 @@
 #!/usr/bin/env python3
 
-import os
 import urllib.request
-import urllib.error
-import sys
-from dotenv import load_dotenv
 
-load_dotenv()
 
-backend_url = os.getenv("BACKEND_URL")
-health_url = f"{backend_url}/api/health-check"
+
 
 try:
-    with urllib.request.urlopen(health_url, timeout=5) as response:
-        status_code = response.getcode()
-        if status_code == 200:
-            print("FLASK is HEALTHYY")
-            sys.exit(0)
-        else:
-            print("UNHEALTHY")
-            sys.exit(1)
+  response = urllib.request.urlopen('http://localhost:5000/api/health-check')
+  if response.getcode() == 200:
+    print("[OK] Flask server is running")
+    exit(0) # success
+  else:
+    print("[BAD] Flask server is not running")
+    exit(1) # false
+# This for some reason is not capturing the error....
+#except ConnectionRefusedError as e:
+# so we'll just catch on all even though this is a bad practice
+except Exception as e:
+  print(e)
+  exit(1) # false
 
-except Exception:
-    print("FLASK is UNHEALTHY")
-    sys.exit(1)

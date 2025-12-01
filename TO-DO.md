@@ -4,7 +4,7 @@
 ### 🏗️ Current Structure: 
 - FrontEnd: React(port=3000) in local-Docker
 
-- Backend:  Flask(port=5000) in local-Docker 
+- Backend:  Flask(port=5000) migrated from local-Docker to ECS (dependencies like ECR,TaskDefinition, service, roles were created)
     - health check backend  using http://localhost:5000/api/health-check or docker exec -it aws-project-backend-flask-1 /backend-flask/bin/flask/health-check
 
 - DB: AWS RDS for users and activitis/cruds 
@@ -17,7 +17,7 @@
 
 ### 🏗️ Phase 6: Migrating the dev env to aws
 - [x] create a test shell script for testing connection to psql 
-- [x] add health-check for flask app (create a route in app.py, create a file for calling healthcheck route from app.py)
+- [x] add health-check for flask app (create a route in app.py, create a file for calling healthcheck route from app.py) docker exec -it aws-project-backend-flask-1 python3 /backend-flask/bin/flask/health-check
 - [X]  Create ECRs for base image of python. 
     - Retrieve an authentication token and authenticate your Docker client to your registry. ( aws ecr  get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 225442939245.dkr.ecr.eu-west-2.amazonaws.com)
     - pull from dockerhub (docker pull python:3.11-slim-buster)
@@ -28,12 +28,12 @@
 
 - [X]  Create ECR for FLASK.
     - Retrieve an authentication token and authenticate  Docker client to  registry. 
-    - build image
+    - build image 
     - Tag image 
     - push image 
     
 - [X] Create ECS cluster with name and namespace Cruddur 
-- [] Create ECS service not task for ECR Flask
+- [X] Create ECS service not task for ECR Flask
     -attaching AWS-managed ECS execution policy and AmazonSSMReadOnlyAccess ( aws iam attach-role-policy \ --role-name crudder-ecs-service-execution-role \ --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy ),(arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess)
 
 - [X] save parameters in system manager to be used by ecs (AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,CONNECTION_URL for postgres,ROLLBAR_ACCESS_TOKEN,OTEL_EXPORTER_OTLP_HEADERS) cat ssmparams.txt | while IFS='=' read -r name value; do
@@ -53,18 +53,16 @@ done
 
 - [X] Create task definition
     1. create task definition json file for backend
-    2. register task defination (aws ecs register-task-definition --cli-input-json file://aws/task-definitions/backend-flask.json)
-
-- [] commit to github
-
+    2. register task defination (aws ecs register-task-definition --cli-input-json file://backend-flask-task-definition.json)
+    
 <!--
-- [] create cloud watch group for fargate cluster
--->
-- [] Create ECS for Fargate and  3 ECRs for python, flask and react.
-- [] Login to ECR(python), pull image from docker,tag image and push it to ECR.
-- [] 
-- [] 
-- [] 
+- [X] commit to github -->
+
+- [X] create service in ecs( using created task definition,fargate,new sg) aws ecs create-service --cli-input-json file://service-backend-flask.json
+    
+- [X] connect to service backend flask (bin/ecs/connect-to-service) aws ecs execute-command --cluster crudder --task 0a9a4ebcd8b14415885e9b62eb0b8ca7 --container backend-flask --interactive --command '/bin/sh'
+
+- [] Test if ecs backend  public ip is working
 - [] 
 - [] 
 - [] 

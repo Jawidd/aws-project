@@ -26,7 +26,7 @@
       "portMappings": [
         {
           "name": "backend-flask",
-          "containerPort": 4567,
+          "containerPort": 5000,
           "protocol": "tcp", 
           "appProtocol": "http"
         }
@@ -49,9 +49,11 @@
         {"name": "AWS_DEFAULT_REGION", "value": "eu-west-2"}
       ],
       "secrets": [
+        {"name": "AWS_ACCESS_KEY_ID" , "valueFrom": "arn:aws:ssm:eu-west-2:225442939245:parameter/cruddur/AWS_ACCESS_KEY_ID"  },
+        {"name": "AWS_SECRET_ACCESS_KEY" , "valueFrom": "arn:aws:ssm:eu-west-2:225442939245:parameter/cruddur/AWS_SECRET_ACCESS_KEY"  },
         {"name": "CONNECTION_URL"       , "valueFrom": "arn:aws:ssm:eu-west-2:225442939245:parameter/cruddur/CONNECTION_URL"  },
-        {"name": "ROLLBAR_ACCESS_TOKEN" , "valueFrom": "arn:aws:ssm:eu-west-2:225442939245:parameter/cruddur/OTEL_EXPORTER_OTLP_HEADERS"  },
-        {"name": "OTEL_EXPORTER_OTLP_HEADERS" , "valueFrom": "arn:aws:ssm:eu-west-2:225442939245:parameter/cruddur/ROLLBAR_ACCESS_TOKEN"  }
+        {"name": "OTEL_EXPORTER_OTLP_HEADERS" , "valueFrom": "arn:aws:ssm:eu-west-2:225442939245:parameter/cruddur/OTEL_EXPORTER_OTLP_HEADERS"  },
+        {"name": "ROLLBAR_ACCESS_TOKEN" , "valueFrom": "arn:aws:ssm:eu-west-2:225442939245:parameter/cruddur/ROLLBAR_ACCESS_TOKEN"  }
       ]
     }
   ]
