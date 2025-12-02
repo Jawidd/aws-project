@@ -2,10 +2,9 @@
 ## ✅ To-Do List
 
 ### 🏗️ Current Structure: 
-- FrontEnd: React(port=3000) in local-Docker
+- FrontEnd: React(port=3000) hosted on ecs, can be accessed via ALB (http://crudder-alb-76675061.eu-west-2.elb.amazonaws.com:3000)
 
-- Backend:  Flask(port=5000) migrated from local-Docker to ECS (dependencies like ECR,TaskDefinition, service, roles were created)
-    - health check backend  using http://localhost:5000/api/health-check or docker exec -it aws-project-backend-flask-1 /backend-flask/bin/flask/health-check
+- Backend:  Flask(port=5000)hosted on ecs, can be accessed via ALB (http://crudder-alb-76675061.eu-west-2.elb.amazonaws.com:5000/api/health-check)
 
 - DB: AWS RDS for users and activitis/cruds 
     -  Setup Db using setup(create rds db, create schemas for db, populate db with users and !!!activities/cruds!!!) shell script in backend-flask/bin/db/setup 
@@ -72,10 +71,22 @@ done
 - [X] create load balancer with target groups for front and back. anyd check if target groups are healthy for backend
 <!--
 - [X] commit to github -->
-- [] 
 
-- []  
+- [X] create a docker file for frontend production.(reason: we use only builded react app in container)
 
+- [] create a ecr for frontend, build,tag and push react app to ecr,   docker build \
+--build-arg REACT_APP_BACKEND_URL="http://crudder-ALB-76675061.eu-west-2.elb.amazonaws.com:5000" \
+--build-arg REACT_APP_AWS_PROJECT_REGION="eu-west-2" \
+--build-arg REACT_APP_AWS_COGNITO_REGION="eu-west-2" \
+--build-arg REACT_APP_AWS_USER_POOLS_ID="eu-west-2_Jwi9THX3b" \
+--build-arg REACT_APP_CLIENT_ID="1ls5p1vu83m5ahseab36ufk6vm" \
+-t frontend-react-js \
+-f Dockerfile.prod \
+.
+
+- [X] create task definition, service for frontend, tested frontend , tested rds(activities), failed test dynamodb(messages)
+aws ecs register-task-definition --cli-input-json file://aws/task-definitions/frontend-reactjs-task-definition.json
+aws ecs create-service --cli-input-json file://aws/json/service-frontend-reactjs.json
 
 
 ## 🧭 Project Overview
