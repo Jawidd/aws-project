@@ -1,13 +1,13 @@
 FROM node:18-alpine
 
-WORKDIR /frontend-react-js
-
-COPY package*.json ./
-RUN npm ci
-
-COPY . .
-
 ENV PORT=3000
-EXPOSE 3000
+COPY . /frontend-react-js
+WORKDIR /frontend-react-js
+RUN npm install
+EXPOSE ${PORT}
 
 CMD ["npm", "start"]
+
+
+# COPY package*.json ./
+# RUN npm ci
