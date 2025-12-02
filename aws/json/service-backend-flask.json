@@ -11,11 +11,29 @@
         "sg-0dc7558f9fe76d3c4"
       ],
       "subnets": [
-        "subnet-0102629bea446df37"
+         "subnet-0102629bea446df37","subnet-02104ad72813ea4fd","subnet-0bd1f42d55ff1152e"
       ]
     }
   },
   "propagateTags": "SERVICE",
   "serviceName": "backend-flask",
-  "taskDefinition": "backend-flask"
+  "taskDefinition": "backend-flask",
+    "serviceConnectConfiguration": {
+    "enabled": true,
+    "namespace": "cruddur",
+    "services": [
+      {
+        "portName": "backend-flask",
+        "discoveryName": "backend-flask",
+        "clientAliases": [{"port": 5000}]
+      }
+    ]
+  },
+ "loadBalancers": [
+    {
+        "targetGroupArn": "arn:aws:elasticloadbalancing:eu-west-2:225442939245:targetgroup/backend-flask-tg/3a4eb2beb7bde29a",
+        "containerName": "backend-flask",
+        "containerPort": 5000
+    }
+  ]
 }
