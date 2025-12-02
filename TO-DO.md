@@ -14,6 +14,10 @@
 - DB: AWS DynamoDB for messages table and conversations table
     - setup using  shell script in backend-flask/bin/ddb
 
+- ALB: target groups will listen to port 5000 and 3000 of alb ip, send them to containers, send back the answers
+ means ALBsg ports of 3000 and 5000 need to be open
+ means containersg ports of 3000 and 5000 need to be open to ALB only
+
 
 ### 🏗️ Phase 6: Migrating the dev env to aws
 - [x] create a test shell script for testing connection to psql 
@@ -55,20 +59,23 @@ done
     1. create task definition json file for backend
     2. register task defination (aws ecs register-task-definition --cli-input-json file://backend-flask-task-definition.json)
     
-<!--
-- [X] commit to github -->
 
-- [X] create service in ecs( using created task definition,fargate,new sg) aws ecs create-service --cli-input-json file://service-backend-flask.json
+
+- [X] create service in ecs (sg is important, it needs to self refernce on ports 443 for ssm and 5000 for self check)( using created task definition,fargate,new sg) aws ecs create-service --cli-input-json file://service-backend-flask.json 
     
 - [X] connect to service backend flask (bin/ecs/connect-to-service) aws ecs execute-command --cluster crudder --task 0a9a4ebcd8b14415885e9b62eb0b8ca7 --container backend-flask --interactive --command '/bin/sh'
 
-- [] Test if ecs backend  public ip is working
+- [X] Test if ecs backend  public ip is working (open port 5000 in sg)
+
+- [X] check connection between ECS-backend and rds
+
+- [X] create load balancer with target groups for front and back. anyd check if target groups are healthy for backend
+<!--
+- [X] commit to github -->
 - [] 
-- [] 
-- [] 
+
 - []  
-- [] Make an ECR for Python and Flask, Task difintations.
-- [] Create Container role `execution role policy` to access secrets from AWS SSM
+
 
 
 ## 🧭 Project Overview
