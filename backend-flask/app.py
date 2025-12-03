@@ -121,13 +121,13 @@ def data_users_without_conversations(claims):
     return users_list, 200
 
 
-
-@app.route("/api/messages/@<string:uuid>", methods=['GET'])
+@app.route("/api/messages/user/<string:uuid>", methods=['GET'])
 @cross_origin()
 @require_jwt()
 def data_messages(claims, uuid):
     """Fetch messages for the logged-in user with a specific receiver."""
-    app.logger.info(f"F003etching messages for {uuid}")
+    app.logger.info(f"Fetching messages for {uuid}")
+    
     # Convert handle to UUID
     receiver_user = users.UsersService.get_user_by_uuid(uuid)
     if not receiver_user:
@@ -146,7 +146,6 @@ def data_messages(claims, uuid):
 
 
 
-
 @app.route("/api/messages", methods=['POST', 'OPTIONS'])
 @cross_origin()
 @require_jwt()
@@ -155,7 +154,11 @@ def data_create_message(claims):
     data = request.json or {}
     
     sender_user = users.UsersService.get_user_by_cognito_id(claims['username'])
-    receiver_user = users.UsersService.get_user_by_uuid(data.get("user_receiver_handle"))
+
+    # CHANGED: use the new field
+    receiver_uuid = data.get("user_receiver_uuid")
+
+    receiver_user = users.UsersService.get_user_by_uuid(receiver_uuid)
     
     model = create_message.CreateMessage.run(
         message=data.get("message"),
@@ -163,7 +166,12 @@ def data_create_message(claims):
         receiver_user=receiver_user,
         endpoint_url=os.getenv("DYNAMODB_LOCAL_DOCKER_URL")
     ) 
-    return ({"errors": model["errors"]}, 422) if model.get("errors") else (model["data"], 200)
+
+    return (
+        {"errors": model["errors"]}, 422
+    ) if model.get("errors") else (
+        model["data"], 200
+    )
 
 
 
@@ -213,4 +221,4 @@ def data_activities_reply(claims, activity_uuid):
 # Main
 # -------------------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()

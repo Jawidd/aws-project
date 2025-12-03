@@ -53,8 +53,11 @@ export default function MessageGroupPage() {
     if (!loading && token) {
       const fetchMessages = async () => {
         try {
-          const handle = params.handle.replace(/^@/, ''); // remove @
-          const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/messages/@${handle}`, {
+          // const handle = params.handle.replace(/^@/, ''); // remove @
+          // const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/messages/@${handle}`, {
+          const uuid = params.handle;
+const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/messages/user/${uuid}`, {
+
             headers: { Authorization: `Bearer ${token}` },
           });
           if (res.status === 200) {
@@ -100,10 +103,14 @@ React.useEffect(() => {
     fetchMessageGroups();
     
     // Refresh messages for current conversation
-    const handle = params.handle.replace(/^@/, '');
+    // const handle = params.handle.replace(/^@/, '');
+    const uuid = params.handle;
     const fetchMessages = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/messages/@${handle}`, {
+        // const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/messages/@${handle}`, {
+        const uuid = params.handle;
+const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/messages/user/${uuid}`, {
+
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.status === 200) {

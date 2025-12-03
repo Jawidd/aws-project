@@ -2,8 +2,9 @@
 ## ✅ To-Do List
 
 ### Problems: 
-- [] messagegroups for each user can not be opened, the problem is with handler @
-- [] code[Q dev] is not working
+
+- [] NOTRelevant- code[Q dev] is not working on vscode
+- [] NotImportant-force update flask service and task defin after new container push to ecr
 
 
 ### 🏗️ Current Structure: 
@@ -58,12 +59,9 @@ done
     3. create ecs-task-trust.json
     4. create ecs task policy.json
 
-
 - [X] Create task definition
     1. create task definition json file for backend
     2. register task defination             aws ecs register-task-definition --cli-input-json file://aws/task-definitions/backend-flask-task-definition.json
-    
-
 
 - [X] create service in ecs (sg is important, it needs to self refernce on ports 443 for ssm and 5000 for self check)( using created task definition,fargate,new sg) aws ecs create-service --cli-input-json file://service-backend-flask.json 
     
@@ -74,7 +72,6 @@ done
 - [X] check connection between ECS-backend and rds
 
 - [X] create load balancer with target groups for front and back. anyd check if target groups are healthy for backend
-
 
 - [X] create a docker file for frontend production.(reason: we use only builded react app in container)
 
@@ -104,9 +101,12 @@ aws ecs create-service --cli-input-json file://aws/json/service-frontend-reactjs
 
 - [X] fix cors:  in backend task definitions change variables [FRONTEND_URL,BACKEND_URL] to ["https://customdns","https://customdns/api"]
 
+- [X] create a new docker file for prod mode for flask
+
+- [X] fix all problems with messagegroupspage.js(message list for each user) for each user can not be opened, the problem was with handler @, so we changed frontend and backend to use messages/user/<:handle> instead of messages/@<:handle> 
+
 <!--
 - [X] commit to github -->
-
 
 
 ## 🧭 Project Overview
