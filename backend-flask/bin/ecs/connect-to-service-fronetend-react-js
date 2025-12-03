@@ -8,7 +8,7 @@ aws ecs execute-command  \
 --region eu-west-2 \
 --cluster crudder \
 --task $ECS_FRONTEND_TASK_ARN \
---container frontend-react-js \
+--container 	frontend-react-js \
 --interactive \
 --command '/bin/sh'
 

@@ -1,6 +1,11 @@
 # 🚀 CRUDDUR
 ## ✅ To-Do List
 
+### Problems: 
+- [] messagegroups for each user can not be opened, the problem is with handler @
+- [] code[Q dev] is not working
+
+
 ### 🏗️ Current Structure: 
 - FrontEnd: React(port=3000) hosted on ecs, can be accessed via ALB (http://crudder-alb-76675061.eu-west-2.elb.amazonaws.com:3000)
 
@@ -56,7 +61,7 @@ done
 
 - [X] Create task definition
     1. create task definition json file for backend
-    2. register task defination (aws ecs register-task-definition --cli-input-json file://backend-flask-task-definition.json)
+    2. register task defination             aws ecs register-task-definition --cli-input-json file://aws/task-definitions/backend-flask-task-definition.json
     
 
 
@@ -69,13 +74,12 @@ done
 - [X] check connection between ECS-backend and rds
 
 - [X] create load balancer with target groups for front and back. anyd check if target groups are healthy for backend
-<!--
-- [X] commit to github -->
+
 
 - [X] create a docker file for frontend production.(reason: we use only builded react app in container)
 
-- [] create a ecr for frontend, build,tag and push react app to ecr,   docker build \
---build-arg REACT_APP_BACKEND_URL="http://crudder-ALB-76675061.eu-west-2.elb.amazonaws.com:5000" \
+- [X] create a ecr for frontend, build,tag and push react app to ecr,   docker build \
+--build-arg REACT_APP_BACKEND_URL="https://cruddur.jawid.me" \
 --build-arg REACT_APP_AWS_PROJECT_REGION="eu-west-2" \
 --build-arg REACT_APP_AWS_COGNITO_REGION="eu-west-2" \
 --build-arg REACT_APP_AWS_USER_POOLS_ID="eu-west-2_Jwi9THX3b" \
@@ -84,9 +88,25 @@ done
 -f Dockerfile.prod \
 .
 
+
 - [X] create task definition, service for frontend, tested frontend , tested rds(activities), failed test dynamodb(messages)
 aws ecs register-task-definition --cli-input-json file://aws/task-definitions/frontend-reactjs-task-definition.json
 aws ecs create-service --cli-input-json file://aws/json/service-frontend-reactjs.json
+
+- [X] execute command work for both front and back, check sg for front,back,ALB and vpc endpoint
+
+- [X] should have a custom dns name for app
+    1. buy a custome domain name 
+    2. create a route 53 with  custom dns name, copy ns addresss to custom dns
+    3. create a ssl cert, select the cert from ALB, create a record for the cert in route 53
+    4. create a record (can point to ALB,A record or C record)
+    5. connect frontend to backend: change variable[REACT_APP_BACKEND_URL]  when building frontend container from ALB:5000 to "https://customdns"
+
+- [X] fix cors:  in backend task definitions change variables [FRONTEND_URL,BACKEND_URL] to ["https://customdns","https://customdns/api"]
+
+<!--
+- [X] commit to github -->
+
 
 
 ## 🧭 Project Overview
@@ -150,3 +170,5 @@ CRUDDUR is an app similar to twittr.
 
 ## 🗓️ Project Status
 > Currently in **Active Development** — contributions welcome!
+
+
