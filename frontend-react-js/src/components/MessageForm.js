@@ -27,7 +27,8 @@ export default function MessageForm({ setMessages }) {
         },
         body: JSON.stringify({
           message: message,
-          user_receiver_handle: params.handle.replace(/^@/, '') // remove @ if present
+          //user_receiver_handle: params.handle.replace(/^@/, '') // remove @ if present
+          user_receiver_uuid: params.handle
         }),
       });
 

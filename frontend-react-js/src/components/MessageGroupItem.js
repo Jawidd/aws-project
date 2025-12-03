@@ -35,7 +35,8 @@ const classes = () => {
   return (
       <Link 
             className={classes()} 
-            to={`/messages/@`+props.message_group.original_uuid}
+           // to={`/messages/@`+props.message_group.original_uuid}
+           to={`/messages/user/` + props.message_group.original_uuid}
             onClick={props.onMarkAsRead}
           >
       <div className='message_group_avatar'></div>
