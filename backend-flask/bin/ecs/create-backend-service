@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -e
+
+# Resolve script directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Relative path to service JSON
+SERVICE_JSON="$SCRIPT_DIR/../../../aws/json/service-backend-flask.json"
+
+# Check if JSON file exists
+if [ ! -f "$SERVICE_JSON" ]; then
+    echo "❌ Service JSON file not found: $SERVICE_JSON"
+    exit 1
+fi
+
+echo "=== Creating backend ECS service ==="
+aws ecs create-service --cli-input-json "file://${SERVICE_JSON}"
+echo "✅ Backend ECS service created successfully."

@@ -24,22 +24,32 @@
  means containersg ports of 3000 and 5000 need to be open to ALB only
 
 
-### 🏗️ Phase 6: Migrating the dev env to aws
+### 🏗️ Phase 7: Xray
+- [X] write scripts to handle task,image and service updates
+<!--
+- [X] commit to github -->
+
+- [] implement xray in backend task definition
+
+
+### 🏗️ Phase 6: Migrating the containers to aws
 - [x] create a test shell script for testing connection to psql 
 - [x] add health-check for flask app (create a route in app.py, create a file for calling healthcheck route from app.py) docker exec -it aws-project-backend-flask-1 python3 /backend-flask/bin/flask/health-check
+
 - [X]  Create ECRs for base image of python. 
-    - Retrieve an authentication token and authenticate your Docker client to your registry. ( aws ecr  get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 225442939245.dkr.ecr.eu-west-2.amazonaws.com)
-    - pull from dockerhub (docker pull python:3.11-slim-buster)
-    - Tag image (docker tag python:3.11-slim-buster \
-        225442939245.dkr.ecr.eu-west-2.amazonaws.com/cruddur-python:3.11-slim-buster)
-    - push image (docker push 225442939245.dkr.ecr.eu-west-2.amazonaws.com/cruddur-python:3.11-slim-buster )
+    - Retrieve an authentication token and authenticate your Docker client to your registry (bin/ecr/auth-docker-client)
+    - pull from dockerhub (python:3.11-slim-buster)
+    - Tag and push python image(bin/ecr/pull-tag-push-python)
     - make flask app to use repo from aws(change docker file  in backend to use ecr python docker uri)
 
-- [X]  Create ECR for FLASK.
-    - Retrieve an authentication token and authenticate  Docker client to  registry. 
-    - build image 
-    - Tag image 
-    - push image 
+- [X]  Create REPO for FLASK in aws ecr
+    - authenticate  Docker client to ecr registry. ((bin/ecr/auth-docker-client))
+    - build,Tag and push backend-prod(Dockerfile-prod) image (bin/ecr/build-backend-prod),(bin/ecr/tag-push-backend-prod)
+
+- [X] Create REPO for React-js in aws ecr
+create a docker file for frontend production.(reason: we use only built react app in container)
+    - - build,Tag and push frontend-react-js-prod(Dockerfile-prod) image (bin/ecr/build-frontend-prod),(bin/ecr/tag-push-frontend-prod)
+
     
 - [X] Create ECS cluster with name and namespace Cruddur 
 - [X] Create ECS service not task for ECR Flask
@@ -60,12 +70,11 @@ done
     4. create ecs task policy.json
 
 - [X] Create task definition
-    1. create task definition json file for backend
-    2. register task defination             aws ecs register-task-definition --cli-input-json file://aws/task-definitions/backend-flask-task-definition.json
+    1. create task definition json file for backend and register task defination(bin/ecs/register-backend-task-update-service)  
 
-- [X] create service in ecs (sg is important, it needs to self refernce on ports 443 for ssm and 5000 for self check)( using created task definition,fargate,new sg) aws ecs create-service --cli-input-json file://service-backend-flask.json 
+- [X] create service in ecs (sg is important, it needs to self refernce on ports 443 for ssm and 5000 for self check)( using created task definition,fargate,new sg) 
     
-- [X] connect to service backend flask (bin/ecs/connect-to-service) aws ecs execute-command --cluster crudder --task 0a9a4ebcd8b14415885e9b62eb0b8ca7 --container backend-flask --interactive --command '/bin/sh'
+- [X] connect to service backend flask (bin/ecs/connect-to-service) 
 
 - [X] Test if ecs backend  public ip is working (open port 5000 in sg)
 
@@ -73,22 +82,10 @@ done
 
 - [X] create load balancer with target groups for front and back. anyd check if target groups are healthy for backend
 
-- [X] create a docker file for frontend production.(reason: we use only builded react app in container)
 
-- [X] create a ecr for frontend, build,tag and push react app to ecr,   docker build \
---build-arg REACT_APP_BACKEND_URL="https://cruddur.jawid.me" \
---build-arg REACT_APP_AWS_PROJECT_REGION="eu-west-2" \
---build-arg REACT_APP_AWS_COGNITO_REGION="eu-west-2" \
---build-arg REACT_APP_AWS_USER_POOLS_ID="eu-west-2_Jwi9THX3b" \
---build-arg REACT_APP_CLIENT_ID="1ls5p1vu83m5ahseab36ufk6vm" \
--t frontend-react-js \
--f Dockerfile.prod \
-.
 
 
 - [X] create task definition, service for frontend, tested frontend , tested rds(activities), failed test dynamodb(messages)
-aws ecs register-task-definition --cli-input-json file://aws/task-definitions/frontend-reactjs-task-definition.json
-aws ecs create-service --cli-input-json file://aws/json/service-frontend-reactjs.json
 
 - [X] execute command work for both front and back, check sg for front,back,ALB and vpc endpoint
 
@@ -105,8 +102,6 @@ aws ecs create-service --cli-input-json file://aws/json/service-frontend-reactjs
 
 - [X] fix all problems with messagegroupspage.js(message list for each user) for each user can not be opened, the problem was with handler @, so we changed frontend and backend to use messages/user/<:handle> instead of messages/@<:handle> 
 
-<!--
-- [X] commit to github -->
 
 
 ## 🧭 Project Overview

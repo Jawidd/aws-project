@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -e
+
+# ---------- CONFIG ----------
+ECR_ACCOUNT="225442939245"
+REGION="eu-west-2"
+REPO_NAME="frontend-react-js"
+ECR_URL="${ECR_ACCOUNT}.dkr.ecr.${REGION}.amazonaws.com/${REPO_NAME}:latest"
+CLUSTER_NAME="crudder"
+SERVICE_NAME="frontend-react-js"
+
+# Resolve the directory where this script lives
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Relative path to task definition JSON
+TASK_DEF_FILE="../../../aws/task-definitions/frontend-reactjs-task-definition.json"
+
+# ---------- REGISTER NEW TASK DEFINITION ----------
+echo "=== Registering new ECS task definition revision ==="
+TASK_DEF_ARN=$(aws ecs register-task-definition \
+  --cli-input-json "file://${TASK_DEF_FILE}" \
+  --query "taskDefinition.taskDefinitionArn" \
+  --output text)
+echo "✅ Task definition registered: ${TASK_DEF_ARN}"
+
+# ---------- UPDATE ECS SERVICE ----------
+echo "=== Updating ECS service to use new task definition revision ==="
+aws ecs update-service \
+  --cluster ${CLUSTER_NAME} \
+  --service ${SERVICE_NAME} \
+  --task-definition ${TASK_DEF_ARN} \
+  --force-new-deployment
+echo "✅ ECS service updated to new revision."
+
+# ---------- OPTIONAL: CLEANUP OLD TASK DEFINITION REVISIONS ----------
+echo "=== Cleaning up old task definitions (optional) ==="
+OLD_TASK_DEFS=$(aws ecs list-task-definitions \
+  --family-prefix ${REPO_NAME} \
+  --status ACTIVE \
+  --query "taskDefinitionArns[:-1]" \
+  --output text)
+
+if [ -n "$OLD_TASK_DEFS" ]; then
+  for OLD in $OLD_TASK_DEFS; do
+    echo "Deregistering old task definition: $OLD"
+    aws ecs deregister-task-definition --task-definition $OLD
+  done
+fi
+
+echo "✅ Deployment completed successfully."

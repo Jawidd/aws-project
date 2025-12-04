@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Exit on error
+set -e
+
+AWS_REGION="eu-west-2"
+ACCOUNT_ID="225442939245"
+
+echo "Logging into AWS ECR for region: $AWS_REGION"
+
+aws ecr get-login-password --region "$AWS_REGION" \
+  | docker login --username AWS --password-stdin "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+
+echo "ECR login successful."
+

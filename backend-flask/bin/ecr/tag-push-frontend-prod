@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -e
+
+ECR_ACCOUNT="225442939245"
+REGION="eu-west-2"
+ECR_URL="${ECR_ACCOUNT}.dkr.ecr.${REGION}.amazonaws.com"
+REPO_NAME="frontend-react-js"
+LOCAL_IMAGE="frontend-react-js:latest"
+REMOTE_IMAGE="${ECR_URL}/${REPO_NAME}:latest"
+
+
+
+echo "=== Checking local frontend image ==="
+if ! docker image inspect ${LOCAL_IMAGE} > /dev/null 2>&1; then
+    echo "❌ Local image ${LOCAL_IMAGE} does NOT exist."
+    echo "You must build frontend first. Example:"
+    echo "  ./bin/ecr/build-frontend-prod"
+    exit 1
+fi
+
+echo "=== Tagging image ==="
+docker tag ${LOCAL_IMAGE} ${REMOTE_IMAGE}
+echo "Tagged: ${LOCAL_IMAGE} → ${REMOTE_IMAGE}"
+
+echo "=== Pushing to ECR ==="
+docker push ${REMOTE_IMAGE}
+
+echo "=== DONE ==="
+echo "Pushed: ${REMOTE_IMAGE}"
