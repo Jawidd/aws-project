@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -e
+
+# Resolve the directory where this script lives
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Navigate to the frontend-react-js project root
+PROJECT_ROOT="$(realpath "$SCRIPT_DIR/../../../frontend-react-js")"
+
+# Check if the folder exists
+if [ ! -d "$PROJECT_ROOT" ]; then
+  echo "Error: frontend-react-js folder not found at $PROJECT_ROOT"
+  exit 1
+fi
+
+printf "\033[1;35m == Building frontend-react-js Docker image... \033[0m\n(frontend dir=$PROJECT_ROOT) \n"
+
+cd "$PROJECT_ROOT" || exit 1
+
+# Build Docker image
+docker build \
+  --build-arg REACT_APP_BACKEND_URL="https://cruddur.jawid.me" \
+  --build-arg REACT_APP_AWS_PROJECT_REGION="eu-west-2" \
+  --build-arg REACT_APP_AWS_COGNITO_REGION="eu-west-2" \
+  --build-arg REACT_APP_AWS_USER_POOLS_ID="eu-west-2_Jwi9THX3b" \
+  --build-arg REACT_APP_CLIENT_ID="1ls5p1vu83m5ahseab36ufk6vm" \
+  -t frontend-react-js \
+  -f Dockerfile.prod \
+  .
+
+echo "Build completed."

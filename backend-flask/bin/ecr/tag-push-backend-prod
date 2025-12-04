@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -e
+
+ECR_ACCOUNT="225442939245"
+REGION="eu-west-2"
+ECR_URL="${ECR_ACCOUNT}.dkr.ecr.${REGION}.amazonaws.com"
+REPO_NAME="backend-flask"
+LOCAL_IMAGE="backend-flask-prod:latest"
+REMOTE_IMAGE="${ECR_URL}/${REPO_NAME}:latest"
+
+echo "=== Checking local Python base image ==="
+if ! docker image inspect python:3.11-slim-buster > /dev/null 2>&1; then
+    echo "❌ python:3.11-slim-buster is NOT available locally."
+    echo "Aborting. Please build or pull it manually first."
+    exit 1
+else
+    echo "✅ python:3.11-slim-buster exists."
+fi
+
+echo "=== Checking local backend image ==="
+if ! docker image inspect ${LOCAL_IMAGE} > /dev/null 2>&1; then
+    echo "❌ Local image ${LOCAL_IMAGE} does NOT exist."
+    echo "You must build backend first. Example:"
+    echo "  docker build -f Dockerfile.prod -t backend-flask ."
+    exit 1
+fi
+
+echo "=== Tagging image ==="
+docker tag ${LOCAL_IMAGE} ${REMOTE_IMAGE}
+echo "Tagged: ${LOCAL_IMAGE} → ${REMOTE_IMAGE}"
+
+echo "=== Pushing to ECR ==="
+docker push ${REMOTE_IMAGE}
+
+echo "=== DONE ==="
+echo "Pushed: ${REMOTE_IMAGE}"
