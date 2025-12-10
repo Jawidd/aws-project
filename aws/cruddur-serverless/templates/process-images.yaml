@@ -10,29 +10,22 @@
   Parameters:
     ThumbingBucketName:
       Type: String
-      Default: cruddur-thumbs-avatars
+      Default: assets.cruddur.jawid.me
 
   Resources:
-
-    #################################
-    # S3 BUCKET
-    #################################
+    # S3 BUCKET FOR THUMBNAILS
     ThumbingBucket:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: !Ref ThumbingBucketName
 
-    #################################
-    # SNS TOPIC
-    #################################
+    # S3 BUCKET POLICY TO ALLOW PUBLIC READ ACCESS
     WebhookTopic:
       Type: AWS::SNS::Topic
       Properties:
         TopicName: cruddur-webhook-avatar
 
-    #################################
-    # LAMBDA – WITH S3 EVENT TRIGGER (NO LAYER)
-    #################################
+    # LAMBDA FUNCTION TO PROCESS IMAGES
     ThumbnailLambda:
       Type: AWS::Serverless::Function
       Metadata:

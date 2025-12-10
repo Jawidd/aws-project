@@ -25,6 +25,21 @@
 
 ###  📌📌📌📌 Phase 8: image proceessing
 
+- [X] create S3 bucket to store original and processed avatars
+- [X] implement Lambda to process uploaded photos and generate thumbnails
+- [X] set up event trigger for new S3 uploads
+
+- [X] create a cloudfront cdn for images of s3, also use route 53 so https://assets.cruddur.jawid.me redirects to cloudfront
+
+
+- [X] use two buckets for uploads(originals/) and assets(processed/)
+
+<!--
+- [X] commit to github -->
+
+
+- [] optionally, provide API to upload photos to S3 to trigger processing
+
 
 
 
@@ -33,8 +48,6 @@
 
 ### 🏗️ Phase 7: Xray
 - [X] write scripts to handle task,image and service updates
-<!--
-- [X] commit to github -->
 
 - [] implement xray in backend task definition
 

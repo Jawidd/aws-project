@@ -3,7 +3,8 @@
 # -------------------------------
 # Configuration
 # -------------------------------
-BUCKET_NAME="cruddur-thumbs-avatars"
+https://assets.cruddur.jawid.me/avatar/original/sample2.png
+BUCKET_NAME="assets.cruddur.jawid.me"
 INPUT_PREFIX="avatar/original"
 TEST_IMAGE_PATH="./sample2.png"
 
@@ -20,7 +21,10 @@ FILENAME=$(basename "$TEST_IMAGE_PATH")
 S3_KEY="$INPUT_PREFIX/$FILENAME"
 
 # Upload file to S3
-echo "Uploading $TEST_IMAGE_PATH to s3://$BUCKET_NAME/$S3_KEY ..."
+# echo "Uploading $TEST_IMAGE_PATH to s3://$BUCKET_NAME/$S3_KEY ..."
+# aws s3 cp "$TEST_IMAGE_PATH" "s3://$BUCKET_NAME/$S3_KEY"
+
+echo "Uploading $TEST_IMAGE_PATH to CDN instead of s3://$BUCKET_NAME/$S3_KEY ..."
 aws s3 cp "$TEST_IMAGE_PATH" "s3://$BUCKET_NAME/$S3_KEY"
 
 if [ $? -eq 0 ]; then
