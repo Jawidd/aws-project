@@ -2,14 +2,11 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Cruddur Serverless Parent Template
 
-
-
 Parameters:
   DatabaseUrl:
     Type: String
     Description: PostgreSQL connection string
     Default: "postgresql://cruddur:password@localhost:5432/cruddur"
-
 
 Resources:
   # DynamoDB + Message Stream Stack
@@ -18,7 +15,6 @@ Resources:
     Properties:
       TemplateURL: templates/dynamo-stream-template.yaml
 
-
   # Post Email Confirm Stack
   PostEmailConfirmStack:
     Type: AWS::CloudFormation::Stack
@@ -26,6 +22,14 @@ Resources:
       TemplateURL: templates/post-email-template.yaml
       Parameters:
         DatabaseUrl: !Ref DatabaseUrl
+
+  # Process Images Stack
+  ProcessImagesStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: templates/process-images.yaml
+      Parameters:
+        ThumbingBucketName: "cruddur-thumbs-avatars"
 
 Outputs:
   PostConfirmationFunctionArn:

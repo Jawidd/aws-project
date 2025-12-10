@@ -1,0 +1,69 @@
+  AWSTemplateFormatVersion: '2010-09-09'
+  Transform: AWS::Serverless-2016-10-31
+  Description:  Serverless image thumbnail generator using Pillow.
+  Globals:
+    Function:
+      Runtime: python3.13
+      Timeout: 30
+      MemorySize: 512
+
+  Parameters:
+    ThumbingBucketName:
+      Type: String
+      Default: cruddur-thumbs-avatars
+
+  Resources:
+
+    #################################
+    # S3 BUCKET
+    #################################
+    ThumbingBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: !Ref ThumbingBucketName
+
+    #################################
+    # SNS TOPIC
+    #################################
+    WebhookTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: cruddur-webhook-avatar
+
+    #################################
+    # LAMBDA – WITH S3 EVENT TRIGGER (NO LAYER)
+    #################################
+    ThumbnailLambda:
+      Type: AWS::Serverless::Function
+      Metadata:
+        BuildMethod: python3.13
+      Properties:
+        FunctionName: image-to-thumbnail
+        Handler: app.lambda_handler
+        CodeUri: ../functions/image-to-thumbnail/
+        Environment:
+          Variables:
+            THUMBING_BUCKET_NAME: !Ref ThumbingBucketName
+            THUMBING_S3_FOLDER_INPUT: "avatar/original/"
+            THUMBING_S3_FOLDER_OUTPUT: "avatar/processed/"
+            THUMBING_WEBHOOK_URL: "https://cruddur.jawid.me/api/webhooks/avatar"
+            THUMBING_TOPIC_ARN: !GetAtt WebhookTopic.TopicArn
+            THUMBING_TOPIC_NAME: "cruddur-webhook-avatar"
+        Policies:
+          - S3ReadPolicy:
+              BucketName: !Ref ThumbingBucketName
+          - S3WritePolicy:
+              BucketName: !Ref ThumbingBucketName
+          - SNSPublishMessagePolicy:
+              TopicName: cruddur-webhook-avatar
+
+        Events:
+          ImageUploadEvent:
+            Type: S3
+            Properties:
+              Bucket: !Ref ThumbingBucket
+              Events: s3:ObjectCreated:*
+
+  Outputs:
+    BucketName:
+      Value: !Ref ThumbingBucketName

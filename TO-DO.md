@@ -1,4 +1,4 @@
-# 🚀 CRUDDUR
+#  CRUDDUR
 ## ✅ To-Do List
 
 ### Problems: 
@@ -22,6 +22,13 @@
 - ALB: target groups will listen to port 5000 and 3000 of alb ip, send them to containers, send back the answers
  means ALBsg ports of 3000 and 5000 need to be open
  means containersg ports of 3000 and 5000 need to be open to ALB only
+
+###  📌📌📌📌 Phase 8: image proceessing
+
+
+
+
+
 
 
 ### 🏗️ Phase 7: Xray
