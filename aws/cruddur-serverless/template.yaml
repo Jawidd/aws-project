@@ -29,7 +29,7 @@ Resources:
     Properties:
       TemplateURL: templates/process-images.yaml
       Parameters:
-        ThumbingBucketName: "cruddur-thumbs-avatars"
+        ThumbingBucketName: "assets.cruddur.jawid.me"
 
 Outputs:
   PostConfirmationFunctionArn:
