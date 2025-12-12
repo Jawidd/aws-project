@@ -32,10 +32,15 @@
 - [X] create a cloudfront cdn for images of s3, also use route 53 so https://assets.cruddur.jawid.me redirects to cloudfront
 
 
-- [X] use two buckets for uploads(originals/) and assets(processed/)
+- [X] seperate dev and prod envs, dockerfiles
+- [X] fixed Connection_URL for rds  which its env variable was misconfigured
+- [X] the problems with dynamodb and websocket
 
 <!--
 - [X] commit to github -->
+
+- [] use two buckets for uploads(originals/) and assets(processed/)
+
 
 
 - [] optionally, provide API to upload photos to S3 to trigger processing
