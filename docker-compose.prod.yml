@@ -1,0 +1,15 @@
+services:
+  backend-flask:
+    build:
+      context: ./backend-flask
+      dockerfile: Dockerfile.prod
+    env_file:
+      - ./backend-flask/.env.production
+    ports:
+      - "5000:5000"
+    networks:
+      - internal-network
+
+networks:
+  internal-network:
+    driver: bridge

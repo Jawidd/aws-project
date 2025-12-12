@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Stable SAM build for nested stacks with multiple Lambdas using relative path
+
+set -e  # Exit on error
+
+# Resolve relative path to SAM project
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SAM_PROJECT_DIR="$SCRIPT_DIR/../../../../aws/cruddur-serverless"
+
+# Clean previous build artifacts
+rm -rf "$SAM_PROJECT_DIR/.aws-sam/build"
+
+# Check Docker
+if ! docker info > /dev/null 2>&1; then
+    echo "Docker is not running. Please start Docker and try again."
+    exit 1
+fi
+
+# Build all nested stacks in parallel with container
+cd "$SAM_PROJECT_DIR"
+sam build \
+    --use-container \
+    --parallel \
+    --build-dir .aws-sam/build
+
+echo "SAM build completed successfully."
