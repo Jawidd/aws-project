@@ -41,6 +41,7 @@
       },
       "environment": [
         {"name": "OTEL_SERVICE_NAME", "value": "backend-flask"},
+        {"name": "DYNAMODB_URL", "value": "https://dynamodb.eu-west-2.amazonaws.com"},
         {"name": "OTEL_EXPORTER_OTLP_ENDPOINT", "value": "https://api.honeycomb.io"},
         {"name": "REACT_APP_USER_POOL_ID", "value": "eu-west-2_Jwi9THX3b"},
         {"name": "REACT_APP_USER_POOL_CLIENT_ID", "value": "1ls5p1vu83m5ahseab36ufk6vm"},

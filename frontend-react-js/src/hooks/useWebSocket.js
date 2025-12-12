@@ -7,31 +7,64 @@ export default function useWebSocket(url) {
 
   useEffect(() => {
     if (!url) return;
+    let socket;
+    let retryTimeout;
 
-    ws.current = new WebSocket(url);
-    
-    ws.current.onopen = () => {
-      setIsConnected(true);
-      // console.log('WebSocket connected');
+    const log = (...args) => {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(...args);
+      }
     };
-    
-    ws.current.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      setLastMessage(message);
+
+    const connect = () => {
+      socket = new WebSocket(url);
+
+      socket.onopen = () => {
+        setIsConnected(true);
+        log('WebSocket connected');
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          setLastMessage(message);
+        } catch (err) {
+          log('Invalid WebSocket message:', event.data);
+        }
+      };
+
+      socket.onclose = () => {
+        setIsConnected(false);
+        log('WebSocket disconnected. Reconnecting in 3s...');
+        retryTimeout = setTimeout(connect, 3000); // auto-reconnect
+      };
+
+      socket.onerror = (err) => {
+        log('WebSocket error:', err);
+        socket.close(); // ensure onclose is called
+      };
+
+      ws.current = socket;
     };
-    
-    ws.current.onclose = () => {
-      setIsConnected(false);
-      // console.log('WebSocket disconnected');
-    };
-    
-    ws.current.onerror = (error) => {
-    };
+
+    // Optional small delay to avoid race conditions on page load
+    const timeout = setTimeout(connect, 150);
 
     return () => {
-      ws.current?.close();
+      clearTimeout(timeout);
+      clearTimeout(retryTimeout);
+      socket?.close();
     };
   }, [url]);
 
-  return { isConnected, lastMessage };
+  // Safe send function
+  const sendMessage = (data) => {
+    if (ws.current && isConnected) {
+      ws.current.send(JSON.stringify(data));
+    } else if (process.env.NODE_ENV !== 'production') {
+      console.warn('WebSocket not connected. Message not sent:', data);
+    }
+  };
+
+  return { isConnected, lastMessage, sendMessage };
 }
