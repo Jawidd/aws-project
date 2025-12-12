@@ -1,0 +1,23 @@
+# COPY . /frontend-react-js
+# WORKDIR /frontend-react-js
+# RUN npm install
+
+# Development Dockerfile
+FROM node:18-alpine
+
+# Set work directory
+WORKDIR /frontend-react-js
+
+# Install dependencies first (leverages Docker cache)
+COPY package*.json ./
+RUN npm install
+
+# Copy the rest of the project
+COPY . .
+
+# Expose development port
+ENV PORT=3000
+EXPOSE 3000
+
+# Start React dev server (with fast refresh)
+CMD ["npm", "start"]

@@ -32,7 +32,7 @@
             required: true
             schema:
               type: string
-              example: "#100DaysOfCloud"
+              example: "#100DaysOfCloudb"
         responses:
           '200':
             description: Returns an array of activities"

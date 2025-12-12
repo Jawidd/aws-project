@@ -80,9 +80,29 @@ CORS(app, resources={r"/api/*": {"origins": [os.getenv('FRONTEND_URL'), os.geten
 # API Routes
 # -------------------------------
 
+# @app.route("/api/health-check")
+# def health_check():
+#     return {"success-from app.py health-check route": True}, 200
 @app.route("/api/health-check")
 def health_check():
-    return {"success-from app.py health-check route": True}, 200
+    # Mock claims for testing
+    claims = {"username": "7632b2e4-6091-70d2-1d03-73979cf7e32b"}  # Replace with an actual username in your database
+
+    # Fetch user from your service
+    user = users.UsersService.get_user_by_cognito_id(claims['username'])
+    if not user:
+        return {"error": f"User {claims['username']} not found"}, 404
+
+    # Fetch message groups
+    model = message_groups.MessageGroups.run(
+        user_uuid=user['uuid'],
+        user_full_name=user['full_name'] or user['preferred_username'] or user['handle'],
+        endpoint_url=os.getenv("DYNAMODB_LOCAL_DOCKER_URL")  # points to local or prod DynamoDB
+    )
+
+    # Return result
+    return (model['errors'], 422) if model['errors'] else (model['data'], 200)
+
 
 
 @app.route("/api/message_groups", methods=['GET'])

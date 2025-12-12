@@ -1,20 +1,26 @@
-# Environment variables loaded from .env file - see .env.example for required vars
 services:
   backend-flask:
+    build:
+      context: ./backend-flask
+      dockerfile: Dockerfile.dev
     env_file:
-      - ./backend-flask/.env
-    build: ./backend-flask
+      - ./backend-flask/.env.development
     ports:
       - "5000:5000"
     volumes:
       - ./backend-flask:/backend-flask
     networks:
+
       - internal-network
+
+
 
   frontend-react-js:
     env_file:
-      -  ./frontend-react-js/.env
-    build: ./frontend-react-js
+      - ./frontend-react-js/.env.development
+    build:
+      context: ./frontend-react-js
+      dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     volumes:
@@ -23,50 +29,43 @@ services:
     networks:
       - internal-network
 
-
-  # dynamodb-local:
-  #   user: root
-  #   command: "-jar DynamoDBLocal.jar  -sharedDb -dbPath ./data"
-  #   image: amazon/dynamodb-local
-  #   container_name: dynamodb-local
-  #   ports:
-  #     - "8000:8000"
-  #   volumes:
-  #     - "./docker/dynamodb:/home/dynamodblocal/data"
-  #   working_dir: /home/dynamodblocal
-  #   networks:
-  #     - internal-network
-  # db:
-  #   image: postgres:13-alpine
-  #   restart: always
-  #   env_file:
-  #     - ./backend-flask/.env
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - db:/var/lib/postgresql/data
-  #   networks:
-  #     - internal-network
-
-
-  # xray-daemon:
-  #   image: amazon/aws-xray-daemon
-  #   env_file:
-  #     - ./backend-flask/.env
-  #   command:
-  #     - "xray -o -b xray-daemon:2000"
-  #   ports:
-  #     - 2000:2000/udp
-  #   networks:
-  #     - internal-network
-
-
 networks:
   internal-network:
     driver: bridge
     name: cruddur
 
 
-# volumes:
-#   db:
-#     driver: local
+
+# dynamodb-local:
+#   user: root
+#   command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+#   image: amazon/dynamodb-local
+#   container_name: dynamodb-local
+#   ports:
+#     - "8000:8000"
+#   volumes:
+#     - "./docker/dynamodb:/home/dynamodblocal/data"
+#   working_dir: /home/dynamodblocal
+#   networks:
+#     - internal-network
+# db:
+#   image: postgres:13-alpine
+#   restart: always
+#   env_file:
+#     - ./backend-flask/.env
+#   ports:
+#     - "5432:5432"
+#   volumes:
+#     - db:/var/lib/postgresql/data
+#   networks:
+#     - internal-network
+# xray-daemon:
+#   image: amazon/aws-xray-daemon
+#   env_file:
+#     - ./backend-flask/.env
+#   command:
+#     - "xray -o -b xray-daemon:2000"
+#   ports:
+#     - 2000:2000/udp
+#   networks:
+#     - internal-network

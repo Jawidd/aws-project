@@ -1,0 +1,20 @@
+# Backend development Dockerfile
+FROM 225442939245.dkr.ecr.eu-west-2.amazonaws.com/cruddur-python:3.11-slim-buster
+
+WORKDIR /backend-flask
+
+# Install dependencies first (cacheable)
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
+
+# Copy all code
+COPY . .
+
+# Development environment
+ENV FLASK_DEBUG=1
+
+# Expose port
+EXPOSE 5000
+
+# Start Flask dev server
+CMD ["python3", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000", "--debug"]
