@@ -2,29 +2,32 @@
 # Use latest stable Node LTS (20.x)
 FROM node:20-alpine AS build
 
+# Build-time arguments (MUST match docker build --build-arg names)
 ARG REACT_APP_BACKEND_URL
-ARG REACT_APP_AWS_PROJECT_REGION
-ARG REACT_APP_AWS_COGNITO_REGION
-ARG REACT_APP_AWS_USER_POOLS_ID
-ARG REACT_APP_CLIENT_ID
+ARG REACT_APP_WEBSOCKET_URL
+ARG REACT_APP_AWS_REGION
+ARG REACT_APP_USER_POOL_ID
+ARG REACT_APP_USER_POOL_CLIENT_ID
 
-ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
-ENV REACT_APP_AWS_PROJECT_REGION=$REACT_APP_AWS_PROJECT_REGION
-ENV REACT_APP_AWS_COGNITO_REGION=$REACT_APP_AWS_COGNITO_REGION
-ENV REACT_APP_AWS_USER_POOLS_ID=$REACT_APP_AWS_USER_POOLS_ID
-ENV REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID
+# Inject into React build environment
+ENV REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL}
+ENV REACT_APP_WEBSOCKET_URL=${REACT_APP_WEBSOCKET_URL}
+ENV REACT_APP_AWS_REGION=${REACT_APP_AWS_REGION}
+ENV REACT_APP_USER_POOL_ID=${REACT_APP_USER_POOL_ID}
+ENV REACT_APP_USER_POOL_CLIENT_ID=${REACT_APP_USER_POOL_CLIENT_ID}
 
+# Copy source
 COPY . ./frontend-react-js
 WORKDIR /frontend-react-js
 
+# Install & build
 RUN npm install
 RUN npm run build
 
-# New Base Image ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Latest stable Nginx Alpine (1.26.x)
+# Runtime Image ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 FROM nginx:1.26-alpine
 
-# --from build is coming from the Base Image
+# Copy build artifacts
 COPY --from=build /frontend-react-js/build /usr/share/nginx/html
 COPY --from=build /frontend-react-js/nginx.conf /etc/nginx/nginx.conf
 

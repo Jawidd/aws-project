@@ -80,9 +80,9 @@ CORS(app, resources={r"/api/*": {"origins": [os.getenv('FRONTEND_URL'), os.geten
 # API Routes
 # -------------------------------
 
-# @app.route("/api/health-check")
-# def health_check():
-#     return {"success-from app.py health-check route": True}, 200
+@app.route("/api/health-check")
+def health_check():
+    return {"success-from app.py health-check route": True}, 200
 
 
 @app.route("/api/message_groups", methods=['GET'])

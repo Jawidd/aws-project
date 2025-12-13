@@ -41,13 +41,20 @@
       },
       "environment": [
         {"name": "OTEL_SERVICE_NAME", "value": "backend-flask"},
-        {"name": "DYNAMODB_URL", "value": "https://dynamodb.eu-west-2.amazonaws.com"},
         {"name": "OTEL_EXPORTER_OTLP_ENDPOINT", "value": "https://api.honeycomb.io"},
+
+        {"name": "REACT_APP_AWS_REGION", "value": "eu-west-2"},  
         {"name": "REACT_APP_USER_POOL_ID", "value": "eu-west-2_Jwi9THX3b"},
         {"name": "REACT_APP_USER_POOL_CLIENT_ID", "value": "1ls5p1vu83m5ahseab36ufk6vm"},
+
         {"name": "FRONTEND_URL", "value": "https://cruddur.jawid.me"},
-        {"name": "BACKEND_URL", "value": "https://cruddur.jawid.me/api"},
-        {"name": "AWS_DEFAULT_REGION", "value": "eu-west-2"}
+        {"name": "BACKEND_URL", "value": "https://cruddur.jawid.me"},
+        {"name": "AWS_DEFAULT_REGION", "value": "eu-west-2"},
+        
+        {"name": "DYNAMODB_MESSAGES_TABLE", "value": "cruddur-messages"},
+        {"name": "DYNAMODB_CONVERSATIONS_TABLE", "value": "cruddur-conversations"},
+        {"name": "DYNAMODB_URL", "value": "https://dynamodb.eu-west-2.amazonaws.com"},
+        {"name": "WEBSOCKET_API_ENDPOINT", "value": "wss://h88ifuk3je.execute-api.eu-west-2.amazonaws.com/prod/"}
       ],
       "secrets": [
         {"name": "AWS_ACCESS_KEY_ID" , "valueFrom": "arn:aws:ssm:eu-west-2:225442939245:parameter/cruddur/AWS_ACCESS_KEY_ID"  },
