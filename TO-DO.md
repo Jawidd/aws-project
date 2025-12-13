@@ -35,7 +35,28 @@
 - [X] seperate dev and prod envs, dockerfiles
 - [X] fixed Connection_URL for rds  which its env variable was misconfigured
 - [X] the problems with dynamodb and websocket
+- [X] fix all problems with dev and prod environments
 
+- [X] (week8-again) do migrations(https://github.com/omenking/aws-bootcamp-cruddur-2023/commit/3920d898928dcddc175aec4d2d2187f62c324335)
+    - Backend & Database:
+        - Implement database migrations for bio field in users table
+        - Add bio column to users schema with proper constraints
+        - Create migration scripts for adding bio field to existing users
+        - Update user model and queries to handle bio data
+    
+    - Other
+        - Create dedicated ProfilePage component (/profile route) with user details display
+        - Implement ProfileForm component for editing user profile information
+        - Add bio editing functionality with proper validation and API integration
+        - Fix profile update API endpoints and data flow
+        - Remove SuggestedUsersSection completely from sidebar
+
+
+
+    2. 
+
+- [] now the like button should work, also cruds should have an attribute in database which will show number of likes, when someone press like, that attribute in database should increase
+- [] make a lambda to update db and delete expired cruds
 <!--
 - [X] commit to github -->
 
@@ -182,7 +203,7 @@ CRUDDUR is an app similar to twittr.
 ## 👥 Contributors
 | Name | Role | GitHub |
 |------|------|--------|
-| Jawid  | Lead Developer | [@alexmorgn](https://github.com/alexmorgn) |
+| Jawid  | Lead Developer | [jawid.me](https://github.com/jawidd) |
 
 
 

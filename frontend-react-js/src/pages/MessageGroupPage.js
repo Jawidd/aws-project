@@ -8,6 +8,7 @@ import DesktopNavigation from '../components/DesktopNavigation';
 import MessagesFeed from '../components/MessageFeed';
 import MessagesForm from '../components/MessageForm';
 import MessageGroupFeed from '../components/MessageGroupFeed';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function MessageGroupPage() {
   const { user, token, loading } = useAuth();
@@ -128,7 +129,7 @@ const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/messages/user/
 
 
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <LoadingSpinner text="Loading conversation..." />;
 
   return (
     <article>

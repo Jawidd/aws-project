@@ -5,6 +5,9 @@ from functools import wraps
 from flask import request, jsonify, current_app
 import os
 
+class TokenVerifyError(Exception):
+    pass
+
 class CognitoJwtToken:
     def __init__(self, user_pool_id=None, user_pool_client_id=None, region=None):
         self.region = region or os.getenv('REACT_APP_AWS_REGION')
@@ -27,8 +30,7 @@ class CognitoJwtToken:
             # Find correct key
             key = next((jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(k)) for k in keys if k['kid'] == kid), None)
             if not key:
-                current_app.logger.error("Key not found for JWT verification")
-                return False
+                raise TokenVerifyError("Key not found for JWT verification")
             
             # Verify token
             token_use = unverified_payload.get('token_use')
@@ -48,10 +50,9 @@ class CognitoJwtToken:
                     audience=self.user_pool_client_id,
                     issuer=f'https://cognito-idp.{self.region}.amazonaws.com/{self.user_pool_id}'
                 )
-            return True
+            return self.claims
         except Exception as e:
-            current_app.logger.error(f"JWT verification error: {e}")
-            return False
+            raise TokenVerifyError(f"JWT verification error: {e}")
 
 
 def require_jwt(optional=False):
@@ -71,9 +72,21 @@ def require_jwt(optional=False):
             
             token = auth_header.split(' ')[1]
             jwt_instance = CognitoJwtToken()
-            if not jwt_instance.verify(token):
+            try:
+                claims = jwt_instance.verify(token)
+                return f(claims, *args, **kwargs)
+            except TokenVerifyError:
                 return jsonify({"error": "Invalid token, please sign in"}), 401
-            
-            return f(jwt_instance.claims, *args, **kwargs)
         return wrapper
     return decorator
+
+def extract_access_token(headers):
+    """Extract access token from Authorization header"""
+    auth_header = headers.get('Authorization')
+    if not auth_header:
+        return None
+    
+    try:
+        return auth_header.split(' ')[1]
+    except IndexError:
+        return None

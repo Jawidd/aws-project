@@ -7,6 +7,7 @@ import useWebSocket from '../hooks/useWebSocket';
 
 import DesktopNavigation from '../components/DesktopNavigation';
 import MessageGroupFeed from '../components/MessageGroupFeed';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function MessageGroupsPage() {
   const { user, token, loading } = useAuth();
@@ -75,7 +76,7 @@ export default function MessageGroupsPage() {
     }
   }, [lastMessage, token]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <LoadingSpinner text="Loading messages..." />;
 
   return (
     <article>

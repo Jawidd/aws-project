@@ -14,6 +14,8 @@ export default function ProfileInfo(props) {
     setPopped(!popped)
   }
 
+
+
 const handleSignOut = async () => {
   try {
     await signOut({ global: true });
@@ -40,11 +42,13 @@ const handleSignOut = async () => {
       <div className="profile-info" onClick={click_pop}>
         <div className="profile-avatar"></div>
         <div className="profile-desc">
-          <div className="profile-display-name">{props.user.display_name || "My Name" }</div>
+          <div className="profile-display-name">{props.profile?.display_name || props.user?.display_name || "My Name" }</div>
           <div className="profile-username">@{props.user.handle || "handle"}</div>
+          {props.profile?.bio && <div className="profile-bio-small">Bio: {props.profile.bio}</div>}
         </div>
         <ElipsesIcon className='icon' />
       </div>
+      
     </div>
   )
 }

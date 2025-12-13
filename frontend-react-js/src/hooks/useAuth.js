@@ -6,6 +6,21 @@ export default function useAuth() {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
   
+  const loadUserProfile = async (token, cognito_user_id) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/profile/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const profile = await response.json();
+        return profile;
+      }
+    } catch (err) {
+      console.log('Error loading profile:', err);
+    }
+    return null;
+  };
+  
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -14,15 +29,24 @@ export default function useAuth() {
         const session = await fetchAuthSession();
         const token = session.tokens?.accessToken?.toString();
         
+        // Create URL-safe handle from email
+        const email = user.signInDetails?.loginId;
+        const urlSafeHandle = email ? email.split('@')[0] : 'user';
+        
+        // Load profile from database
+        const profile = await loadUserProfile(token, user.userId);
+        
         setUser({
-          display_name: attributes.preferred_username,
-          handle: user.signInDetails?.loginId
+          display_name: profile?.display_name || attributes.preferred_username || attributes.name || 'User',
+          handle: urlSafeHandle,
+          email: email,
+          bio: profile?.bio || '',
+          uuid: profile?.uuid
         });
         setToken(token);
       } catch (err) {
         console.log("User not authenticated", err);
         
-        // If token is revoked, sign out completely
         if (err.name === 'NotAuthorizedException' && err.message.includes('revoked')) {
           try {
             await signOut();
@@ -41,5 +65,9 @@ export default function useAuth() {
     initAuth();
   }, []);
 
-  return { user, token, loading };
+  const updateUserProfile = (newProfile) => {
+    setUser(prev => ({ ...prev, ...newProfile }));
+  };
+
+  return { user, token, loading, updateUserProfile };
 }
