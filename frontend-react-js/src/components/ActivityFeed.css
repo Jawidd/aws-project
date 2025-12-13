@@ -17,6 +17,8 @@
 .activity_feed_collection {
   display: flex;
   flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 400px;
 }
 
 .activity_feed_heading {
@@ -28,6 +30,9 @@
   border-radius: 24px 24px 0 0;
   position: relative;
   overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .activity_feed_heading::before {
@@ -61,4 +66,82 @@
 .activity_feed_heading:hover .title {
   transform: scale(1.02);
   filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.4));
+}
+
+.activity_controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 8px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.control_btn {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(99, 102, 241, 0.15) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.control_btn:hover:not(.disabled) {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(99, 102, 241, 0.25) 100%);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.control_btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.activity_counter {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 80px;
+  text-align: center;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.no_activities {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .activity_feed_heading {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .activity_controls {
+    align-self: stretch;
+    justify-content: center;
+  }
+  
+  .activity_counter {
+    min-width: 100px;
+  }
 }

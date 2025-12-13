@@ -85,6 +85,29 @@
   font-weight: 700;
 }
 
+/* Like button states */
+.activity_item .activity_actions .activity_action_heart.liked .icon {
+  fill: #ef4444;
+}
+
+.activity_item .activity_actions .activity_action_heart.liked .counter {
+  color: #ef4444;
+}
+
+.activity_item .activity_actions .activity_action_heart.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.activity_item .activity_actions .activity_action_heart.loading .icon {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 /* Reply styling */
 .activity_item .replies {
   margin-top: 16px;

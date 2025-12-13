@@ -10,6 +10,10 @@ import RecoverPage from './pages/RecoverPage';
 import MessageGroupsPage from './pages/MessageGroupsPage';
 import MessageGroupPage from './pages/MessageGroupPage';
 import ConfirmationPage from './pages/ConfirmationPage';
+import AboutPage from './pages/AboutPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
+import Footer from './components/Footer';
 import React from 'react';
 import process from 'process';
 import {
@@ -77,6 +81,33 @@ const router = createBrowserRouter([
   {
     path: "/forgot",
     element: <RecoverPage />
+  },
+  {
+    path: "/about",
+    element: (
+      <>
+        <AboutPage />
+        <Footer />
+      </>
+    )
+  },
+  {
+    path: "/terms",
+    element: (
+      <>
+        <TermsPage />
+        <Footer />
+      </>
+    )
+  },
+  {
+    path: "/privacy",
+    element: (
+      <>
+        <PrivacyPage />
+        <Footer />
+      </>
+    )
   }
 ]);
 

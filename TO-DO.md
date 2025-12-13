@@ -5,6 +5,7 @@
 
 - [] NOTRelevant- code[Q dev] is not working on vscode
 - [] NotImportant-force update flask service and task defin after new container push to ecr
+- [] minor: the new crud shoudl be placed at last, add-crud style is not nice, expirey reamining time of cruds shoudl be shown, more button on nav bar is empty, fix about privacy terms  pages, 
 
 
 ### 🏗️ Current Structure: 
@@ -51,14 +52,13 @@
         - Fix profile update API endpoints and data flow
         - Remove SuggestedUsersSection completely from sidebar
 
-
-
-    2. 
-
-- [] now the like button should work, also cruds should have an attribute in database which will show number of likes, when someone press like, that attribute in database should increase
-- [] make a lambda to update db and delete expired cruds
+- [X] now the like button should work, also cruds should have an attribute in database which will show number of likes, when someone press like, that attribute in database should increase
 <!--
 - [X] commit to github -->
+
+
+
+- [] make a lambda to update db and delete expired cruds or maybe update trending cruds
 
 - [] use two buckets for uploads(originals/) and assets(processed/)
 

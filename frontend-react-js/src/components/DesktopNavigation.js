@@ -4,6 +4,7 @@ import DesktopNavigationLink from '../components/DesktopNavigationLink';
 import CrudButton from '../components/CrudButton';
 import ProfileInfo from '../components/ProfileInfo';
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function DesktopNavigation(props) {
   const [isLocked, setIsLocked] = React.useState(() => {
@@ -11,6 +12,7 @@ export default function DesktopNavigation(props) {
     return saved ? saved.split('=')[1] === 'true' : true;
   });
   const [isHovered, setIsHovered] = React.useState(false);
+
 
   const toggleLock = () => {
     const newLockState = !isLocked;
@@ -62,10 +64,14 @@ export default function DesktopNavigation(props) {
       {notificationsLink}
       {messagesLink}
       {profileLink}
-      <DesktopNavigationLink url="/#" 
-        name="More" 
-        handle="more"
-        active={props.active} />
+      <div className="more-menu-container">
+        <button 
+          className="more-menu-trigger"
+          disabled
+        >
+          More
+        </button>
+      </div>
       {button}
       {showProfile && profile}
     </nav>

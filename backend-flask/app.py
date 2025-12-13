@@ -16,7 +16,9 @@ from services import (
     notifications_activities,
     users,
     update_profile,
-    user_short
+    user_short,
+    like_activity,
+    trending_activities
 )
 
 # JWT
@@ -71,10 +73,11 @@ app = Flask(__name__)
 #     got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
 
 # CORS - Allow all origins for development
-CORS(app, resources={r"/api/*": {"origins": "*"}},
+CORS(app, 
+     origins=["http://localhost:3000", "https://localhost:3000"],
      expose_headers="location,link",
-     allow_headers="content-type,if-modified-since,authorization",
-     methods="OPTIONS,GET,HEAD,POST",
+     allow_headers=["content-type", "if-modified-since", "authorization"],
+     methods=["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"],
      supports_credentials=True)
 
 # -------------------------------
@@ -92,6 +95,10 @@ CORS(app, resources={r"/api/*": {"origins": "*"}},
 @app.route("/api/health-check")
 def health_check():
     return {"success-from app.py health-check route": True}, 200
+
+@app.route("/api/activities/trending", methods=['GET'])
+def data_trending():
+    return trending_activities.TrendingActivities.run(), 200
 
 
 @app.route("/api/message_groups", methods=['GET'])
@@ -225,6 +232,19 @@ def data_show_activity(activity_uuid):
 def data_activities_reply(claims, activity_uuid):
     model = create_reply.CreateReply.run(request.json['message'], claims, activity_uuid)
     return (model['errors'], 422) if model['errors'] else (model['data'], 200)
+
+@app.route("/api/activities/<string:activity_uuid>/like", methods=['POST','OPTIONS'])
+@cross_origin()
+@require_jwt()
+def data_activities_like(claims, activity_uuid):
+    try:
+        model = like_activity.LikeActivity.run(activity_uuid, claims)
+        if model.get('errors'):
+            return {"errors": model['errors']}, 422
+        return model, 200
+    except Exception as e:
+        app.logger.error(f"Error in like endpoint: {str(e)}")
+        return {"errors": [str(e)]}, 500
 
 @app.route("/api/users/@<string:handle>/short", methods=['GET'])
 def data_users_short(handle):
