@@ -11,44 +11,98 @@ class HomeActivities:
       now = datetime.now(timezone.utc).astimezone()
       span.set_attribute("app.now", now.isoformat())
       
+      current_user_uuid = None
+      if user_claims:
+        with pool.connection() as conn:
+          with conn.cursor() as cur:
+            cur.execute("""
+              SELECT uuid FROM public.users 
+              WHERE cognito_user_id = %s
+            """, (user_claims['sub'],))
+            user_result = cur.fetchone()
+            if user_result:
+              current_user_uuid = user_result[0]
+      
       with pool.connection() as conn:
         with conn.cursor() as cur:
-          # Get main activities (not replies)
-          cur.execute("""
-            SELECT 
-              activities.uuid,
-              users.preferred_username,
-              users.handle,
-              activities.message,
-              activities.replies_count,
-              activities.reposts_count,
-              activities.likes_count,
-              activities.expires_at,
-              activities.created_at
-            FROM public.activities
-            LEFT JOIN public.users ON users.uuid = activities.user_uuid
-            WHERE activities.reply_to_activity_uuid IS NULL
-            ORDER BY activities.created_at DESC
-          """)
+          # Get main activities (not replies) with like status
+          if current_user_uuid:
+            cur.execute("""
+              SELECT 
+                activities.uuid,
+                users.preferred_username,
+                users.handle,
+                activities.message,
+                activities.replies_count,
+                activities.reposts_count,
+                activities.likes_count,
+                activities.expires_at,
+                activities.created_at,
+                CASE WHEN likes.user_uuid IS NOT NULL THEN true ELSE false END as liked
+              FROM public.activities
+              LEFT JOIN public.users ON users.uuid = activities.user_uuid
+              LEFT JOIN public.likes ON likes.activity_uuid = activities.uuid AND likes.user_uuid = %s
+              WHERE activities.reply_to_activity_uuid IS NULL
+              ORDER BY activities.created_at DESC
+            """, (current_user_uuid,))
+          else:
+            cur.execute("""
+              SELECT 
+                activities.uuid,
+                users.preferred_username,
+                users.handle,
+                activities.message,
+                activities.replies_count,
+                activities.reposts_count,
+                activities.likes_count,
+                activities.expires_at,
+                activities.created_at,
+                false as liked
+              FROM public.activities
+              LEFT JOIN public.users ON users.uuid = activities.user_uuid
+              WHERE activities.reply_to_activity_uuid IS NULL
+              ORDER BY activities.created_at DESC
+            """)
           main_activities = cur.fetchall()
           
-          # Get all replies
-          cur.execute("""
-            SELECT 
-              activities.uuid,
-              users.preferred_username,
-              users.handle,
-              activities.message,
-              activities.likes_count,
-              activities.replies_count,
-              activities.reposts_count,
-              activities.reply_to_activity_uuid,
-              activities.created_at
-            FROM public.activities
-            LEFT JOIN public.users ON users.uuid = activities.user_uuid
-            WHERE activities.reply_to_activity_uuid IS NOT NULL
-            ORDER BY activities.created_at DESC
-          """)
+          # Get all replies with like status
+          if current_user_uuid:
+            cur.execute("""
+              SELECT 
+                activities.uuid,
+                users.preferred_username,
+                users.handle,
+                activities.message,
+                activities.likes_count,
+                activities.replies_count,
+                activities.reposts_count,
+                activities.reply_to_activity_uuid,
+                activities.created_at,
+                CASE WHEN likes.user_uuid IS NOT NULL THEN true ELSE false END as liked
+              FROM public.activities
+              LEFT JOIN public.users ON users.uuid = activities.user_uuid
+              LEFT JOIN public.likes ON likes.activity_uuid = activities.uuid AND likes.user_uuid = %s
+              WHERE activities.reply_to_activity_uuid IS NOT NULL
+              ORDER BY activities.created_at DESC
+            """, (current_user_uuid,))
+          else:
+            cur.execute("""
+              SELECT 
+                activities.uuid,
+                users.preferred_username,
+                users.handle,
+                activities.message,
+                activities.likes_count,
+                activities.replies_count,
+                activities.reposts_count,
+                activities.reply_to_activity_uuid,
+                activities.created_at,
+                false as liked
+              FROM public.activities
+              LEFT JOIN public.users ON users.uuid = activities.user_uuid
+              WHERE activities.reply_to_activity_uuid IS NOT NULL
+              ORDER BY activities.created_at DESC
+            """)
           replies = cur.fetchall()
       
       # Group replies by parent activity
@@ -65,7 +119,8 @@ class HomeActivities:
           'likes_count': reply[4],
           'replies_count': reply[5],
           'reposts_count': reply[6],
-          'created_at': reply[8].isoformat()
+          'created_at': reply[8].isoformat(),
+          'liked': reply[9]
         })
       
       # Build results with public activities
@@ -81,6 +136,7 @@ class HomeActivities:
           'likes_count': activity[6],
           'replies_count': activity[4],
           'reposts_count': activity[5],
+          'liked': activity[9],
           'replies': replies_dict.get(activity_uuid, [])
         }
         

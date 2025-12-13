@@ -1,14 +1,15 @@
 #!/usr/bin/bash
-set -e #exit on error
+set -e # exit on error
 
+# Load environment variables
 source $(dirname $0)/../.env
 
-if [ "$ENV_TYPE" = "prod" ]; then
-    printf "\033[1;35m == db-setup rds-psql-db \033[0m\n " 
-else
-    printf "\033[1;36m == db-setup localhost-postgresql \033[0m\n " 
-fi
+printf "\033[1;35m == db-setup rds-psql-db \033[0m\n"
 
-source "./create" #create db
-source "./schema-load" #create tables
-source "./seed" #populate tables
+# Use RDS connection for all scripts
+export CONNECTION_URL="$CONNECTION_URL_DB"
+
+# Run create, schema-load, seed scripts
+source "./create"
+source "./schema-load"
+source "./seed"

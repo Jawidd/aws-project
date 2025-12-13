@@ -1,6 +1,7 @@
 from psycopg_pool import ConnectionPool
 import os
 import re
+import sys
 
 class Db:
   def __init__(self):
@@ -117,9 +118,11 @@ class Db:
     print ("\n psycopg ERROR:", err, "on line number:", line_num)
     print ("psycopg traceback:", traceback, "-- type:", err_type)
 
-    # print the pgcode and pgerror exceptions
-    print ("pgerror:", err.pgerror)
-    print ("pgcode:", err.pgcode, "\n")
+    # print the pgcode and pgerror exceptions if they exist
+    if hasattr(err, 'pgerror'):
+        print ("pgerror:", err.pgerror)
+    if hasattr(err, 'pgcode'):
+        print ("pgcode:", err.pgcode, "\n")
 
 db = Db()
 

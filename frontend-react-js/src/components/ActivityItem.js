@@ -29,7 +29,7 @@ export default function ActivityItem(props) {
       <div className="activity_actions">
         <ActivityActionReply setReplyActivity={props.setReplyActivity} activity={props.activity} setPopped={props.setPopped} activity_uuid={props.activity.uuid} count={props.activity.replies_count}/>
         <ActivityActionRepost activity_uuid={props.activity.uuid} count={props.activity.reposts_count}/>
-        <ActivityActionLike activity_uuid={props.activity.uuid} count={props.activity.likes_count}/>
+        <ActivityActionLike activity_uuid={props.activity.uuid} count={props.activity.likes_count} liked={props.activity.liked}/>
         <ActivityActionShare activity_uuid={props.activity.uuid} />
       </div>
       {replies}
