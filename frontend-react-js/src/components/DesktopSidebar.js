@@ -1,7 +1,6 @@
 import './DesktopSidebar.css';
 import Search from '../components/Search';
 import TrendingSection from '../components/TrendingsSection'
-import SuggestedUsersSection from '../components/SuggestedUsersSection'
 import JoinSection from '../components/JoinSection'
 
 export default function DesktopSidebar(props) {
@@ -12,22 +11,13 @@ export default function DesktopSidebar(props) {
     {"hashtag": "FreeWillyReboot", "count": 7753 }
   ]
 
-  const users = [
-    {"display_name": "Andrew Brown", "handle": "andrewbrown"}
-  ]
-
   let trending;
   if (props.user) {
     trending = <TrendingSection trendings={trendings} />
   }
 
-  let suggested;
-  if (props.user) {
-    suggested = <SuggestedUsersSection users={users} />
-  }
   let join;
-  if (props.user) {
-  } else {
+  if (!props.user) {
     join = <JoinSection />
   }
 
@@ -35,7 +25,6 @@ export default function DesktopSidebar(props) {
     <section>
       <Search />
       {trending}
-      {suggested}
       {join}
       <footer>
         <a href="#">About</a>

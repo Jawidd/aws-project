@@ -7,9 +7,10 @@ import DesktopSidebar     from '../components/DesktopSidebar';
 import ActivityFeed from '../components/ActivityFeed';
 import ActivityForm from '../components/ActivityForm';
 import ReplyForm from '../components/ReplyForm';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function HomeFeedPage() {
-  const { user, token, loading } = useAuth();
+  const { user, token, loading, updateUserProfile } = useAuth();
   const [activities, setActivities] = React.useState([]);
   const [popped, setPopped] = React.useState(false);
   const [poppedReply, setPoppedReply] = React.useState(false);
@@ -37,11 +38,11 @@ export default function HomeFeedPage() {
     }
   }, [loading, token]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <LoadingSpinner text="Loading home feed..." />;
 
   return (
     <article>
-      <DesktopNavigation user={user} active={'home'} setPopped={setPopped} />
+      <DesktopNavigation user={user} active={'home'} setPopped={setPopped} updateUserProfile={updateUserProfile} />
       <div className='content'>
         <ActivityForm  
           popped={popped} setPopped={setPopped} setActivities={setActivities} 

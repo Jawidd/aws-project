@@ -14,11 +14,20 @@ from services import (
     create_message,
     show_activity,
     notifications_activities,
-    users
+    users,
+    update_profile,
+    user_short
 )
 
 # JWT
-from lib.cognito_jwt_token import require_jwt
+from lib.cognito_jwt_token import require_jwt, CognitoJwtToken, extract_access_token, TokenVerifyError
+
+# Initialize JWT token handler
+cognito_jwt_token = CognitoJwtToken(
+    user_pool_id=os.getenv("AWS_COGNITO_USER_POOL_ID"), 
+    user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
+    region=os.getenv("AWS_DEFAULT_REGION")
+)
 
 # # Logging and tracing
 # from aws_xray_sdk.core import xray_recorder 
@@ -61,8 +70,8 @@ app = Flask(__name__)
 #     )
 #     got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
 
-# CORS
-CORS(app, resources={r"/api/*": {"origins": [os.getenv('FRONTEND_URL'), os.getenv('BACKEND_URL')]}},
+# CORS - Allow all origins for development
+CORS(app, resources={r"/api/*": {"origins": "*"}},
      expose_headers="location,link",
      allow_headers="content-type,if-modified-since,authorization",
      methods="OPTIONS,GET,HEAD,POST",
@@ -216,6 +225,80 @@ def data_show_activity(activity_uuid):
 def data_activities_reply(claims, activity_uuid):
     model = create_reply.CreateReply.run(request.json['message'], claims, activity_uuid)
     return (model['errors'], 422) if model['errors'] else (model['data'], 200)
+
+@app.route("/api/users/@<string:handle>/short", methods=['GET'])
+def data_users_short(handle):
+  app.logger.info(f"Getting user short data for handle: {handle}")
+  data = user_short.UserShort.run(handle)
+  app.logger.info(f"User short data result: {data}")
+  return data, 200
+
+@app.route("/api/profile/me", methods=['GET'])
+@cross_origin()
+@require_jwt()
+def data_profile_me(claims):
+  from lib.db import db
+  try:
+    sql = """
+    SELECT uuid, handle, full_name as display_name, bio, created_at
+    FROM public.users 
+    WHERE cognito_user_id = %(cognito_user_id)s
+    """
+    
+    with db.pool.connection() as conn:
+      with conn.cursor() as cur:
+        cur.execute(sql, {'cognito_user_id': claims['sub']})
+        result = cur.fetchone()
+        
+        if result:
+          return {
+            'uuid': str(result[0]),
+            'handle': result[1],
+            'display_name': result[2],
+            'bio': result[3] or '',
+            'created_at': str(result[4])
+          }, 200
+        else:
+          return {'error': 'User not found'}, 404
+          
+  except Exception as e:
+    app.logger.error(f"Error getting profile: {str(e)}")
+    return {'error': str(e)}, 500
+
+@app.route("/api/profile/update", methods=['POST','OPTIONS'])
+@cross_origin()
+def data_update_profile():
+  bio          = request.json.get('bio',None)
+  display_name = request.json.get('display_name',None)
+  access_token = extract_access_token(request.headers)
+  
+  app.logger.info(f"Profile update request: bio='{bio}', display_name='{display_name}'")
+  
+  try:
+    claims = cognito_jwt_token.verify(access_token)
+    cognito_user_id = claims['sub']
+    app.logger.info(f"Updating profile for user: {cognito_user_id}")
+    
+    model = update_profile.UpdateProfile.run(
+      cognito_user_id=cognito_user_id,
+      bio=bio,
+      display_name=display_name
+    )
+    
+    app.logger.info(f"Update result: {model}")
+    
+    if model['errors'] is not None:
+      app.logger.error(f"Profile update errors: {model['errors']}")
+      return {"errors": model['errors']}, 422
+    else:
+      app.logger.info(f"Profile updated successfully: {model['data']}")
+      return model['data'], 200
+  except TokenVerifyError as e:
+    app.logger.debug(e)
+    return {"error": "Unauthorized"}, 401
+  except Exception as e:
+    app.logger.error(f"Profile update exception: {str(e)}")
+    return {"error": str(e)}, 500
 
 # -------------------------------
 # Main

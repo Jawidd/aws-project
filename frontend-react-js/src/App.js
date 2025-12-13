@@ -3,6 +3,7 @@ import './App.css';
 import HomeFeedPage from './pages/HomeFeedPage';
 import NotifcicationFeedPage from './pages/NotificationPage';
 import UserFeedPage from './pages/UserFeedPage';
+import ProfilePage from './pages/ProfilePage';
 import SignupPage from './pages/SignupPage';
 import SigninPage from './pages/SigninPage';
 import RecoverPage from './pages/RecoverPage';
@@ -47,6 +48,10 @@ const router = createBrowserRouter([
   {
     path: "/@:handle",
     element: <UserFeedPage />
+  },
+  {
+    path: "/profile",
+    element: <ProfilePage />
   },
   {
     path: "/messages",
