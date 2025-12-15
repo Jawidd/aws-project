@@ -1,6 +1,7 @@
 import json
-import psycopg2
 import os
+
+import psycopg2
 
 def lambda_handler(event, context):
     try:
@@ -12,21 +13,20 @@ def lambda_handler(event, context):
         handle = preferred_username or (email.split('@')[0] if email else 'unknown')
 
         
-        # Connect to database
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
-        
+
         # Insert user if not exists
         cur.execute("""
             INSERT INTO public.users (preferred_username, handle, email, cognito_user_id, full_name)
             VALUES (%s, %s, %s, %s, %s)
             ON CONFLICT (email) DO NOTHING
             """, (preferred_username, handle, email, cognito_user_id, full_name))
-        
+
         conn.commit()
         cur.close()
         conn.close()
-        
+
         print(f"User created: {email}")
         
     except Exception as e:

@@ -1,10 +1,11 @@
 import json
 import os
+
 import boto3
 from boto3.dynamodb.conditions import Key
 
 dynamodb = boto3.resource('dynamodb')
-apigateway = boto3.client('apigatewaymanagementapi', 
+apigateway = boto3.client('apigatewaymanagementapi',
     endpoint_url=os.environ.get('WEBSOCKET_API_ENDPOINT'))
 
 def lambda_handler(event, context):
@@ -15,7 +16,7 @@ def lambda_handler(event, context):
             # New message inserted
             message_data = record['dynamodb']['NewImage']
             
-            # Get all active WebSocket connections
+            # Grab every active connection (small table so scan is fine)
             response = connections_table.scan()
             connections = response.get('Items', [])
             
@@ -30,7 +31,7 @@ def lambda_handler(event, context):
                 }
             }
             
-            # Send to all connected clients
+            # Fan out to every active connection
             for connection in connections:
                 try:
                     apigateway.post_to_connection(

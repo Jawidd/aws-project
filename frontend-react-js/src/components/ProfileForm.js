@@ -13,8 +13,6 @@ export default function ProfileForm(props) {
   const [uploadMessage, setUploadMessage] = React.useState('');
   const [uploadError, setUploadError] = React.useState('');
 
-  const assetsBaseUrl = (process.env.REACT_APP_ASSETS_BASE_URL || '').replace(/\/$/, '');
-
   React.useEffect(()=>{
     setBio(props.profile.bio || "");
     setDisplayName(props.profile.display_name || "");
@@ -51,6 +49,29 @@ export default function ProfileForm(props) {
     return data.upload_url;
   };
 
+  const fetchProfile = async () => {
+    if (!token) return null;
+    const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/profile/me`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return null;
+    return res.json();
+  };
+
+  const waitForProcessedAvatar = async (previousUrl) => {
+    const attempts = 5;
+    const delayMs = 1500;
+
+    for (let i = 0; i < attempts; i++) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      const profile = await fetchProfile();
+      if (profile?.avatar_url && profile.avatar_url !== previousUrl) {
+        return profile;
+      }
+    }
+    return null;
+  };
+
   const handleAvatarChange = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -77,17 +98,23 @@ export default function ProfileForm(props) {
         throw new Error(`Upload failed with status ${uploadRes.status}`);
       }
 
-      const processedUrl = props.profile?.cognito_user_id && assetsBaseUrl
-        ? `${assetsBaseUrl}/avatar/processed/${props.profile.cognito_user_id}.jpg`
-        : null;
+      const previousUrl = props.profile?.avatar_url || "";
+      const refreshedProfile = await waitForProcessedAvatar(previousUrl);
 
-      if (props.updateUserProfile) {
+      if (refreshedProfile && props.updateUserProfile) {
         props.updateUserProfile({
-          avatar_url: processedUrl || previewUrl
+          display_name: refreshedProfile.display_name || displayName,
+          bio: refreshedProfile.bio ?? bio,
+          avatar_url: refreshedProfile.avatar_url,
+          handle: refreshedProfile.handle,
+          uuid: refreshedProfile.uuid,
+          cognito_user_id: refreshedProfile.cognito_user_id
         });
+        setAvatarPreview(refreshedProfile.avatar_url || previewUrl);
+        setUploadMessage("Avatar updated!");
+      } else {
+        setUploadMessage("Upload started. The image will refresh after processing.");
       }
-
-      setUploadMessage("Upload started. The image will refresh after processing.");
     } catch (err) {
       console.log(err);
       setUploadError(err.message || 'Upload failed');

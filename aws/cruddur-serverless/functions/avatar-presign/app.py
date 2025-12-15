@@ -8,27 +8,27 @@ BUCKET = os.environ["AVATAR_UPLOAD_BUCKET"]
 PREFIX = os.getenv("AVATAR_UPLOAD_PREFIX", "avatar/original/")
 URL_TTL = int(os.getenv("PRESIGN_URL_TTL_SECONDS", "300"))
 
+# Allow callers to change the prefix, but keep it folder-ish
 if not PREFIX.endswith("/"):
     PREFIX += "/"
 
 def lambda_handler(event, context):
-    claims = (
-        event.get("requestContext", {})
-        .get("authorizer", {})
-        .get("jwt", {})
-        .get("claims", {})
-    )
+    request_context = event.get("requestContext", {})
+    jwt_block = request_context.get("authorizer", {}).get("jwt", {})
+    jwt_claims = jwt_block.get("claims", {}) or {}
 
-    cognito_sub = claims.get("sub")
-    if not cognito_sub:
+    user_sub = jwt_claims.get("sub")
+    if not user_sub:
         return {"statusCode": 401, "body": json.dumps({"error": "unauthorized"})}
 
+    # Prefer explicit body; fallback to empty JSON
     body = json.loads(event.get("body") or "{}")
 
-    extension = (body.get("extension") or "jpg").lstrip(".").lower()
+    file_ext = (body.get("extension") or "jpg").lstrip(".").lower()
     content_type = body.get("content_type")
 
-    object_key = f"{PREFIX}{cognito_sub}.{extension}"
+    # Keep the key predictable so cleanup on the thumbnail side is easy
+    object_key = f"{PREFIX}{user_sub}.{file_ext}"
 
     params = {"Bucket": BUCKET, "Key": object_key}
     if content_type:
