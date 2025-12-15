@@ -11,7 +11,9 @@ class UserShort:
         users.handle,
         users.full_name as display_name,
         users.bio,
-        users.created_at
+        users.created_at,
+        users.avatar_url,
+        users.cognito_user_id
       FROM public.users
       WHERE 
         users.handle = %(handle)s
@@ -34,7 +36,9 @@ class UserShort:
         'handle': handle,
         'display_name': display_name,
         'bio': 'Welcome to Cruddur! This is your profile.',
-        'created_at': '2023-01-01T00:00:00.000000+00:00'
+        'created_at': '2023-01-01T00:00:00.000000+00:00',
+        'avatar_url': None,
+        'cognito_user_id': None
       }
       logging.info(f"UserShort fallback: {fallback}")
       return fallback

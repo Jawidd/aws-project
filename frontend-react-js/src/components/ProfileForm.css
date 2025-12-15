@@ -34,6 +34,52 @@ form.profile_form label {
   display: block;
 }
 
+.profile_form .avatar_upload {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.profile_form .avatar_preview {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.profile_form .upload_button {
+  background: #2d2d2d;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile_form .upload_button input {
+  display: none;
+}
+
+.profile_form .upload_message {
+  color: #9bd1ff;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.profile_form .upload_error {
+  color: #ff9b9b;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
 form.profile_form textarea {
   height: 140px;
 }

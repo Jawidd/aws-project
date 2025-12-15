@@ -14,6 +14,14 @@ export default function ProfileInfo(props) {
     setPopped(!popped)
   }
 
+  const avatarUrl = props.profile?.avatar_url || props.user?.avatar_url;
+  const avatarStyle = avatarUrl ? {
+    backgroundImage: `url(${avatarUrl})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center'
+  } : {};
+  const handle = props.profile?.handle || props.user?.handle || "handle";
+
 
 
 const handleSignOut = async () => {
@@ -40,10 +48,10 @@ const handleSignOut = async () => {
         <button onClick={handleSignOut}>Sign Out</button>
       </div>
       <div className="profile-info" onClick={click_pop}>
-        <div className="profile-avatar"></div>
+        <div className="profile-avatar" style={avatarStyle}></div>
         <div className="profile-desc">
           <div className="profile-display-name">{props.profile?.display_name || props.user?.display_name || "My Name" }</div>
-          <div className="profile-username">@{props.user.handle || "handle"}</div>
+          <div className="profile-username">@{handle}</div>
           {props.profile?.bio && <div className="profile-bio-small">Bio: {props.profile.bio}</div>}
         </div>
         <ElipsesIcon className='icon' />

@@ -26,6 +26,9 @@
   border-radius: 50%;
   background: linear-gradient(135deg, #9500ff, #ff0080);
   flex-shrink: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .profile-details h2 {

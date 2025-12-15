@@ -10,6 +10,11 @@ import LoadingSpinner from '../components/LoadingSpinner';
 export default function ProfilePage() {
   const { user, token, loading, updateUserProfile } = useAuth();
   const [poppedEdit, setPoppedEdit] = React.useState(false);
+  const avatarStyle = user?.avatar_url ? {
+    backgroundImage: `url(${user.avatar_url})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center'
+  } : {};
 
   if (loading) return <LoadingSpinner text="Loading profile..." />;
 
@@ -27,7 +32,7 @@ export default function ProfilePage() {
           </div>
           <div className="profile-display">
             <div className="profile-header">
-              <div className="profile-avatar-large"></div>
+              <div className="profile-avatar-large" style={avatarStyle}></div>
               <div className="profile-details">
                 <h2>{user.display_name || 'No Name'}</h2>
                 <p className="profile-handle">@{user.handle}</p>

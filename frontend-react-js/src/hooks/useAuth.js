@@ -8,13 +8,13 @@ export default function useAuth() {
   
   const loadUserProfile = async (token, cognito_user_id) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/profile/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const profile = await response.json();
-        return profile;
-      }
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/profile/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const profile = await response.json();
+          return profile;
+        }
     } catch (err) {
       console.log('Error loading profile:', err);
     }
@@ -29,7 +29,6 @@ export default function useAuth() {
         const session = await fetchAuthSession();
         const token = session.tokens?.accessToken?.toString();
         
-        // Create URL-safe handle from email
         const email = user.signInDetails?.loginId;
         const urlSafeHandle = email ? email.split('@')[0] : 'user';
         
@@ -38,10 +37,12 @@ export default function useAuth() {
         
         setUser({
           display_name: profile?.display_name || attributes.preferred_username || attributes.name || 'User',
-          handle: urlSafeHandle,
+          handle: profile?.handle || urlSafeHandle,
           email: email,
           bio: profile?.bio || '',
-          uuid: profile?.uuid
+          uuid: profile?.uuid,
+          avatar_url: profile?.avatar_url || null,
+          cognito_user_id: profile?.cognito_user_id || user.userId
         });
         setToken(token);
       } catch (err) {
