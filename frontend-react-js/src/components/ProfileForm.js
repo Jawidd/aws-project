@@ -141,7 +141,6 @@ export default function ProfileForm(props) {
         }),
       });
       let data = await res.json();
-      console.log('Profile update response:', res.status, data);
       if (res.status === 200) {
         // Update the user profile globally
         if (props.updateUserProfile) {
