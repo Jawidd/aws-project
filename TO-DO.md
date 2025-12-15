@@ -5,7 +5,7 @@
 
 - [] NOTRelevant- code[Q dev] is not working on vscode
 - [] NotImportant-force update flask service and task defin after new container push to ecr
-- [] minor: the new crud shoudl be placed at last, add-crud style is not nice, expirey reamining time of cruds shoudl be shown, more button on nav bar is empty, fix about privacy terms  pages, 
+- [] minor: the new crud shoudl be placed at last, add-crud style is not nice, expirey reamining time of cruds shoudl be shown, more button on nav bar is empty, fix about privacy terms  pages, MORE should be hidden when navbar is in collapse state,
 
 
 ### 🏗️ Current Structure: 
@@ -64,7 +64,7 @@
 
 
 
-- [] optionally, provide API to upload photos to S3 to trigger processing
+- [] , provide API to upload photos to S3 to trigger processing
 
 
 
