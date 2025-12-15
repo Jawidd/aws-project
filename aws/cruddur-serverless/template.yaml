@@ -5,17 +5,42 @@ Description: Cruddur Serverless Parent Template
 Parameters:
   DatabaseUrl:
     Type: String
-    Description: PostgreSQL connection string
-    Default: "postgresql://cruddur:password@localhost:5432/cruddur"
+
+  AssetsBucketName:
+    Type: String
+    Default: assets.cruddur.jawid.me
+
+  AvatarUploadPrefix:
+    Type: String
+    Default: avatar/original/
+
+  CreateAssetsBucket:
+    Type: String
+    AllowedValues: ["true", "false"]
+    Default: "false"
+
+  FrontendOrigin:
+    Type: String
+    Default: https://cruddur.jawid.me
+
+  CognitoUserPoolId:
+    Type: String
+    Default: eu-west-2_Jwi9THX3b
+
+  CognitoUserPoolClientId:
+    Type: String
+    Default: 1ls5p1vu83m5ahseab36ufk6vm
+
+  CorsAllowedOrigins:
+    Type: String
+    Default: "https://cruddur.jawid.me,http://localhost:3000,https://localhost:3000"
 
 Resources:
-  # DynamoDB + Message Stream Stack
   DynamoDBMessagingStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: templates/dynamo-stream-template.yaml
 
-  # Post Email Confirm Stack
   PostEmailConfirmStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -23,13 +48,27 @@ Resources:
       Parameters:
         DatabaseUrl: !Ref DatabaseUrl
 
-  # Process Images Stack
+  # 🔑 KEEP THIS LOGICAL ID
   ProcessImagesStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: templates/process-images.yaml
+      TemplateURL: templates/images-stack.yaml
       Parameters:
-        ThumbingBucketName: "assets.cruddur.jawid.me"
+        AssetsBucketName: !Ref AssetsBucketName
+        CreateAssetsBucket: !Ref CreateAssetsBucket
+        CorsAllowedOrigins: !Ref CorsAllowedOrigins
+        DatabaseUrl: !Ref DatabaseUrl
+
+  AvatarUploadStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: templates/avatar-upload-template.yaml
+      Parameters:
+        AvatarBucketName: !Ref AssetsBucketName
+        AvatarUploadPrefix: !Ref AvatarUploadPrefix
+        FrontendOrigin: !Ref FrontendOrigin
+        UserPoolId: !Ref CognitoUserPoolId
+        UserPoolClientId: !Ref CognitoUserPoolClientId
 
 Outputs:
   PostConfirmationFunctionArn:
@@ -55,3 +94,9 @@ Outputs:
     Value: !GetAtt DynamoDBMessagingStack.Outputs.ConversationsTableName
     Export:
       Name: CruddurConversationsTableNameV2
+
+  AvatarUploadApiUrl:
+    Description: "HTTP API endpoint for presigned avatar uploads"
+    Value: !GetAtt AvatarUploadStack.Outputs.AvatarUploadApiUrl
+    Export:
+      Name: CruddurAvatarUploadApiUrl

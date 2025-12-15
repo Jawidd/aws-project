@@ -1,0 +1,1 @@
+# Uses AWS SDK provided by the Lambda runtime

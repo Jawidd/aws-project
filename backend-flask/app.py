@@ -18,7 +18,8 @@ from services import (
     update_profile,
     user_short,
     like_activity,
-    trending_activities
+    trending_activities,
+    avatar_webhook
 )
 
 # JWT
@@ -260,7 +261,7 @@ def data_profile_me(claims):
   from lib.db import db
   try:
     sql = """
-    SELECT uuid, handle, full_name as display_name, bio, created_at
+    SELECT uuid, handle, full_name as display_name, bio, created_at, avatar_url, cognito_user_id
     FROM public.users 
     WHERE cognito_user_id = %(cognito_user_id)s
     """
@@ -276,7 +277,9 @@ def data_profile_me(claims):
             'handle': result[1],
             'display_name': result[2],
             'bio': result[3] or '',
-            'created_at': str(result[4])
+            'created_at': str(result[4]),
+            'avatar_url': result[5],
+            'cognito_user_id': result[6]
           }, 200
         else:
           return {'error': 'User not found'}, 404
@@ -319,6 +322,28 @@ def data_update_profile():
   except Exception as e:
     app.logger.error(f"Profile update exception: {str(e)}")
     return {"error": str(e)}, 500
+
+@app.route("/api/webhooks/avatar", methods=['POST'])
+def handle_avatar_webhook():
+  data = request.json or {}
+  thumbnail_key = data.get("thumbnail")
+  if not thumbnail_key:
+    return {"error": "thumbnail_missing"}, 400
+
+  cognito_user_id = avatar_webhook.extract_cognito_user_id(thumbnail_key)
+  if not cognito_user_id:
+    return {"error": "invalid_thumbnail_key"}, 400
+
+  avatar_url = avatar_webhook.build_public_url(thumbnail_key)
+  result = avatar_webhook.AvatarWebhook.update_avatar(cognito_user_id, avatar_url)
+
+  if result['errors']:
+    return {"errors": result['errors']}, 422
+
+  return {
+    "avatar_url": avatar_url,
+    "user": result['data']
+  }, 200
 
 # -------------------------------
 # Main

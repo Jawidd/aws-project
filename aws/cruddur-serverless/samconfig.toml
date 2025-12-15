@@ -4,6 +4,7 @@ version = 0.1
 
 [default.global.parameters]
 stack_name = "cruddur-serverless-v2"
+region = "eu-west-2"
 
 
 [default.build.parameters]
@@ -18,9 +19,8 @@ capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
 confirm_changeset = true
 resolve_s3 = true
 s3_prefix = "cruddur-serverless-v2"
-region = "eu-west-2"
 image_repositories = []
-parameter_overrides = "DatabaseUrl=postgresql://cruddur:SuperSecretPassword@cruddur-db-dev.cjw6kceccsk2.eu-west-2.rds.amazonaws.com:5432/cruddur"
+parameter_overrides = "DatabaseUrl=\"postgresql://cruddur:SuperSecretPassword@cruddur-db-dev.cjw6kceccsk2.eu-west-2.rds.amazonaws.com:5432/cruddur\" AssetsBucketName=\"assets.cruddur.jawid.me\" AvatarUploadPrefix=\"avatar/original/\" CreateAssetsBucket=\"false\" FrontendOrigin=\"https://cruddur.jawid.me\" CognitoUserPoolId=\"eu-west-2_Jwi9THX3b\" CognitoUserPoolClientId=\"1ls5p1vu83m5ahseab36ufk6vm\" CorsAllowedOrigins=\"https://cruddur.jawid.me,http://localhost:3000,https://localhost:3000\""
 
 [default.package.parameters]
 resolve_s3 = true

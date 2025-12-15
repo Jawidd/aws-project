@@ -8,11 +8,94 @@ export default function ProfileForm(props) {
   const { token } = useAuth();
   const [bio, setBio] = React.useState('');
   const [displayName, setDisplayName] = React.useState('');
+  const [avatarPreview, setAvatarPreview] = React.useState('');
+  const [uploadingAvatar, setUploadingAvatar] = React.useState(false);
+  const [uploadMessage, setUploadMessage] = React.useState('');
+  const [uploadError, setUploadError] = React.useState('');
+
+  const assetsBaseUrl = (process.env.REACT_APP_ASSETS_BASE_URL || '').replace(/\/$/, '');
 
   React.useEffect(()=>{
     setBio(props.profile.bio || "");
     setDisplayName(props.profile.display_name || "");
+    setAvatarPreview(props.profile.avatar_url || "");
   }, [props.profile])
+
+  const requestPresignedUrl = async (extension, contentType) => {
+    if (!token) {
+      throw new Error("You must be signed in to upload an avatar");
+    }
+
+    const gatewayBase = process.env.REACT_APP_AVATAR_API_URL;
+    if (!gatewayBase) {
+      throw new Error("Avatar upload endpoint is not configured");
+    }
+
+    const res = await fetch(`${gatewayBase}/avatars/presign`, {
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        extension: extension,
+        content_type: contentType
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Unable to get upload URL');
+    }
+    return data.upload_url;
+  };
+
+  const handleAvatarChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadError('');
+    setUploadMessage('');
+    setUploadingAvatar(true);
+
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
+
+    const parts = file.name.split('.');
+    const extension = (parts.length > 1 ? parts.pop() : 'jpg');
+
+    try {
+      const uploadUrl = await requestPresignedUrl(extension, file.type);
+      const uploadRes = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: { 'Content-Type': file.type },
+        body: file
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error(`Upload failed with status ${uploadRes.status}`);
+      }
+
+      const processedUrl = props.profile?.cognito_user_id && assetsBaseUrl
+        ? `${assetsBaseUrl}/avatar/processed/${props.profile.cognito_user_id}.jpg`
+        : null;
+
+      if (props.updateUserProfile) {
+        props.updateUserProfile({
+          avatar_url: processedUrl || previewUrl
+        });
+      }
+
+      setUploadMessage("Upload started. The image will refresh after processing.");
+    } catch (err) {
+      console.log(err);
+      setUploadError(err.message || 'Upload failed');
+      setAvatarPreview(props.profile.avatar_url || "");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const onsubmit = async (event) => {
     event.preventDefault();
@@ -77,6 +160,26 @@ export default function ProfileForm(props) {
             </div>
           </div>
           <div className="popup_content">
+            <div className="field avatar">
+              <label>Avatar</label>
+              <div className="avatar_upload">
+                <div
+                  className="avatar_preview"
+                  style={avatarPreview ? { backgroundImage: `url(${avatarPreview})` } : {}}
+                ></div>
+                <label className="upload_button">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    disabled={uploadingAvatar}
+                  />
+                  {uploadingAvatar ? 'Uploading...' : 'Choose file'}
+                </label>
+              </div>
+              {uploadMessage && <div className="upload_message">{uploadMessage}</div>}
+              {uploadError && <div className="upload_error">{uploadError}</div>}
+            </div>
             <div className="field display_name">
               <label>Display Name</label>
               <input

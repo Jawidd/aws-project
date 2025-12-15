@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: API Gateway + Lambda for avatar upload presigned URLs
+
+Globals:
+  Function:
+    Runtime: python3.13
+    Timeout: 20
+    MemorySize: 128
+
+Parameters:
+  AvatarBucketName:
+    Type: String
+  AvatarUploadPrefix:
+    Type: String
+    Default: avatar/original/
+  FrontendOrigin:
+    Type: String
+  UserPoolId:
+    Type: String
+  UserPoolClientId:
+    Type: String
+
+Resources:
+  AvatarUploadApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowHeaders: [Authorization, Content-Type]
+        AllowMethods: [OPTIONS, POST]
+        AllowOrigins:
+          - !Ref FrontendOrigin
+          - http://localhost:3000
+          - https://localhost:3000
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            JwtConfiguration:
+              audience: [!Ref UserPoolClientId]
+              issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPoolId}"
+            IdentitySource: "$request.header.Authorization"
+
+  AvatarPresignFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: avatar-presign
+      CodeUri: ../functions/avatar-presign/
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          AVATAR_UPLOAD_BUCKET: !Ref AvatarBucketName
+          AVATAR_UPLOAD_PREFIX: !Ref AvatarUploadPrefix
+          PRESIGN_URL_TTL_SECONDS: 300
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref AvatarBucketName
+      Events:
+        Presign:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AvatarUploadApi
+            Path: /avatars/presign
+            Method: POST
+
+Outputs:
+  AvatarUploadApiUrl:
+    Value: !Sub "https://${AvatarUploadApi}.execute-api.${AWS::Region}.amazonaws.com"

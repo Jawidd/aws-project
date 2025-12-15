@@ -1,0 +1,22 @@
+                                     Table "public.users"
+       Column       |            Type             | Collation | Nullable |      Default       
+--------------------+-----------------------------+-----------+----------+--------------------
+ full_name          | character varying(100)      |           | not null | 
+ uuid               | uuid                        |           | not null | uuid_generate_v4()
+ email              | character varying(255)      |           | not null | 
+ handle             | character varying(50)       |           | not null | 
+ preferred_username | character varying(100)      |           | not null | 
+ cognito_user_id    | character varying(255)      |           |          | 
+ created_at         | timestamp without time zone |           |          | CURRENT_TIMESTAMP
+ bio                | text                        |           |          | 
+ avatar_url         | character varying(500)      |           |          | 
+Indexes:
+    "users_pkey" PRIMARY KEY, btree (uuid)
+    "idx_users_email" btree (email)
+    "users_cognito_user_id_key" UNIQUE CONSTRAINT, btree (cognito_user_id)
+    "users_email_key" UNIQUE CONSTRAINT, btree (email)
+    "users_handle_key" UNIQUE CONSTRAINT, btree (handle)
+Referenced by:
+    TABLE "activities" CONSTRAINT "activities_user_uuid_fkey" FOREIGN KEY (user_uuid) REFERENCES users(uuid)
+    TABLE "likes" CONSTRAINT "likes_user_uuid_fkey" FOREIGN KEY (user_uuid) REFERENCES users(uuid) ON DELETE CASCADE
+

@@ -14,7 +14,7 @@ class UpdateProfile:
         UPDATE public.users 
         SET bio = %(bio)s, full_name = %(display_name)s
         WHERE cognito_user_id = %(cognito_user_id)s
-        RETURNING handle, uuid, full_name, bio, created_at
+        RETURNING handle, uuid, full_name, bio, created_at, avatar_url
       """
       
       params = {
@@ -40,7 +40,8 @@ class UpdateProfile:
               'uuid': str(result[1]),
               'display_name': result[2],
               'bio': result[3],
-              'created_at': str(result[4])
+              'created_at': str(result[4]),
+              'avatar_url': result[5]
             }
             logging.info(f"Returning data: {data}")
             return {
