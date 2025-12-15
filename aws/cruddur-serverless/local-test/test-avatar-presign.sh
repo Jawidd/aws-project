@@ -5,7 +5,7 @@ set -euo pipefail
 # -------------------------------
 # Configuration (EDIT THESE)
 # -------------------------------
-API_BASE_URL="https://mizxii4b39.execute-api.eu-west-2.amazonaws.com"
+GATEWAY_URL="https://mizxii4b39.execute-api.eu-west-2.amazonaws.com"
 PRESIGN_PATH="/avatars/presign"
 TEST_IMAGE_PATH="./sample2.png"
 EXTENSION="png"
@@ -35,11 +35,11 @@ fi
 # Request presigned URL
 # -------------------------------
 echo "Requesting presigned URL..."
-echo "POST ${API_BASE_URL}${PRESIGN_PATH}"
+echo "POST ${GATEWAY_URL}${PRESIGN_PATH}"
 
 RESPONSE=$(curl --fail --show-error --silent --max-time 10 \
   -X POST \
-  "${API_BASE_URL}${PRESIGN_PATH}" \
+  "${GATEWAY_URL}${PRESIGN_PATH}" \
   -H "Authorization: Bearer ${ACCESS_TOKEN}" \
   -H "Content-Type: application/json" \
   -d "{

@@ -1,11 +1,16 @@
 import json
 import logging
 import os
-import psycopg2
+import time
 from urllib.parse import urlparse
+
+import psycopg2
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 ASSETS_BASE_URL = os.getenv("ASSETS_BASE_URL")
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def get_db_connection():
@@ -25,10 +30,7 @@ def get_db_connection():
 
 
 def extract_cognito_user_id(key: str):
-    """
-    Extracts cognito user id from:
-    avatar/processed/<cognito_id>_<timestamp>.jpg
-    """
+    # avatar/processed/<cognito_id>_<timestamp>.jpg -> cognito_id
     filename = key.split("/")[-1]
     name = filename.split(".")[0]
     return name.split("_")[0]
@@ -39,22 +41,37 @@ def build_public_url(key: str):
 
 
 def update_avatar(cognito_user_id, avatar_url):
-    conn = get_db_connection()
-    try:
-        with conn.cursor() as cur:
-            cur.execute("""
-                UPDATE public.users
-                SET avatar_url = %s
-                WHERE cognito_user_id = %s
-            """, (avatar_url, cognito_user_id))
-            conn.commit()
-    finally:
-        conn.close()
+    # Keep trying a couple times in case the DB is momentarily unhappy
+    max_attempts = 3
+    retry_pause = 0.3
+
+    for attempt in range(max_attempts):
+        conn = None
+        try:
+            conn = get_db_connection()
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE public.users
+                    SET avatar_url = %s
+                    WHERE cognito_user_id = %s
+                """, (avatar_url, cognito_user_id))
+                conn.commit()
+            logger.info("Avatar updated for %s", cognito_user_id)
+            return
+        except Exception as e:
+            logger.warning("Update attempt %s failed for %s: %s", attempt + 1, cognito_user_id, e)
+            if attempt == max_attempts - 1:
+                raise
+            time.sleep(retry_pause * (attempt + 1))
+        finally:
+            if conn:
+                conn.close()
 
 
 def lambda_handler(event, context):
     for record in event["Records"]:
-        message = json.loads(record["Sns"]["Message"])
+        message_raw = record["Sns"]["Message"]
+        message = json.loads(message_raw)
         thumbnail_key = message.get("thumbnail")
 
         if not thumbnail_key:

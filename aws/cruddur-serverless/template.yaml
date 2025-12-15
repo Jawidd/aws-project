@@ -36,11 +36,13 @@ Parameters:
     Default: "https://cruddur.jawid.me,http://localhost:3000,https://localhost:3000"
 
 Resources:
+  # Messaging + WebSocket tables and handlers
   DynamoDBMessagingStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: templates/dynamo-stream-template.yaml
 
+  # User bootstrap after Cognito confirm
   PostEmailConfirmStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -49,6 +51,7 @@ Resources:
         DatabaseUrl: !Ref DatabaseUrl
 
   # 🔑 KEEP THIS LOGICAL ID
+  # Avatar upload + resize + DB update
   ProcessImagesStack:
     Type: AWS::CloudFormation::Stack
     Properties:

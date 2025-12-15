@@ -83,6 +83,7 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: ttl
         Enabled: true
+        # stale connection records age out automatically
 
   # Message Stream Lambda
   MessageStreamFunction:

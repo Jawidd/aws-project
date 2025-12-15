@@ -1,7 +1,8 @@
 import json
 import os
-import boto3
 from datetime import datetime, timedelta
+
+import boto3
 
 dynamodb = boto3.resource('dynamodb')
 
@@ -10,7 +11,7 @@ def lambda_handler(event, context):
     table_name = os.environ['CONNECTIONS_TABLE']
     table = dynamodb.Table(table_name)
     
-    # Store connection with TTL (24 hours)
+    # Keep the connection for a day; stale ones fall out automatically
     ttl = int((datetime.now() + timedelta(hours=24)).timestamp())
     
     table.put_item(

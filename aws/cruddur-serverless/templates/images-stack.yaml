@@ -6,7 +6,7 @@ Globals:
   Function:
     Runtime: python3.13
     Timeout: 30
-    MemorySize: 512
+    MemorySize: 512 # lambdas here do image work, give them some room
 
 Parameters:
   AssetsBucketName:
@@ -69,7 +69,8 @@ Resources:
           THUMBING_BUCKET_NAME: !Ref AssetsBucketName
           THUMBING_S3_FOLDER_INPUT: avatar/original/
           THUMBING_S3_FOLDER_OUTPUT: avatar/processed/
-          THUMBING_TOPIC_ARN: !Ref AvatarEventsTopic
+          THUMBING_TOPIC_ARN: !Ref AvatarEventsTopic          # publish on success
+          AVATAR_DB_CONSUMER_ARN: !GetAtt AvatarDbConsumer.Arn # fallback invoke when SNS flakes
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref AssetsBucketName
@@ -77,6 +78,10 @@ Resources:
             BucketName: !Ref AssetsBucketName
         - SNSPublishMessagePolicy:
             TopicName: cruddur-avatar-events
+        - Statement:
+            Effect: Allow
+            Action: lambda:InvokeFunction
+            Resource: !GetAtt AvatarDbConsumer.Arn
 
   # ------------------------------------------------------------
   # SNS → DATABASE CONSUMER
