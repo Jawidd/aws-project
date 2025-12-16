@@ -2,8 +2,6 @@
 version: 0.2
 phases:
   install:
-    runtime-versions:
-      docker: 20
     commands:
       - echo "cd into $CODEBUILD_SRC_DIR/backend"
       - cd $CODEBUILD_SRC_DIR/backend-flask
@@ -25,10 +23,10 @@ phases:
 
 env:
   variables:
-    AWS_ACCOUNT_ID: 387543059434
-    AWS_DEFAULT_REGION: ca-central-1
+    AWS_ACCOUNT_ID: 225442939245
+    AWS_DEFAULT_REGION: eu-west-2
     CONTAINER_NAME: backend-flask
-    IMAGE_URL: 387543059434.dkr.ecr.ca-central-1.amazonaws.com
+    IMAGE_URL: 225442939245.dkr.ecr.u-west-2.amazonaws.com
     REPO_NAME: backend-flask:latest
 artifacts:
   files:
