@@ -5,7 +5,7 @@
 
 - [] NOTRelevant- code[Q dev] is not working on vscode
 - [] NotImportant-force update flask service and task defin after new container push to ecr
-- [] minor: the new crud shoudl be placed at last, add-crud style is not nice, expirey reamining time of cruds shoudl be shown, more button on nav bar is empty, fix about privacy terms  pages, MORE should be hidden when navbar is in collapse state,
+- [] minor: the new crud shoudl be placed at last, add-crud style is not nice, expirey reamining time of cruds shoudl be shown, more button on nav bar is empty, fix about privacy terms  pages, MORE should be hidden when navbar is in collapse state, still several progile images relateed to one user is stored in s3/processesed ,  add cover photo, make a lambda to update db and delete expired cruds or maybe update trending cruds, implement codepipeline for front and backend using cloudformation
 
 
 ### 🏗️ Current Structure: 
@@ -24,7 +24,28 @@
  means ALBsg ports of 3000 and 5000 need to be open
  means containersg ports of 3000 and 5000 need to be open to ALB only
 
-###  📌📌📌📌 Phase 8: image proceessing
+###  📌📌📌📌 Phase 9: CI/CD
+
+- [X] create AWS code pipeline for backend
+    - [X] create github connection to repo, select new prod branch
+    - [X] skip build ,deploy provider ecs
+- [X] create another stage names bake image
+    - [X] add action group (any name, action provider:code build)
+    - [X] select project - create build project
+        - [X] any name, enable build badge, 
+        - [X] source: select repo, select prod
+        - [X] create webhook, eventtype pull request to merge prod and main, push to prod 
+        - [X] environment os =amazon linux standard
+        - [X] toggle on priviliged because we are using docker
+        - [X] role,timeout,vpc, remove vpc as we dont want it to be in private subnets
+        - [X] dir:backend-flask/buildspec.yml create a buildspec.yaml for backend(add all backend paramterstore and envs in it)
+        - [X] logs, create build project
+        - [] build must succeced.
+        - [] deploy must succesed
+
+
+
+### ✅ Phase 8: image proceessing
 
 - [X] create S3 bucket to store original and processed avatars
 - [X] implement Lambda to process uploaded photos and generate thumbnails
@@ -53,32 +74,23 @@
         - Remove SuggestedUsersSection completely from sidebar
 
 - [X] now the like button should work, also cruds should have an attribute in database which will show number of likes, when someone press like, that attribute in database should increase
+
+- [X] Profile photo working using s3, lambda ,sns and cloudfront for both dev and prod
+
 <!--
 - [X] commit to github -->
 
 
 
-- [] make a lambda to update db and delete expired cruds or maybe update trending cruds
-
-- [] use two buckets for uploads(originals/) and assets(processed/)
 
 
-
-- [] , provide API to upload photos to S3 to trigger processing
-
-
-
-
-
-
-
-### 🏗️ Phase 7: Xray
+### ✅ Phase 7: Xray
 - [X] write scripts to handle task,image and service updates
 
 - [] implement xray in backend task definition
 
 
-### 🏗️ Phase 6: Migrating the containers to aws
+### ✅ Phase 6: Migrating the containers to aws
 - [x] create a test shell script for testing connection to psql 
 - [x] add health-check for flask app (create a route in app.py, create a file for calling healthcheck route from app.py) docker exec -it aws-project-backend-flask-1 python3 /backend-flask/bin/flask/health-check
 
