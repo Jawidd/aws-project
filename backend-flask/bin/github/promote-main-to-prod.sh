@@ -17,24 +17,4 @@ gh pr create \
   --title "$TITLE" \
   --body "$BODY"
 
-echo "🔍 Finding pull request number..."
-PR_NUMBER=$(gh pr list \
-  --base "$BASE_BRANCH" \
-  --head "$HEAD_BRANCH" \
-  --state open \
-  | awk 'NR==1 {print $1}')
-
-if [ -z "$PR_NUMBER" ]; then
-  echo "❌ Failed to find the pull request"
-  exit 1
-fi
-
-echo "✅ Found PR #$PR_NUMBER"
-
-echo "👍 Approving pull request..."
-gh pr review "$PR_NUMBER" --approve
-
-echo "🔀 Merging pull request..."
-gh pr merge "$PR_NUMBER" --squash --delete-branch=false
-
-echo "🎉 Promotion from main → prod completed successfully"
+echo "ℹ️ Pull request created. Waiting for external approval."
