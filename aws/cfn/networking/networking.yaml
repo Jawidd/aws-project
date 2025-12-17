@@ -38,13 +38,13 @@ Parameters:
   Az3:
     Type: AWS::EC2::AvailabilityZone::Name
     Default: eu-west-2c
-  SubnetCidrBlocks: 
+  SubnetCidrBlocks:
     Description: "Comma-delimited list of CIDR blocks for our private public subnets"
     Type: CommaDelimitedList
     Default: >
-      10.0.0.0/22, 
-      10.0.4.0/22, 
-      10.0.8.0/22, 
+      10.0.0.0/22,
+      10.0.4.0/22,
+      10.0.8.0/22,
       10.0.12.0/22,
       10.0.16.0/22,
       10.0.20.0/22
@@ -188,6 +188,42 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}SubnetPriv3"
 
+  SubnetPub1RTA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPub1
+      RouteTableId: !Ref PublicRouteTable
+
+  SubnetPub2RTA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPub2
+      RouteTableId: !Ref PublicRouteTable
+
+  SubnetPub3RTA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPub3
+      RouteTableId: !Ref PublicRouteTable
+
+  SubnetPriv1RTA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPriv1
+      RouteTableId: !Ref PrivateRouteTable
+
+  SubnetPriv2RTA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPriv2
+      RouteTableId: !Ref PrivateRouteTable
+
+  SubnetPriv3RTA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPriv3
+      RouteTableId: !Ref PrivateRouteTable
+
   DynamoDbEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -196,3 +232,19 @@ Resources:
       VpcEndpointType: Gateway
       RouteTableIds:
         - !Ref PrivateRouteTable
+
+Outputs:
+  VpcId:
+    Value: !Ref VPC
+    Export:
+      Name: !Sub "${AWS::StackName}VpcId"
+
+  PublicSubnetIds:
+    Value: !Join [",", [!Ref SubnetPub1, !Ref SubnetPub2, !Ref SubnetPub3]]
+    Export:
+      Name: !Sub "${AWS::StackName}PublicSubnetIds"
+
+  PrivateSubnetIds:
+    Value: !Join [",", [!Ref SubnetPriv1, !Ref SubnetPriv2, !Ref SubnetPriv3]]
+    Export:
+      Name: !Sub "${AWS::StackName}PrivateSubnetIds"

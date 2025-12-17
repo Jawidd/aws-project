@@ -91,23 +91,6 @@ Parameters:
     Default: cruddur
 
 Resources:
-  ServiceSG:
-    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Service SG for our Cruddur backend-flask service
-      VpcId:
-        Fn::ImportValue:
-          !Sub "${NetworkingStack}VpcId"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          SourceSecurityGroupId:
-            Fn::ImportValue:
-              !Sub "${ClusterStack}ALBSecurityGroupId"
-          FromPort: !Ref ContainerPort
-          ToPort: !Ref ContainerPort
-          Description: ALB to backend-flask
-
   LogGroup:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-logs-loggroup.html
     Type: AWS::Logs::LogGroup
@@ -201,7 +184,7 @@ Resources:
       DesiredCount: 1
       EnableECSManagedTags: true
       EnableExecuteCommand: true
-      HealthCheckGracePeriodSeconds: 100
+      HealthCheckGracePeriodSeconds: 0
       LaunchType: FARGATE
       LoadBalancers:
         - TargetGroupArn:
@@ -213,7 +196,8 @@ Resources:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
           SecurityGroups:
-            - !GetAtt ServiceSG.GroupId
+            - Fn::ImportValue:
+                !Sub "${ClusterStack}ServiceSecurityGroupId"
           Subnets:
             Fn::Split:
               - ","
@@ -306,11 +290,6 @@ Outputs:
     Value: !Ref FargateService
     Export:
       Name: !Sub "${AWS::StackName}ServiceName"
-
-  ServiceSecurityGroupId:
-    Value: !GetAtt ServiceSG.GroupId
-    Export:
-      Name: !Sub "${AWS::StackName}ServiceSecurityGroupId"
 
   TaskDefinitionArn:
     Value: !Ref TaskDefinition

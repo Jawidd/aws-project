@@ -8,6 +8,7 @@ Description: |
     - internet facing
     - certificate attached from Amazon Certificate Manager (ACM)
   - ALB Security Group
+  - Service Security Group (shared)
   - HTTPS Listener
     - route /api/* to backend Target Group
     - route all other paths to frontend Target Group
@@ -77,6 +78,27 @@ Resources:
           ToPort: 80
           CidrIp: '0.0.0.0/0'
           Description: INTERNET HTTP
+
+  # We create this SG before the service so we can pass it to database SG
+  ServiceSG:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security for Fargate Services for Cruddur
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${NetworkingStack}VpcId"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt ALBSG.GroupId
+          FromPort: !Ref FrontendPort
+          ToPort: !Ref FrontendPort
+          Description: ALB to frontend
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt ALBSG.GroupId
+          FromPort: !Ref BackendPort
+          ToPort: !Ref BackendPort
+          Description: ALB to backend
 
   ALB:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticloadbalancingv2-loadbalancer.html
@@ -202,10 +224,16 @@ Outputs:
     Value: !Ref ALB
     Export:
       Name: !Sub "${AWS::StackName}ALBArn"
+
   ALBSecurityGroupId:
-  Value: !GetAtt ALBSG.GroupId
-  Export:
-     Name: !Sub "${AWS::StackName}ALBSecurityGroupId"
+    Value: !GetAtt ALBSG.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}ALBSecurityGroupId"
+
+  ServiceSecurityGroupId:
+    Value: !GetAtt ServiceSG.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}ServiceSecurityGroupId"
 
   ALBDnsName:
     Value: !GetAtt ALB.DNSName
@@ -221,5 +249,3 @@ Outputs:
     Value: !Ref BackendTG
     Export:
       Name: !Sub "${AWS::StackName}BackendTargetGroupArn"
-  
-  
