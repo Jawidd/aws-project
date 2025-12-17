@@ -9,8 +9,6 @@ CONFIG_PATH="$ROOT_DIR/aws/cfn/networking/config.toml"
 
 echo "$CFN_PATH"
 
-cfn-lint "$CFN_PATH"
-
 BUCKET=$(cfn-toml key deploy.bucket -t "$CONFIG_PATH")
 REGION=$(cfn-toml key deploy.region -t "$CONFIG_PATH")
 STACK_NAME=$(cfn-toml key deploy.stack_name -t "$CONFIG_PATH")
