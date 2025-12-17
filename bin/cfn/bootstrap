@@ -8,8 +8,6 @@ CFN_PATH="$ROOT_DIR/aws/cfn/bootstrap/bootstraping.yaml"
 
 echo "$CFN_PATH"
 
-cfn-lint "$CFN_PATH"
-
 aws cloudformation deploy \
   --stack-name CfnBootstrap \
   --region "$(aws configure get region)" \

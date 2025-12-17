@@ -104,7 +104,7 @@ Resources:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticloadbalancingv2-targetgroup.html
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Sub "${AWS::StackName}FrontendTG"
+      # Name: !Sub "${AWS::StackName}FrontendTG"
       TargetType: ip
       Port: !Ref FrontendPort
       Protocol: HTTP
@@ -121,12 +121,15 @@ Resources:
       VpcId:
         Fn::ImportValue:
           !Sub "${NetworkingStack}VpcId"
+      Tags:
+        - Key: target-group-name
+          Value: frontend
 
   BackendTG:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticloadbalancingv2-targetgroup.html
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Sub "${AWS::StackName}BackendTG"
+      # Name: !Sub "${AWS::StackName}BackendTG"
       TargetType: ip
       Port: !Ref BackendPort
       Protocol: HTTP
@@ -143,6 +146,9 @@ Resources:
       VpcId:
         Fn::ImportValue:
           !Sub "${NetworkingStack}VpcId"
+      Tags:
+        - Key: target-group-name
+          Value: backend
 
   HTTPSListener:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticloadbalancingv2-listener.html
@@ -196,6 +202,10 @@ Outputs:
     Value: !Ref ALB
     Export:
       Name: !Sub "${AWS::StackName}ALBArn"
+  ALBSecurityGroupId:
+  Value: !GetAtt ALBSG.GroupId
+  Export:
+     Name: !Sub "${AWS::StackName}ALBSecurityGroupId"
 
   ALBDnsName:
     Value: !GetAtt ALB.DNSName
@@ -211,3 +221,5 @@ Outputs:
     Value: !Ref BackendTG
     Export:
       Name: !Sub "${AWS::StackName}BackendTargetGroupArn"
+  
+  
