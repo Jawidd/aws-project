@@ -1,0 +1,198 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  The base networking components for our stack:
+  - VPC
+    - sets DNS hostnames for EC2 instances
+    - Only IPV4, IPV6 is disabled
+  - InternetGateway
+  - Public Route Table
+    - route to the IGW
+  - Private Route Table
+    - currently unused
+  - 6 Subnets Explicitly Associated
+    - 3 Public Subnets numbered 1 to 3
+    - 3 Private Subnets numbered 1 to 3
+  - DynamoDB Gateway VPC Endpoint (free)
+
+  NOTE ON NAT GATEWAY:
+  - NAT Gateway base cost is ~$30/month
+  - Currently NOT required because:
+    - ECS tasks are deployed in public subnets
+    - Tasks are assigned public IPs
+    - DynamoDB uses a Gateway Endpoint
+  - NAT Gateway will be required if:
+    - ECS tasks are moved to private subnets
+    - Public IP assignment is disabled
+    - Outbound internet access is still required
+
+Parameters:
+  VpcCidrBlock:
+    Type: String
+    Default: 10.0.0.0/16
+  Az1:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: eu-west-2a
+  Az2:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: eu-west-2b
+  Az3:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: eu-west-2c
+  SubnetCidrBlocks: 
+    Description: "Comma-delimited list of CIDR blocks for our private public subnets"
+    Type: CommaDelimitedList
+    Default: >
+      10.0.0.0/22, 
+      10.0.4.0/22, 
+      10.0.8.0/22, 
+      10.0.12.0/22,
+      10.0.16.0/22,
+      10.0.20.0/22
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidrBlock
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}VPC"
+
+  IGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}IGW"
+
+  AttachIGW:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref IGW
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}PublicRT"
+
+  PublicRouteToIGW:
+    Type: AWS::EC2::Route
+    DependsOn: AttachIGW
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      GatewayId: !Ref IGW
+      DestinationCidrBlock: 0.0.0.0/0
+
+  # NAT Gateway intentionally commented out
+  # See description above for cost and enablement conditions
+
+  # NatEip:
+  #   Type: AWS::EC2::EIP
+  #   Properties:
+  #     Domain: vpc
+
+  # NatGateway:
+  #   Type: AWS::EC2::NatGateway
+  #   Properties:
+  #     AllocationId: !GetAtt NatEip.AllocationId
+  #     SubnetId: !Ref SubnetPub1
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Sub "${AWS::StackName}NatGW"
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}PrivateRT"
+
+  # PrivateRouteToNat:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref PrivateRouteTable
+  #     NatGatewayId: !Ref NatGateway
+  #     DestinationCidrBlock: 0.0.0.0/0
+
+  SubnetPub1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref Az1
+      CidrBlock: !Select [0, !Ref SubnetCidrBlocks]
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}SubnetPub1"
+
+  SubnetPub2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref Az2
+      CidrBlock: !Select [1, !Ref SubnetCidrBlocks]
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}SubnetPub2"
+
+  SubnetPub3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref Az3
+      CidrBlock: !Select [2, !Ref SubnetCidrBlocks]
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}SubnetPub3"
+
+  SubnetPriv1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref Az1
+      CidrBlock: !Select [3, !Ref SubnetCidrBlocks]
+      MapPublicIpOnLaunch: false
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}SubnetPriv1"
+
+  SubnetPriv2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref Az2
+      CidrBlock: !Select [4, !Ref SubnetCidrBlocks]
+      MapPublicIpOnLaunch: false
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}SubnetPriv2"
+
+  SubnetPriv3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref Az3
+      CidrBlock: !Select [5, !Ref SubnetCidrBlocks]
+      MapPublicIpOnLaunch: false
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}SubnetPriv3"
+
+  DynamoDbEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.dynamodb"
+      VpcEndpointType: Gateway
+      RouteTableIds:
+        - !Ref PrivateRouteTable

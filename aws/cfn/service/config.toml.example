@@ -1,0 +1,10 @@
+[deploy]
+bucket = ''
+region = ''
+stack_name = ''
+
+
+
+[parameters]
+CertificateArn = ''
+NetworkingStack = ''

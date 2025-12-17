@@ -4,6 +4,7 @@
 # Local Docker stuff
 docker
 
+TO-DO.md
 # Virtual environment
 venv/
 docker/dynamodb/shared-local-instance.db
