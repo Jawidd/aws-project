@@ -5,7 +5,7 @@
 
 - [] NOTRelevant- code[Q dev] is not working on vscode
 - [] NotImportant-force update flask service and task defin after new container push to ecr
-- [] minor: the new crud shoudl be placed at last, add-crud style is not nice, expirey reamining time of cruds shoudl be shown, more button on nav bar is empty, fix about privacy terms  pages, MORE should be hidden when navbar is in collapse state, still several progile images relateed to one user is stored in s3/processesed ,  add cover photo, make a lambda to update db and delete expired cruds or maybe update trending cruds, implement codepipeline for front and backend using cloudformation
+- [] minor: the new crud shoudl be placed at last, add-crud style is not nice, expirey reamining time of cruds shoudl be shown, more button on nav bar is empty, fix about privacy terms  pages, MORE should be hidden when navbar is in collapse state, still several progile images relateed to one user is stored in s3/processesed ,  add cover photo, make a lambda to update db and delete expired cruds or maybe update trending cruds, implement codepipeline for front and backend using cloudformation, should be able to requset for cruddur.jawid.me to run and will be gone again in 5 mins..... to avoid costs...
 
 
 ### 🏗️ Current Structure: 
@@ -24,7 +24,30 @@
  means ALBsg ports of 3000 and 5000 need to be open
  means containersg ports of 3000 and 5000 need to be open to ALB only
 
-###  📌📌📌📌 Phase 9: CI/CD
+###  📌📌📌📌 Phase 10: CloudFormation
+- [] create a cfn folder, decide if i need to specify s3 bucket in cloudformation to save artifacts!
+- [] cfn, create networking folder/ and networking template.yaml
+    - [] VPC, cidr block:10/16, just enable dnshostnames rest default is ok
+    - [] IGW, attach to vpc
+    - [] RT, Route to IGW, 
+    - [] . cidr,AZ,AZID,VPCID
+    - [] 3PubSubnets+3privSubnets. cidr,AZ,AZID,VPCID,RTASSoC use parameters use comma dilimited, use stack name for naming : stackname/subnetpub1 route vpc, outputs
+    - [] create lucid chart out of networking
+
+- [] create cluster template.yml
+    - [] ECs cluster:capacityprov:fargate, default logging, insights, seviceconnectdefaultsnamespace=cruddur, 
+    - [] ALB: routeinghttp2enabled,ipv4,persevervehostheaderdisabled,deletionprotectionenabled,crosszoneenabled,name,schemeInternrt,sg,subnetmap,typeApp,
+    - []  create lucid chart out of this template
+
+- [] create service template
+    - []  
+
+- [] create db template
+    - [] 
+    - []  
+
+
+###  ✅ Phase 9: CI/CD
 
 - [X] create AWS code pipeline for backend
     - [X] create github connection to repo, select new prod branch
@@ -40,8 +63,9 @@
         - [X] role,timeout,vpc, remove vpc as we dont want it to be in private subnets
         - [X] dir:backend-flask/buildspec.yml create a buildspec.yaml for backend(add all backend paramterstore and envs in it)
         - [X] logs, create build project
-        - [] build must succeced.
-        - [] deploy must succesed
+        - [X] add required permissions for roles in pipe
+        - [X] build stage must succeced.
+        - [X] deploy stage must succesed
 
 
 

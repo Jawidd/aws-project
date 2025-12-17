@@ -1,0 +1,17 @@
+#! /usr/bin/env bash
+set -e # stop the execution of the script if it fails
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+CFN_PATH="$ROOT_DIR/aws/cfn/bootstrap/bootstraping.yaml"
+
+echo "$CFN_PATH"
+
+cfn-lint "$CFN_PATH"
+
+aws cloudformation deploy \
+  --stack-name CfnBootstrap \
+  --region "$(aws configure get region)" \
+  --template-file "$CFN_PATH" \
+  --capabilities CAPABILITY_NAMED_IAM
