@@ -287,7 +287,7 @@ Resources:
 
 Outputs:
   ServiceName:
-    Value: !Ref FargateService
+    Value: !GetAtt FargateService.Name
     Export:
       Name: !Sub "${AWS::StackName}ServiceName"
 
