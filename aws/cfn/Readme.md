@@ -22,12 +22,16 @@ Stacks **must** be deployed in the following order. Each layer depends on export
    - Application Load Balancer
    - Listeners and target groups
    - Shared service security group
+   - [] !!!TODO Change route53 A_name record to new ALB
+
+
 
 4. **db**
    - Postgres RDS instance
    - Private subnet placement
    - Security group restricted to ECS services
    - After deployment: retrieve the new RDS endpoint
+   - [] !!!TODO Change parameter store /cruddur/CONNECTION_URL  to db endpoint
 
 5. **service**
    - ECS task definition

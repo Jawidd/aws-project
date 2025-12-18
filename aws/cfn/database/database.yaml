@@ -117,3 +117,28 @@ Resources:
       PubliclyAccessible: false
       VPCSecurityGroups:
         - !GetAtt RDSPostgresSG.GroupId
+
+Outputs:
+  DBEndpoint:
+    Description: RDS endpoint address
+    Value: !GetAtt Database.Endpoint.Address
+    Export:
+      Name: !Sub "${AWS::StackName}DBEndpoint"
+
+  DBPort:
+    Description: RDS endpoint port
+    Value: !GetAtt Database.Endpoint.Port
+    Export:
+      Name: !Sub "${AWS::StackName}DBPort"
+
+  DBSecurityGroupId:
+    Description: Security group applied to the RDS instance
+    Value: !GetAtt RDSPostgresSG.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}DBSecurityGroupId"
+
+  DBNameOutput:
+    Description: Logical database name configured for the instance
+    Value: !Ref DBName
+    Export:
+      Name: !Sub "${AWS::StackName}DBName"

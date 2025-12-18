@@ -1,28 +1,37 @@
 #! /usr/bin/env bash
-set -e # stop the execution of the script if it fails
+set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-CFN_PATH="$ROOT_DIR/aws/cfn/frontend/template.yaml"
-CONFIG_PATH="$ROOT_DIR/aws/cfn/frontend/config.toml"
+CFN_PATH="$ROOT_DIR/aws/cfn/frontend-ecs/frontend-ecs.yaml"
 
-echo "$CFN_PATH"
+# -------------------------------------------------------------------
+# Explicit deploy configuration
+# -------------------------------------------------------------------
+STACK_NAME="CrdSrvFrontend"
+REGION="eu-west-2"
+BUCKET="cfn-artifacts-225442939245-eu-west-2"
 
-cfn-lint "$CFN_PATH"
+NETWORKING_STACK="CrdNet"
+CLUSTER_STACK="CrdCluster"
 
-BUCKET=$(cfn-toml key deploy.bucket -t "$CONFIG_PATH")
-REGION=$(cfn-toml key deploy.region -t "$CONFIG_PATH")
-STACK_NAME=$(cfn-toml key deploy.stack_name -t "$CONFIG_PATH")
-PARAMETERS=$(cfn-toml params v2 -t "$CONFIG_PATH")
+echo "Deploying Frontend Stack"
+echo "Template: $CFN_PATH"
+echo "Stack:    $STACK_NAME"
+echo "Region:   $REGION"
+echo "Bucket:   $BUCKET"
+
+
 
 aws cloudformation deploy \
   --stack-name "$STACK_NAME" \
   --s3-bucket "$BUCKET" \
-  --s3-prefix frontend \
+  --s3-prefix frontend-service \
   --region "$REGION" \
   --template-file "$CFN_PATH" \
-  --no-execute-changeset \
   --tags group=cruddur-frontend \
-  --parameter-overrides $PARAMETERS \
+  --parameter-overrides \
+    NetworkingStack="$NETWORKING_STACK" \
+    ClusterStack="$CLUSTER_STACK" \
   --capabilities CAPABILITY_NAMED_IAM
