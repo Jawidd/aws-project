@@ -12,3 +12,11 @@ backend-flask/.env.development
 backend-flask/.env.production
 frontend-react-js/.env.development
 frontend-react-js/.env.production
+
+
+# CloudFormation local deploy config
+**/config.toml
+
+
+aws/cfn/networking/config.toml
+
