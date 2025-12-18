@@ -23,6 +23,10 @@ Parameters:
     Type: String
     Default: cruddur.jawid.me
 
+  ApiSubDomainName:
+    Type: String
+    Default: api.cruddur.jawid.me
+
   ClusterStack:
     Type: String
     Default: CrdCluster
@@ -53,12 +57,12 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}Certificate"
 
-  CruddurAliasRecord:
+  ApiAliasRecord:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-route53-recordset.html
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref HostedZone
-      Name: !Sub "${CruddurSubDomainName}."
+      Name: !Sub "${ApiSubDomainName}."
       Type: A
       AliasTarget:
         HostedZoneId:
