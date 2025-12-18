@@ -5,6 +5,3 @@ stack_name = ''
 
 
 
-[parameters]
-CertificateArn = ''
-NetworkingStack = ''
