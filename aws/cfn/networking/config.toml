@@ -1,4 +1,0 @@
-[deploy] #
-bucket = 'cfn-artifacts-225442939245-eu-west-2'
-region = 'eu-west-2'
-stack_name = 'CrdNet'
