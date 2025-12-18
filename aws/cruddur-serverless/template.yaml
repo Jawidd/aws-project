@@ -40,13 +40,13 @@ Resources:
   DynamoDBMessagingStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: dynamo-stream/dynamo-stream.yaml
+      TemplateURL: services/dynamo-stream/template.yaml
 
   # User bootstrap after Cognito confirm
   PostEmailConfirmStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: cognito-post-confirmation/post-email-template.yaml
+      TemplateURL: services/cognito-post-confirmation/template.yaml
       Parameters:
         DatabaseUrl: !Ref DatabaseUrl
 
@@ -55,7 +55,7 @@ Resources:
   ProcessImagesStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: avatar-processing/avatar-processing.yaml
+      TemplateURL: services/avatar-processing/template.yaml
       Parameters:
         AssetsBucketName: !Ref AssetsBucketName
         CreateAssetsBucket: !Ref CreateAssetsBucket
@@ -65,7 +65,7 @@ Resources:
   AvatarUploadStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: avatar-presign/avatar-presign.yaml
+      TemplateURL: services/avatar-presign/template.yaml
       Parameters:
         AvatarBucketName: !Ref AssetsBucketName
         AvatarUploadPrefix: !Ref AvatarUploadPrefix
