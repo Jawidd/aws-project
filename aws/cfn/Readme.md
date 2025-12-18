@@ -1,67 +1,69 @@
-# CloudFormation Deployment Guide
+# Cruddur CloudFormation Infrastructure
 
----
+## Architecture Overview
 
-## Stack Overview/order
+```
+Domain Layout:
+- cruddur.jawid.me     → CloudFront → S3 (React Frontend)
+- api.cruddur.jawid.me → ALB → ECS (Backend Flask)
+```
 
-Stacks **must** be deployed in the following order. Each layer depends on exports from the previous layer.
+## Stack Dependencies
 
-1. **bootstrap**
+1. **Bootstrap** (`CfnBootstrap`)
    - S3 bucket for CloudFormation artifacts
-   - One-time per account and region
+   - One-time setup per account/region
 
-2. **networking**
-   - VPC
-   - Public subnets (ECS / ALB)
-   - Private subnets (RDS)
-   - Route tables
-   - DynamoDB VPC endpoint
+2. **Networking** (`CrdNet`)
+   - VPC with public/private subnets
+   - Internet Gateway, Route Tables
+   - DynamoDB VPC Endpoint
 
-3. **cluster**
-   - ECS Fargate cluster
-   - Application Load Balancer
-   - Listeners and target groups
-   - Shared service security group
-   - [] !!!TODO Change route53 A_name record to new ALB
+3. **Cluster** (`CrdCluster`)
+   - ECS Fargate Cluster
+   - Application Load Balancer (api.cruddur.jawid.me)
+   - Security Groups
 
+4. **Database** (`CrdDb`)
+   - RDS PostgreSQL instance
+   - Database security group
+   - DB subnet group
 
+5. **DNS** (`CrdDns`)
+   - Route53 hosted zone (jawid.me)
+   - ACM certificate (*.jawid.me)
+   - Alias record for api.cruddur.jawid.me → ALB
 
-4. **db**
-   - Postgres RDS instance
-   - Private subnet placement
-   - Security group restricted to ECS services
-   - After deployment: retrieve the new RDS endpoint
-   - [] !!!TODO Change parameter store /cruddur/CONNECTION_URL  to db endpoint
+6. **Backend Service** (`CrdSrvBackendFlask`)
+   - ECS service and task definition
+   - IAM roles for execution and task
+   - CloudWatch logs
 
-5. **service**
-   - ECS task definition
-   - ECS service
-   - Service Connect
-   - Logs, roles, and permissions
+7. **Frontend** (`CrdSrvFrontend`)
+   - S3 bucket for static assets
+   - CloudFront distribution
+   - Route53 alias record for cruddur.jawid.me → CloudFront
 
-6. **dns**
-   - Public hosted zone
-   - ACM certificate (DNS validated)
-   - ALB alias record (depends on cluster exports)
+## Deployment
 
-7. **frontend**
-   - S3 static site buckets (root + www redirect)
-   - CloudFront distribution with ACM cert from `dns`
-   - Route53 aliases pointing at CloudFront
+Deploy all stacks in order:
+```bash
+./bin/cfn/deploy-all
+```
 
-8. **cicd**
-   - CodePipeline with GitHub source (CodeStar connection)
-   - CodeBuild image bake using repo buildspec
-   - ECS deploy action targeting the backend service
+Or deploy individually:
+```bash
+./bin/cfn/bootstrap
+./bin/cfn/deploy-networking
+./bin/cfn/deploy-cluster
+./bin/cfn/deploy-database-rds
+./bin/cfn/deploy-dns
+./bin/cfn/deploy-backend-service
+./bin/cfn/deploy-frontend
+```
 
-## Frontend/DNS Notes
-- Deploy `dns` after `cluster` so ALB exports are available for the alias record.
-- Deploy `frontend` after `dns`; pass the `dns` certificate ARN and hosted zone values into `aws/cfn/frontend/frontend.yaml`.
-- Both S3 site buckets are retained on stack delete and allow public reads for CloudFront; CloudFront aliases use the ACM cert from `dns`.
+## Environment Variables
 
-## CI/CD Notes
-- The `cicd` stack packages a nested CodeBuild project from `aws/cfn/cicd/codebuild-bake/codebuild-bake.yaml` using the artifact bucket created by `bootstrap`.
-- Deploy with `bin/cfn/deploy-cicd`; you will be prompted to complete the GitHub CodeStar connection in AWS before the pipeline can pull source.
-- The Build stage outputs `ImageDefinition` for the ECS deploy action; ensure the service stack is up so the deploy stage can import its exports.
-
----
+Production environment uses:
+- Frontend: `https://cruddur.jawid.me`
+- Backend API: `https://api.cruddur.jawid.me`

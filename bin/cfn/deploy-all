@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+printf "\033[1;35m == Deploying Cruddur Infrastructure == \033[0m\n"
+
+echo "1. Bootstrap (S3 artifacts bucket)"
+"$SCRIPT_DIR/bootstrap"
+
+echo "2. Networking (VPC, subnets, security groups)"
+"$SCRIPT_DIR/deploy-networking"
+
+echo "3. Cluster (ECS cluster, ALB for api.cruddur.jawid.me)"
+"$SCRIPT_DIR/deploy-cluster"
+
+echo "4. Database (RDS PostgreSQL)"
+"$SCRIPT_DIR/deploy-database-rds"
+
+echo "5. DNS (Route53, ACM certificate)"
+"$SCRIPT_DIR/deploy-dns"
+
+echo "6. Backend Service (ECS service for api.cruddur.jawid.me)"
+"$SCRIPT_DIR/deploy-backend-service"
+
+echo "7. Frontend (CloudFront + S3 for cruddur.jawid.me)"
+"$SCRIPT_DIR/deploy-frontend"
+
+printf "\033[1;32m == Deployment Complete == \033[0m\n"
+printf "Frontend: https://cruddur.jawid.me\n"
+printf "Backend API: https://api.cruddur.jawid.me\n"

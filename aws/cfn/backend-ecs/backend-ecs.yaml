@@ -55,7 +55,7 @@ Parameters:
     Default: https://cruddur.jawid.me
   EnvBackendUrl:
     Type: String
-    Default: https://cruddur.jawid.me
+    Default: https://api.cruddur.jawid.me
   EnvDynamoDbMessagesTable:
     Type: String
     Default: cruddur-messages

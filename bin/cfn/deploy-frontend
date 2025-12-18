@@ -16,13 +16,11 @@ BUCKET="cfn-artifacts-225442939245-eu-west-2"
 # Stack dependencies
 DNS_STACK="CrdDns"
 
+# Certificate must be in us-east-1 for CloudFront
 CERTIFICATE_ARN="arn:aws:acm:us-east-1:225442939245:certificate/2cbac534-9a60-4476-aed9-4cf5389e3e2f"
 
-
 # Domain configuration
-HOSTED_ZONE_NAME="jawid.me"
 ROOT_DOMAIN_NAME="cruddur.jawid.me"
-WWW_DOMAIN_NAME="www.cruddur.jawid.me"
 
 echo "Deploying Frontend Stack"
 echo "Template: $CFN_PATH"
@@ -40,8 +38,8 @@ aws cloudformation deploy \
   --template-file "$CFN_PATH" \
   --tags group=cruddur-frontend \
   --parameter-overrides \
-    CertificateArn=$CERTIFICATE_ARN \
+    CertificateArn="$CERTIFICATE_ARN" \
     RootDomainName="$ROOT_DOMAIN_NAME" \
-    WwwDomainName="$WWW_DOMAIN_NAME" \
+    HostedZoneId="$(aws cloudformation describe-stacks --stack-name $DNS_STACK --query 'Stacks[0].Outputs[?OutputKey==`HostedZoneId`].OutputValue' --output text --region $REGION)" \
   --capabilities CAPABILITY_NAMED_IAM
 

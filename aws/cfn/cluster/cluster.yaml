@@ -26,14 +26,7 @@ Parameters:
   CertificateArn:
     Type: String
 
-  # Frontend ------
-  FrontendPort:
-    Type: Number
-    Default: 3000
 
-  FrontendHealthCheckPath:
-    Type: String
-    Default: "/"
 
   # Backend ------
   BackendPort:
@@ -91,11 +84,6 @@ Resources:
       SecurityGroupIngress:
         - IpProtocol: tcp
           SourceSecurityGroupId: !GetAtt ALBSG.GroupId
-          FromPort: !Ref FrontendPort
-          ToPort: !Ref FrontendPort
-          Description: ALB to frontend
-        - IpProtocol: tcp
-          SourceSecurityGroupId: !GetAtt ALBSG.GroupId
           FromPort: !Ref BackendPort
           ToPort: !Ref BackendPort
           Description: ALB to backend
@@ -122,29 +110,7 @@ Resources:
         - Key: load_balancing.cross_zone.enabled
           Value: true
 
-  FrontendTG:
-    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticloadbalancingv2-targetgroup.html
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      TargetType: ip
-      Port: !Ref FrontendPort
-      Protocol: HTTP
-      ProtocolVersion: HTTP2
-      HealthCheckEnabled: true
-      HealthCheckPath: !Ref FrontendHealthCheckPath
-      HealthCheckPort: !Ref FrontendPort
-      HealthCheckProtocol: HTTP
-      Matcher:
-        HttpCode: 200
-      TargetGroupAttributes:
-        - Key: deregistration_delay.timeout_seconds
-          Value: 0
-      VpcId:
-        Fn::ImportValue:
-          !Sub "${NetworkingStack}VpcId"
-      Tags:
-        - Key: target-group-name
-          Value: frontend
+
 
   BackendTG:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticloadbalancingv2-targetgroup.html
@@ -181,7 +147,7 @@ Resources:
         - CertificateArn: !Ref CertificateArn
       DefaultActions:
         - Type: forward
-          TargetGroupArn: !Ref FrontendTG
+          TargetGroupArn: !Ref BackendTG
 
   HTTPListener:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticloadbalancingv2-listener.html
@@ -197,20 +163,7 @@ Resources:
             Port: 443
             StatusCode: HTTP_301
 
-  ApiListenerRule:
-    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticloadbalancingv2-listenerrule.html
-    Type: AWS::ElasticLoadBalancingV2::ListenerRule
-    Properties:
-      ListenerArn: !Ref HTTPSListener
-      Priority: 1
-      Conditions:
-        - Field: path-pattern
-          PathPatternConfig:
-            Values:
-              - /api/*
-      Actions:
-        - Type: forward
-          TargetGroupArn: !Ref BackendTG
+
 
 Outputs:
   ClusterName:
@@ -238,10 +191,7 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}ALBDnsName"
 
-  FrontendTargetGroupArn:
-    Value: !Ref FrontendTG
-    Export:
-      Name: !Sub "${AWS::StackName}FrontendTargetGroupArn"
+
 
   BackendTargetGroupArn:
     Value: !Ref BackendTG
