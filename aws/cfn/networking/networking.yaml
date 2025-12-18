@@ -90,22 +90,7 @@ Resources:
       GatewayId: !Ref IGW
       DestinationCidrBlock: 0.0.0.0/0
 
-  # NAT Gateway intentionally commented out
-  # See description above for cost and enablement conditions
 
-  # NatEip:
-  #   Type: AWS::EC2::EIP
-  #   Properties:
-  #     Domain: vpc
-
-  # NatGateway:
-  #   Type: AWS::EC2::NatGateway
-  #   Properties:
-  #     AllocationId: !GetAtt NatEip.AllocationId
-  #     SubnetId: !Ref SubnetPub1
-  #     Tags:
-  #       - Key: Name
-  #         Value: !Sub "${AWS::StackName}NatGW"
 
   PrivateRouteTable:
     Type: AWS::EC2::RouteTable
@@ -115,12 +100,7 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}PrivateRT"
 
-  # PrivateRouteToNat:
-  #   Type: AWS::EC2::Route
-  #   Properties:
-  #     RouteTableId: !Ref PrivateRouteTable
-  #     NatGatewayId: !Ref NatGateway
-  #     DestinationCidrBlock: 0.0.0.0/0
+
 
   SubnetPub1:
     Type: AWS::EC2::Subnet
