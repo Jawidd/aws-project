@@ -32,7 +32,11 @@ Parameters:
 
   BuildSpec:
     Type: String
-    Default: buildspec.yaml
+    Default: backend-flask/buildspec.yml
+
+  ArtifactBucketName:
+    Type: String
+    Description: S3 bucket used by CodePipeline for build input and output artifacts
 
 Resources:
   CodeBuildLogGroup:
@@ -69,7 +73,7 @@ Resources:
                   - ecr:PutImage
                   - ecr:BatchGetImage
                   - ecr:GetDownloadUrlForLayer
-                Resource: '*'
+            Resource: '*'
         - PolicyName: !Sub "${ProjectName}Logs"
           PolicyDocument:
             Version: '2012-10-17'
@@ -79,6 +83,21 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroupPath}:*"
+        - PolicyName: !Sub "${ProjectName}Artifacts"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:PutObject
+                Resource: !Sub "arn:aws:s3:::${ArtifactBucketName}/*"
+              - Effect: Allow
+                Action:
+                  - s3:GetBucketLocation
+                  - s3:ListBucket
+                Resource: !Sub "arn:aws:s3:::${ArtifactBucketName}"
 
   CodeBuildProject:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-codebuild-project.html

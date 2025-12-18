@@ -37,7 +37,7 @@ Parameters:
     AllowedValues:
       - true
       - false
-    Default: true
+    Default: 'true'
 
   EngineVersion:
     Type: String
@@ -53,7 +53,7 @@ Parameters:
     NoEcho: true
 
 Conditions:
-  EnableDeletionProtection: !Equals [!Ref DeletionProtection, true]
+  EnableDeletionProtection: !Equals [!Ref DeletionProtection, 'true']
 
 Resources:
   RDSPostgresSG:
