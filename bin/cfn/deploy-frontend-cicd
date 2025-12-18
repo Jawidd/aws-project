@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+CFN_PATH="$ROOT_DIR/aws/cfn/cicd/frontend-pipeline.yaml"
+
+STACK_NAME="CrdFrontendCiCd"
+REGION="eu-west-2"
+BUCKET="cfn-artifacts-225442939245-eu-west-2"
+
+GITHUB_BRANCH="prod"
+GITHUB_REPO="omenking/aws-bootcamp-cruddur-2023"
+
+# Resolve frontend stack exports
+FRONTEND_BUCKET_NAME=$(aws cloudformation list-exports \
+  --region "$REGION" \
+  --query "Exports[?Name=='CrdFrontendFrontendBucketName'].Value" \
+  --output text)
+
+CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudformation list-exports \
+  --region "$REGION" \
+  --query "Exports[?Name=='CrdFrontendDistributionId'].Value" \
+  --output text)
+
+if [[ -z "$FRONTEND_BUCKET_NAME" || -z "$CLOUDFRONT_DISTRIBUTION_ID" ]]; then
+  echo "ERROR: Unable to resolve frontend stack exports"
+  exit 1
+fi
+
+echo "Deploying Frontend CICD Stack"
+echo "Template:     $CFN_PATH"
+echo "Stack:        $STACK_NAME"
+echo "Region:       $REGION"
+echo "Bucket:       $FRONTEND_BUCKET_NAME"
+echo "Distribution: $CLOUDFRONT_DISTRIBUTION_ID"
+
+aws cloudformation deploy \
+  --stack-name "$STACK_NAME" \
+  --region "$REGION" \
+  --template-file "$CFN_PATH" \
+  --tags group=cruddur-frontend-cicd \
+  --parameter-overrides \
+    GitHubBranch="$GITHUB_BRANCH" \
+    GithubRepo="$GITHUB_REPO" \
+    FrontendBucketName="$FRONTEND_BUCKET_NAME" \
+    CloudFrontDistributionId="$CLOUDFRONT_DISTRIBUTION_ID" \
+  --capabilities CAPABILITY_IAM
