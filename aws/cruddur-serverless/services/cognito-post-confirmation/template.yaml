@@ -32,7 +32,7 @@ Resources:
       - PostConfirmationLogGroup
     Properties:
       FunctionName: post-email-confirm
-      CodeUri: post-email-confirm-function/
+      CodeUri: functions/post_email_confirm/
       Handler: app.lambda_handler
       Description: Creates user record after Cognito email confirmation
       Environment:

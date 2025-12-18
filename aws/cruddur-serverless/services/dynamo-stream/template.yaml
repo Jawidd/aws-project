@@ -332,7 +332,7 @@ Resources:
       - MessageStreamLogGroup
     Properties:
       FunctionName: message-stream
-      CodeUri: message-stream-function/
+      CodeUri: functions/message_stream/
       Handler: app.lambda_handler
       Role: !GetAtt MessageStreamExecutionRole.Arn
       Timeout: 30
@@ -359,7 +359,7 @@ Resources:
       - WebSocketConnectLogGroup
     Properties:
       FunctionName: websocket-connect
-      CodeUri: websocket-connect-function/
+      CodeUri: functions/websocket_connect/
       Handler: app.lambda_handler
       Role: !GetAtt WebSocketConnectExecutionRole.Arn
       Environment:
@@ -373,7 +373,7 @@ Resources:
       - WebSocketDisconnectLogGroup
     Properties:
       FunctionName: websocket-disconnect
-      CodeUri: websocket-disconnect-function/
+      CodeUri: functions/websocket_disconnect/
       Handler: app.lambda_handler
       Role: !GetAtt WebSocketDisconnectExecutionRole.Arn
       Environment:

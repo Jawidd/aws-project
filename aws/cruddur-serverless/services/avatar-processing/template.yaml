@@ -72,7 +72,7 @@ Resources:
       - ThumbnailLogGroup
     Properties:
       FunctionName: image-to-thumbnail
-      CodeUri: image-to-thumbnail-function/
+      CodeUri: functions/image_to_thumbnail/
       Handler: app.lambda_handler
       Environment:
         Variables:
@@ -105,7 +105,7 @@ Resources:
       - AvatarDbConsumerLogGroup
     Properties:
       FunctionName: avatar-db-consumer
-      CodeUri: avatar-db-consumer-function/
+      CodeUri: functions/avatar_db_consumer/
       Handler: app.lambda_handler
       Environment:
         Variables:
