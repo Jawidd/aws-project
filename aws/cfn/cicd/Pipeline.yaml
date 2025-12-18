@@ -33,7 +33,9 @@ Resources:
   CodeBuildBakeImageStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: nested/codebuild-bake.yaml
+      TemplateURL: codebuild-bake/codebuild-bake.yaml
+      Parameters:
+        ArtifactBucketName: !Ref ArtifactBucket
 
   CodeStarConnection:
     Type: AWS::CodeStarConnections::Connection
@@ -87,6 +89,8 @@ Resources:
                 Version: '1'
               InputArtifacts:
                 - Name: Source
+              OutputArtifacts:
+                - Name: ImageDefinition
               Configuration:
                 ProjectName:
                   Fn::GetAtt:

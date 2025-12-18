@@ -44,6 +44,17 @@ Resources:
         RedirectAllRequestsTo:
           HostName: !Ref RootDomainName
 
+  WWWBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WWWBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: s3:GetObject
+            Resource: !Sub "arn:aws:s3:::${WWWBucket}/*"
+            Principal: '*'
+
   RootBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -101,3 +112,19 @@ Resources:
       AliasTarget:
         DNSName: !GetAtt Distribution.DomainName
         HostedZoneId: Z2FDTNDATAQYW2
+
+Outputs:
+  RootBucketName:
+    Value: !Ref RootBucket
+    Export:
+      Name: !Sub "${AWS::StackName}RootBucketName"
+
+  WwwBucketName:
+    Value: !Ref WWWBucket
+    Export:
+      Name: !Sub "${AWS::StackName}WwwBucketName"
+
+  DistributionDomainName:
+    Value: !GetAtt Distribution.DomainName
+    Export:
+      Name: !Sub "${AWS::StackName}DistributionDomainName"

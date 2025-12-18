@@ -4,18 +4,29 @@ set -e # stop the execution of the script if it fails
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-CFN_PATH="$ROOT_DIR/aws/cfn/cicd/template.yaml"
-CONFIG_PATH="$ROOT_DIR/aws/cfn/cicd/config.toml"
+CFN_PATH="$ROOT_DIR/aws/cfn/cicd/Pipeline.yaml"
 PACKAGED_PATH="$ROOT_DIR/tmp/packaged-cicd-template.yaml"
 
-echo "$CFN_PATH"
+# -------------------------------------------------------------------
+# Explicit deploy configuration
+# -------------------------------------------------------------------
+STACK_NAME="CrdCiCd"
+REGION="eu-west-2"
+BUCKET="cfn-artifacts-225442939245-eu-west-2"
 
-cfn-lint "$CFN_PATH"
+# CloudFormation parameters
+GITHUB_BRANCH="prod"
+GITHUB_REPO="omenking/aws-bootcamp-cruddur-2023"
+CLUSTER_STACK="CrdCluster"
+SERVICE_STACK="CrdSrvBackendFlask"
 
-BUCKET=$(cfn-toml key deploy.bucket -t "$CONFIG_PATH")
-REGION=$(cfn-toml key deploy.region -t "$CONFIG_PATH")
-STACK_NAME=$(cfn-toml key deploy.stack_name -t "$CONFIG_PATH")
-PARAMETERS=$(cfn-toml params v2 -t "$CONFIG_PATH")
+mkdir -p "$ROOT_DIR/tmp"
+
+echo "Deploying CICD Stack"
+echo "Template: $CFN_PATH"
+echo "Stack:    $STACK_NAME"
+echo "Region:   $REGION"
+echo "Bucket:   $BUCKET"
 
 echo "== packaging CFN to S3..."
 aws cloudformation package \
@@ -31,7 +42,10 @@ aws cloudformation deploy \
   --s3-prefix cicd \
   --region "$REGION" \
   --template-file "$PACKAGED_PATH" \
-  --no-execute-changeset \
   --tags group=cruddur-cicd \
-  --parameter-overrides $PARAMETERS \
+  --parameter-overrides \
+    GitHubBranch="$GITHUB_BRANCH" \
+    GithubRepo="$GITHUB_REPO" \
+    ClusterStack="$CLUSTER_STACK" \
+    ServiceStack="$SERVICE_STACK" \
   --capabilities CAPABILITY_NAMED_IAM
