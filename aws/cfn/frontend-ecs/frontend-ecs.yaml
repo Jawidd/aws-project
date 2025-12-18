@@ -2,69 +2,55 @@ AWSTemplateFormatVersion: 2010-09-09
 
 Description: |
   Static frontend hosting
-  - CloudFront Distribution
+  - CloudFront Distribution with Origin Access Control
   - S3 bucket for root domain
   - S3 bucket for www redirect
-  - Route53 alias records
 
 Parameters:
   CertificateArn:
     Type: String
 
-  HostedZoneName:
-    Type: String
-    Description: Public hosted zone (eg. cruddur.com)
-
   RootDomainName:
     Type: String
     Description: Naked domain (eg. cruddur.com)
 
-  WwwDomainName:
-    Type: String
-    Description: WWW domain (eg. www.cruddur.com)
+
 
 Resources:
-  RootBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
+  OriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
     Properties:
-      BucketName: !Ref RootDomainName
-      PublicAccessBlockConfiguration:
-        BlockPublicPolicy: false
-      WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: error.html
-
-  WWWBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    Properties:
-      BucketName: !Ref WwwDomainName
-      WebsiteConfiguration:
-        RedirectAllRequestsTo:
-          HostName: !Ref RootDomainName
-
-  WWWBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref WWWBucket
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action: s3:GetObject
-            Resource: !Sub "arn:aws:s3:::${WWWBucket}/*"
-            Principal: '*'
+      OriginAccessControlConfig:
+        Name: !Sub "${AWS::StackName}OAC"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
 
   RootBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Ref RootBucket
+      Bucket: !Ref RootDomainName
       PolicyDocument:
         Statement:
-          - Effect: Allow
+          - Sid: AllowCloudFrontServicePrincipal
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
             Action: s3:GetObject
-            Resource: !Sub "arn:aws:s3:::${RootBucket}/*"
+            Resource: !Sub "arn:aws:s3:::${RootDomainName}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+          - Sid: DenyInsecureConnections
+            Effect: Deny
             Principal: '*'
+            Action: s3:*
+            Resource:
+              - !Sub "arn:aws:s3:::${RootDomainName}/*"
+              - !Sub "arn:aws:s3:::${RootDomainName}"
+            Condition:
+              Bool:
+                aws:SecureTransport: false
 
   Distribution:
     Type: AWS::CloudFront::Distribution
@@ -76,53 +62,26 @@ Resources:
         HttpVersion: http2and3
         Aliases:
           - !Ref RootDomainName
-          - !Ref WwwDomainName
         Origins:
           - Id: RootBucketOrigin
-            DomainName: !GetAtt RootBucket.DomainName
-            S3OriginConfig: {}
+            DomainName: !Sub "${RootDomainName}.s3.${AWS::Region}.amazonaws.com"
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+            OriginAccessControlId: !GetAtt OriginAccessControl.Id
         DefaultCacheBehavior:
           TargetOriginId: RootBucketOrigin
           ViewerProtocolPolicy: redirect-to-https
           AllowedMethods: [GET, HEAD, OPTIONS]
-          ForwardedValues:
-            QueryString: false
-            Cookies:
-              Forward: none
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          Compress: true
         ViewerCertificate:
           AcmCertificateArn: !Ref CertificateArn
           SslSupportMethod: sni-only
-
-  RootDomainRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneName: !Sub "${HostedZoneName}."
-      Name: !Sub "${RootDomainName}."
-      Type: A
-      AliasTarget:
-        DNSName: !GetAtt Distribution.DomainName
-        HostedZoneId: Z2FDTNDATAQYW2
-
-  WwwDomainRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneName: !Sub "${HostedZoneName}."
-      Name: !Sub "${WwwDomainName}."
-      Type: A
-      AliasTarget:
-        DNSName: !GetAtt Distribution.DomainName
-        HostedZoneId: Z2FDTNDATAQYW2
-
 Outputs:
   RootBucketName:
-    Value: !Ref RootBucket
+    Value: !Ref RootDomainName
     Export:
       Name: !Sub "${AWS::StackName}RootBucketName"
-
-  WwwBucketName:
-    Value: !Ref WWWBucket
-    Export:
-      Name: !Sub "${AWS::StackName}WwwBucketName"
 
   DistributionDomainName:
     Value: !GetAtt Distribution.DomainName

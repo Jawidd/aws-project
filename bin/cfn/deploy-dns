@@ -1,0 +1,30 @@
+#! /usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+CFN_PATH="$ROOT_DIR/aws/cfn/dns/dns.yaml"
+
+STACK_NAME="CrdDns"
+REGION="eu-west-2"
+BUCKET="cfn-artifacts-225442939245-eu-west-2"
+
+CLUSTER_STACK="CrdCluster"
+
+echo "Deploying DNS Stack"
+echo "Template: $CFN_PATH"
+echo "Stack:    $STACK_NAME"
+echo "Region:   $REGION"
+echo "Bucket:   $BUCKET"
+
+aws cloudformation deploy \
+  --stack-name "$STACK_NAME" \
+  --s3-bucket "$BUCKET" \
+  --s3-prefix dns \
+  --region "$REGION" \
+  --template-file "$CFN_PATH" \
+  --tags group=cruddur-dns \
+  --parameter-overrides \
+    ClusterStack="$CLUSTER_STACK" \
+  --capabilities CAPABILITY_NAMED_IAM
