@@ -1,12 +1,18 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
-Description: Image processing stack (avatars, thumbnails, SNS events)
+
+Description: |
+  Image processing and avatar events
+  - Optional assets S3 bucket
+  - Thumbnail generator
+  - SNS events
+  - Database consumer
 
 Globals:
   Function:
     Runtime: python3.13
     Timeout: 30
-    MemorySize: 512 # lambdas here do image work, give them some room
+    MemorySize: 512
 
 Parameters:
   AssetsBucketName:
@@ -15,9 +21,8 @@ Parameters:
 
   CreateAssetsBucket:
     Type: String
-    AllowedValues: ["true", "false"]
-    Default: "false"
-    Description: Create S3 bucket only if it does not already exist
+    AllowedValues: ['true', 'false']
+    Default: 'false'
 
   CorsAllowedOrigins:
     Type: String
@@ -27,14 +32,16 @@ Parameters:
     Type: String
     Description: PostgreSQL connection string
 
+  LogRetentionInDays:
+    Type: Number
+    Default: 30
+
 Conditions:
-  ShouldCreateBucket: !Equals [!Ref CreateAssetsBucket, "true"]
+  ShouldCreateBucket: !Equals [!Ref CreateAssetsBucket, 'true']
 
 Resources:
-  # ------------------------------------------------------------
-  # OPTIONAL S3 BUCKET
-  # ------------------------------------------------------------
   AssetsBucket:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-s3-bucket.html
     Type: AWS::S3::Bucket
     Condition: ShouldCreateBucket
     DeletionPolicy: Retain
@@ -42,35 +49,38 @@ Resources:
       BucketName: !Ref AssetsBucketName
       CorsConfiguration:
         CorsRules:
-          - AllowedHeaders: ["*"]
+          - AllowedHeaders: ['*']
             AllowedMethods: [GET, PUT, HEAD]
             AllowedOrigins: !Split [",", !Ref CorsAllowedOrigins]
             MaxAge: 3000
 
-  # ------------------------------------------------------------
-  # SNS TOPIC
-  # ------------------------------------------------------------
   AvatarEventsTopic:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-sns-topic.html
     Type: AWS::SNS::Topic
     Properties:
       TopicName: cruddur-avatar-events
 
-  # ------------------------------------------------------------
-  # THUMBNAIL GENERATOR (S3 notification configured OUTSIDE SAM)
-  # ------------------------------------------------------------
+  ThumbnailLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/image-to-thumbnail
+      RetentionInDays: !Ref LogRetentionInDays
+
   ThumbnailLambda:
     Type: AWS::Serverless::Function
+    DependsOn:
+      - ThumbnailLogGroup
     Properties:
       FunctionName: image-to-thumbnail
-      CodeUri: ../functions/image-to-thumbnail/
+      CodeUri: image-to-thumbnail-function/
       Handler: app.lambda_handler
       Environment:
         Variables:
           THUMBING_BUCKET_NAME: !Ref AssetsBucketName
           THUMBING_S3_FOLDER_INPUT: avatar/original/
           THUMBING_S3_FOLDER_OUTPUT: avatar/processed/
-          THUMBING_TOPIC_ARN: !Ref AvatarEventsTopic          # publish on success
-          AVATAR_DB_CONSUMER_ARN: !GetAtt AvatarDbConsumer.Arn # fallback invoke when SNS flakes
+          THUMBING_TOPIC_ARN: !Ref AvatarEventsTopic
+          AVATAR_DB_CONSUMER_ARN: !GetAtt AvatarDbConsumer.Arn
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref AssetsBucketName
@@ -83,14 +93,19 @@ Resources:
             Action: lambda:InvokeFunction
             Resource: !GetAtt AvatarDbConsumer.Arn
 
-  # ------------------------------------------------------------
-  # SNS → DATABASE CONSUMER
-  # ------------------------------------------------------------
+  AvatarDbConsumerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/avatar-db-consumer
+      RetentionInDays: !Ref LogRetentionInDays
+
   AvatarDbConsumer:
     Type: AWS::Serverless::Function
+    DependsOn:
+      - AvatarDbConsumerLogGroup
     Properties:
       FunctionName: avatar-db-consumer
-      CodeUri: ../functions/avatar-db-consumer/
+      CodeUri: avatar-db-consumer-function/
       Handler: app.lambda_handler
       Environment:
         Variables:
