@@ -249,3 +249,9 @@ Outputs:
     Value: !Ref BackendTG
     Export:
       Name: !Sub "${AWS::StackName}BackendTargetGroupArn"
+
+  ALBCanonicalHostedZoneId:
+    Value: !GetAtt ALB.CanonicalHostedZoneID
+    Export:
+      Name: !Sub "${AWS::StackName}ALBCanonicalHostedZoneId"
+

@@ -5,24 +5,35 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 CFN_PATH="$ROOT_DIR/aws/cfn/database/database.yaml"
-CONFIG_PATH="$ROOT_DIR/aws/cfn/database/config.toml"
 
+# -------------------------------------------------------------------
+# Explicit deploy configuration
+# -------------------------------------------------------------------
+STACK_NAME="CrdDb"
+REGION="eu-west-2"
+BUCKET="cfn-artifacts-225442939245-eu-west-2"
 
-echo "$CFN_PATH"
+# CloudFormation parameters
+NETWORKING_STACK="CrdNet"
+CLUSTER_STACK="CrdCluster"
+MASTER_USERNAME="cruddurroot"
+MASTER_USER_PASSWORD="$DB_PASSWORD"
 
-cfn-lint "$CFN_PATH"
-
-BUCKET=$(cfn-toml key deploy.bucket -t "$CONFIG_PATH")
-REGION=$(cfn-toml key deploy.region -t "$CONFIG_PATH")
-STACK_NAME=$(cfn-toml key deploy.stack_name -t "$CONFIG_PATH")
-PARAMETERS=$(cfn-toml params v2 -t "$CONFIG_PATH")
+echo "Deploying Database Stack"
+echo "Template: $CFN_PATH"
+echo "Stack:    $STACK_NAME"
+echo "Region:   $REGION"
+echo "Bucket:   $BUCKET"
 
 aws cloudformation deploy \
   --stack-name "$STACK_NAME" \
   --s3-bucket "$BUCKET" \
   --region "$REGION" \
   --template-file "$CFN_PATH" \
-  --no-execute-changeset \
   --tags group=cruddur-db \
-  --parameter-overrides $PARAMETERS MasterUserPassword="$DB_PASSWORD" \
+  --parameter-overrides \
+    NetworkingStack="$NETWORKING_STACK" \
+    ClusterStack="$CLUSTER_STACK" \
+    MasterUsername="$MASTER_USERNAME" \
+    MasterUserPassword="$MASTER_USER_PASSWORD" \
   --capabilities CAPABILITY_NAMED_IAM

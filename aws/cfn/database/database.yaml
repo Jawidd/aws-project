@@ -43,7 +43,7 @@ Parameters:
     Type: String
     # DB Proxy only supports very specific versions of Postgres
     # https://stackoverflow.com/questions/63084648/which-rds-db-instances-are-supported-for-db-proxy
-    Default: '15.2'
+    Default: "15.10"
 
   MasterUsername:
     Type: String

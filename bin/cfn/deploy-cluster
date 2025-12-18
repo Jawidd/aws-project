@@ -5,21 +5,32 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 CFN_PATH="$ROOT_DIR/aws/cfn/cluster/cluster.yaml"
-CONFIG_PATH="$ROOT_DIR/aws/cfn/cluster/config.toml"
 
-echo "$CFN_PATH"
+# -------------------------------------------------------------------
+# Explicit deploy configuration
+# -------------------------------------------------------------------
+STACK_NAME="CrdCluster"
+REGION="eu-west-2"
+BUCKET="cfn-artifacts-225442939245-eu-west-2"
 
-BUCKET=$(cfn-toml key deploy.bucket -t "$CONFIG_PATH")
-REGION=$(cfn-toml key deploy.region -t "$CONFIG_PATH")
-STACK_NAME=$(cfn-toml key deploy.stack_name -t "$CONFIG_PATH")
-PARAMETERS=$(cfn-toml params v2 -t "$CONFIG_PATH")
+# CloudFormation parameters
+NETWORKING_STACK="CrdNet"
+CERTIFICATE_ARN="arn:aws:acm:eu-west-2:225442939245:certificate/4182aef0-5ba8-45d2-9ac1-1a300ef44bd3"
+
+
+echo "Deploying Cluster Stack"
+echo "Template: $CFN_PATH"
+echo "Stack:    $STACK_NAME"
+echo "Region:   $REGION"
+echo "Bucket:   $BUCKET"
 
 aws cloudformation deploy \
   --stack-name "$STACK_NAME" \
   --s3-bucket "$BUCKET" \
   --region "$REGION" \
   --template-file "$CFN_PATH" \
-  --no-execute-changeset \
   --tags group=cruddur-cluster \
-  --parameter-overrides $PARAMETERS \
+  --parameter-overrides \
+    NetworkingStack="$NETWORKING_STACK" \
+    CertificateArn="$CERTIFICATE_ARN" \
   --capabilities CAPABILITY_NAMED_IAM

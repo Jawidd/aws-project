@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: |
+  DNS and TLS configuration
+  - Route53 Public Hosted Zone
+  - ACM Certificate (DNS validated)
+  - cruddur.jawid.me Alias record to ALB (created after ALB exists)
+
+Parameters:
+  HostedZoneName:
+    Type: String
+    Default: jawid.me
+
+  RootDomainName:
+    Type: String
+    Default: jawid.me
+
+  WildcardDomainName:
+    Type: String
+    Default: "*.jawid.me"
+
+  CruddurSubDomainName:
+    Type: String
+    Default: cruddur.jawid.me
+
+  ClusterStack:
+    Type: String
+    Default: CrdCluster
+
+Resources:
+  HostedZone:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-route53-hostedzone.html
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Sub "${HostedZoneName}."
+      HostedZoneConfig:
+        Comment: Public hosted zone for jawid.me
+
+  Certificate:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-certificatemanager-certificate.html
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref RootDomainName
+      SubjectAlternativeNames:
+        - !Ref WildcardDomainName
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref RootDomainName
+          HostedZoneId: !Ref HostedZone
+        - DomainName: !Ref WildcardDomainName
+          HostedZoneId: !Ref HostedZone
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}Certificate"
+
+  CruddurAliasRecord:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-route53-recordset.html
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Sub "${CruddurSubDomainName}."
+      Type: A
+      AliasTarget:
+        HostedZoneId:
+          Fn::ImportValue:
+            !Sub "${ClusterStack}ALBCanonicalHostedZoneId"
+        DNSName:
+          Fn::ImportValue:
+            !Sub "${ClusterStack}ALBDnsName"
+        EvaluateTargetHealth: true
+
+Outputs:
+  HostedZoneId:
+    Value: !Ref HostedZone
+    Export:
+      Name: !Sub "${AWS::StackName}HostedZoneId"
+
+  HostedZoneNameServers:
+    Value: !Join [",", !GetAtt HostedZone.NameServers]
+    Export:
+      Name: !Sub "${AWS::StackName}HostedZoneNameServers"
+
+  CertificateArn:
+    Value: !Ref Certificate
+    Export:
+      Name: !Sub "${AWS::StackName}CertificateArn"
