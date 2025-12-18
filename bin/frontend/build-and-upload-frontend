@@ -2,7 +2,7 @@
 set -e
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$(realpath "$SCRIPT_DIR/../../../frontend-react-js")"
+PROJECT_ROOT="$(realpath "$SCRIPT_DIR/../../frontend-react-js")"
 S3_BUCKET="cruddur.jawid.me"
 
 if [ ! -d "$PROJECT_ROOT" ]; then
@@ -16,7 +16,7 @@ cd "$PROJECT_ROOT" || exit 1
 
 # Build the Docker image
 docker build \
-  --build-arg REACT_APP_BACKEND_URL="https://cruddur.jawid.me" \
+  --build-arg REACT_APP_BACKEND_URL="https://api.cruddur.jawid.me" \
   --build-arg REACT_APP_WEBSOCKET_URL="wss://h88ifuk3je.execute-api.eu-west-2.amazonaws.com/prod/" \
   --build-arg REACT_APP_AWS_REGION="eu-west-2" \
   --build-arg REACT_APP_USER_POOL_ID="eu-west-2_Jwi9THX3b" \
