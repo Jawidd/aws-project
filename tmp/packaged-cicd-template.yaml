@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "CI/CD pipeline\n- GitHub source\n- CodeBuild image bake\n- ECS service\
+  \ deploy\n"
+Parameters:
+  GitHubBranch:
+    Type: String
+    Default: prod
+  GithubRepo:
+    Type: String
+    Default: omenking/aws-bootcamp-cruddur-2023
+  ClusterStack:
+    Type: String
+  ServiceStack:
+    Type: String
+Resources:
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName:
+        Fn::Sub: cruddur-cicd-${AWS::AccountId}-${AWS::Region}
+      VersioningConfiguration:
+        Status: Enabled
+  CodeBuildBakeImageStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.eu-west-2.amazonaws.com/cfn-artifacts-225442939245-eu-west-2/cicd-package/3fa47ed8504853ff0653235273ebf871.template
+      Parameters:
+        ArtifactBucketName:
+          Ref: ArtifactBucket
+  CodeStarConnection:
+    Type: AWS::CodeStarConnections::Connection
+    Properties:
+      ConnectionName:
+        Fn::Sub: ${AWS::StackName}-github
+      ProviderType: GitHub
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: codepipeline.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: CodePipelinePolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:GetObject
+            - s3:GetObjectVersion
+            - s3:PutObject
+            - s3:GetBucketVersioning
+            Resource:
+            - Fn::Sub: ${ArtifactBucket}/*
+            - Ref: ArtifactBucket
+          - Effect: Allow
+            Action:
+            - codebuild:BatchGetBuilds
+            - codebuild:StartBuild
+            Resource:
+              Fn::GetAtt:
+              - CodeBuildBakeImageStack
+              - Outputs.CodeBuildProjectArn
+          - Effect: Allow
+            Action:
+            - ecs:DescribeServices
+            - ecs:DescribeTaskDefinition
+            - ecs:DescribeTasks
+            - ecs:ListTasks
+            - ecs:RegisterTaskDefinition
+            - ecs:UpdateService
+            - iam:PassRole
+            Resource: '*'
+          - Effect: Allow
+            Action:
+            - codestar-connections:UseConnection
+            Resource:
+              Ref: CodeStarConnection
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RoleArn:
+        Fn::GetAtt:
+        - CodePipelineRole
+        - Arn
+      ArtifactStore:
+        Type: S3
+        Location:
+          Ref: ArtifactBucket
+      Stages:
+      - Name: Source
+        Actions:
+        - Name: GitHub
+          ActionTypeId:
+            Category: Source
+            Owner: AWS
+            Provider: CodeStarSourceConnection
+            Version: '2'
+          OutputArtifacts:
+          - Name: Source
+          Configuration:
+            ConnectionArn:
+              Ref: CodeStarConnection
+            FullRepositoryId:
+              Ref: GithubRepo
+            BranchName:
+              Ref: GitHubBranch
+      - Name: Build
+        Actions:
+        - Name: BakeImage
+          ActionTypeId:
+            Category: Build
+            Owner: AWS
+            Provider: CodeBuild
+            Version: '1'
+          InputArtifacts:
+          - Name: Source
+          OutputArtifacts:
+          - Name: ImageDefinition
+          Configuration:
+            ProjectName:
+              Fn::GetAtt:
+              - CodeBuildBakeImageStack
+              - Outputs.CodeBuildProjectName
+      - Name: Deploy
+        Actions:
+        - Name: ECSDeploy
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: ECS
+            Version: '1'
+          InputArtifacts:
+          - Name: ImageDefinition
+          Configuration:
+            ClusterName:
+              Fn::ImportValue:
+                Fn::Sub: ${ClusterStack}ClusterName
+            ServiceName:
+              Fn::ImportValue:
+                Fn::Sub: ${ServiceStack}ServiceName
