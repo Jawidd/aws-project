@@ -4,7 +4,7 @@ set -e # stop the execution of the script if it fails
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-CFN_PATH="$ROOT_DIR/aws/cfn/service/service.yaml"
+CFN_PATH="$ROOT_DIR/aws/cfn/backend-ecs/backend-ecs.yaml"
 
 # -------------------------------------------------------------------
 # Explicit deploy configuration

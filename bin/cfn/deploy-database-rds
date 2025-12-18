@@ -14,6 +14,7 @@ REGION="eu-west-2"
 BUCKET="cfn-artifacts-225442939245-eu-west-2"
 
 # CloudFormation parameters
+# must set DB_PASSWORD  in env ,export DB_PASSWORD=********
 NETWORKING_STACK="CrdNet"
 CLUSTER_STACK="CrdCluster"
 MASTER_USERNAME="cruddurroot"
