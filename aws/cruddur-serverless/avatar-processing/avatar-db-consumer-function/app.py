@@ -17,23 +17,23 @@ def get_db_connection():
     if not DATABASE_URL:
         raise RuntimeError("DATABASE_URL not set")
 
-    result = urlparse(DATABASE_URL)
+    parsed = urlparse(DATABASE_URL)
 
     return psycopg2.connect(
-        host=result.hostname,
-        port=result.port,
-        dbname=result.path.lstrip("/"),
-        user=result.username,
-        password=result.password,
+        host=parsed.hostname,
+        port=parsed.port,
+        dbname=parsed.path.lstrip("/"),
+        user=parsed.username,
+        password=parsed.password,
         sslmode="require"
     )
 
 
 def extract_cognito_user_id(key: str):
-    # avatar/processed/<cognito_id>_<timestamp>.jpg -> cognito_id
+    # avatar/processed/<cognito_id>_<timestamp>.jpg
     filename = key.split("/")[-1]
-    name = filename.split(".")[0]
-    return name.split("_")[0]
+    base = filename.split(".")[0]
+    return base.split("_")[0]
 
 
 def build_public_url(key: str):
@@ -41,9 +41,8 @@ def build_public_url(key: str):
 
 
 def update_avatar(cognito_user_id, avatar_url):
-    # Keep trying a couple times in case the DB is momentarily unhappy
     max_attempts = 3
-    retry_pause = 0.3
+    backoff = 0.3
 
     for attempt in range(max_attempts):
         conn = None
@@ -59,32 +58,40 @@ def update_avatar(cognito_user_id, avatar_url):
             logger.info("Avatar updated for %s", cognito_user_id)
             return
         except Exception as e:
-            logger.warning("Update attempt %s failed for %s: %s", attempt + 1, cognito_user_id, e)
+            logger.warning(
+                "Update attempt %s failed for %s: %s",
+                attempt + 1,
+                cognito_user_id,
+                e
+            )
             if attempt == max_attempts - 1:
                 raise
-            time.sleep(retry_pause * (attempt + 1))
+            time.sleep(backoff * (attempt + 1))
         finally:
             if conn:
                 conn.close()
 
 
 def lambda_handler(event, context):
-    for record in event["Records"]:
-        message_raw = record["Sns"]["Message"]
+    for record in event.get("Records", []):
+        message_raw = record.get("Sns", {}).get("Message")
+        if not message_raw:
+            continue
+
         message = json.loads(message_raw)
         thumbnail_key = message.get("thumbnail")
 
         if not thumbnail_key:
-            logging.warning("Missing thumbnail key")
+            logger.warning("Missing thumbnail key")
             continue
 
         cognito_user_id = extract_cognito_user_id(thumbnail_key)
         if not cognito_user_id:
-            logging.warning("Invalid thumbnail key: %s", thumbnail_key)
+            logger.warning("Invalid thumbnail key: %s", thumbnail_key)
             continue
 
         avatar_url = build_public_url(thumbnail_key)
-        logging.info("Updating avatar %s -> %s", cognito_user_id, avatar_url)
+        logger.info("Updating avatar %s -> %s", cognito_user_id, avatar_url)
 
         update_avatar(cognito_user_id, avatar_url)
 

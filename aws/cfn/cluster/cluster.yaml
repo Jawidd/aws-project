@@ -155,7 +155,7 @@ Resources:
       TargetType: ip
       Port: !Ref BackendPort
       Protocol: HTTP
-      ProtocolVersion: HTTP2
+      ProtocolVersion: HTTP1
       HealthCheckEnabled: true
       HealthCheckPath: !Ref BackendHealthCheckPath
       HealthCheckPort: !Ref BackendPort
@@ -254,4 +254,3 @@ Outputs:
     Value: !GetAtt ALB.CanonicalHostedZoneID
     Export:
       Name: !Sub "${AWS::StackName}ALBCanonicalHostedZoneId"
-

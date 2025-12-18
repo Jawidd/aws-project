@@ -45,7 +45,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: avatar-presign
-      CodeUri: ../functions/avatar-presign/
+      CodeUri: avatar-presign-function/
       Handler: app.lambda_handler
       Environment:
         Variables:

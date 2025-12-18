@@ -1,5 +1,6 @@
 import json
 import os
+
 import boto3
 
 s3 = boto3.client("s3")
@@ -8,29 +9,42 @@ BUCKET = os.environ["AVATAR_UPLOAD_BUCKET"]
 PREFIX = os.getenv("AVATAR_UPLOAD_PREFIX", "avatar/original/")
 URL_TTL = int(os.getenv("PRESIGN_URL_TTL_SECONDS", "300"))
 
-# Allow callers to change the prefix, but keep it folder-ish
+# Ensure folder-style prefix
 if not PREFIX.endswith("/"):
     PREFIX += "/"
 
+
 def lambda_handler(event, context):
     request_context = event.get("requestContext", {})
-    jwt_block = request_context.get("authorizer", {}).get("jwt", {})
-    jwt_claims = jwt_block.get("claims", {}) or {}
+    jwt = request_context.get("authorizer", {}).get("jwt", {})
+    claims = jwt.get("claims", {}) or {}
 
-    user_sub = jwt_claims.get("sub")
+    user_sub = claims.get("sub")
     if not user_sub:
-        return {"statusCode": 401, "body": json.dumps({"error": "unauthorized"})}
+        return {
+            "statusCode": 401,
+            "body": json.dumps({"error": "unauthorized"})
+        }
 
-    # Prefer explicit body; fallback to empty JSON
-    body = json.loads(event.get("body") or "{}")
+    try:
+        body = json.loads(event.get("body") or "{}")
+    except json.JSONDecodeError:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"error": "invalid json body"})
+        }
 
     file_ext = (body.get("extension") or "jpg").lstrip(".").lower()
     content_type = body.get("content_type")
 
-    # Keep the key predictable so cleanup on the thumbnail side is easy
+    # Predictable object key simplifies cleanup later
     object_key = f"{PREFIX}{user_sub}.{file_ext}"
 
-    params = {"Bucket": BUCKET, "Key": object_key}
+    params = {
+        "Bucket": BUCKET,
+        "Key": object_key
+    }
+
     if content_type:
         params["ContentType"] = content_type
 
