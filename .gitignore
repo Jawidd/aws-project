@@ -20,3 +20,5 @@ frontend-react-js/.env.production
 
 aws/cfn/networking/config.toml
 
+tmp/packaged-cicd-template.yaml
+tmp/

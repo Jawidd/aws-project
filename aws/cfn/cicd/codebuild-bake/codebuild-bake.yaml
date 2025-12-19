@@ -122,39 +122,7 @@ Resources:
           StreamName: !Ref LogStreamName
       Source:
         Type: CODEPIPELINE
-        BuildSpec: |
-          version: 0.2
-          phases:
-            install:
-              commands:
-                - echo "cd into $CODEBUILD_SRC_DIR/backend-flask"
-                - cd $CODEBUILD_SRC_DIR/backend-flask
-                - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $IMAGE_URL
-            build:
-              commands:
-                - echo Build started on `date`
-                - echo Building the Docker image...
-                - sed -i 's|387543059434.dkr.ecr.ca-central-1.amazonaws.com/cruddur-python:3.10-slim-buster|python:3.10-slim|g' Dockerfile.prod
-                - docker build -f Dockerfile.prod -t $IMAGE_REPO_NAME:$IMAGE_TAG .
-                - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $IMAGE_URL/$IMAGE_REPO_NAME:$IMAGE_TAG
-            post_build:
-              commands:
-                - echo Build completed on `date`
-                - echo Pushing the Docker image..
-                - docker push $IMAGE_URL/$IMAGE_REPO_NAME:$IMAGE_TAG
-                - cd $CODEBUILD_SRC_DIR
-                - printf "[{\"name\":\"$CONTAINER_NAME\",\"imageUri\":\"$IMAGE_URL/$IMAGE_REPO_NAME:$IMAGE_TAG\"}]" > imagedefinitions.json
-          env:
-            variables:
-              AWS_ACCOUNT_ID: 225442939245
-              AWS_DEFAULT_REGION: eu-west-2
-              CONTAINER_NAME: backend-flask
-              IMAGE_URL: 225442939245.dkr.ecr.eu-west-2.amazonaws.com
-              IMAGE_REPO_NAME: backend-flask
-              IMAGE_TAG: latest
-          artifacts:
-            files:
-              - imagedefinitions.json
+        BuildSpec: !Ref BuildSpec
 
 Outputs:
   CodeBuildProjectName:
