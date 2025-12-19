@@ -38,7 +38,8 @@ class HomeActivities:
                 activities.likes_count,
                 activities.expires_at,
                 activities.created_at,
-                CASE WHEN likes.user_uuid IS NOT NULL THEN true ELSE false END as liked
+                CASE WHEN likes.user_uuid IS NOT NULL THEN true ELSE false END as liked,
+                users.avatar_url
               FROM public.activities
               LEFT JOIN public.users ON users.uuid = activities.user_uuid
               LEFT JOIN public.likes ON likes.activity_uuid = activities.uuid AND likes.user_uuid = %s
@@ -57,7 +58,8 @@ class HomeActivities:
                 activities.likes_count,
                 activities.expires_at,
                 activities.created_at,
-                false as liked
+                false as liked,
+                users.avatar_url
               FROM public.activities
               LEFT JOIN public.users ON users.uuid = activities.user_uuid
               WHERE activities.reply_to_activity_uuid IS NULL
@@ -78,7 +80,8 @@ class HomeActivities:
                 activities.reposts_count,
                 activities.reply_to_activity_uuid,
                 activities.created_at,
-                CASE WHEN likes.user_uuid IS NOT NULL THEN true ELSE false END as liked
+                CASE WHEN likes.user_uuid IS NOT NULL THEN true ELSE false END as liked,
+                users.avatar_url
               FROM public.activities
               LEFT JOIN public.users ON users.uuid = activities.user_uuid
               LEFT JOIN public.likes ON likes.activity_uuid = activities.uuid AND likes.user_uuid = %s
@@ -97,7 +100,8 @@ class HomeActivities:
                 activities.reposts_count,
                 activities.reply_to_activity_uuid,
                 activities.created_at,
-                false as liked
+                false as liked,
+                users.avatar_url
               FROM public.activities
               LEFT JOIN public.users ON users.uuid = activities.user_uuid
               WHERE activities.reply_to_activity_uuid IS NOT NULL
@@ -120,7 +124,8 @@ class HomeActivities:
           'replies_count': reply[5],
           'reposts_count': reply[6],
           'created_at': reply[8].isoformat(),
-          'liked': reply[9]
+          'liked': reply[9],
+          'avatar_url': reply[10]
         })
       
       # Build results with public activities
@@ -137,6 +142,7 @@ class HomeActivities:
           'replies_count': activity[4],
           'reposts_count': activity[5],
           'liked': activity[9],
+          'avatar_url': activity[10],
           'replies': replies_dict.get(activity_uuid, [])
         }
         

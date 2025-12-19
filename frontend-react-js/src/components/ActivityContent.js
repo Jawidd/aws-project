@@ -47,9 +47,15 @@ export default function ActivityContent(props) {
 
   }
 
+  const avatarStyle = props.activity.avatar_url ? {
+    backgroundImage: `url(${props.activity.avatar_url})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center'
+  } : {};
+
   return (
     <div className='activity_content_wrap'>
-      <div className='activity_avatar'></div>
+      <div className='activity_avatar' style={avatarStyle}></div>
       <div className='activity_content'>
         <div className='activity_meta'>
           <Link className='activity_identity' to={`/@`+props.activity.handle}>

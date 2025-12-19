@@ -5,6 +5,7 @@
 - open psql: `psql "$CONNECTION_URL"` (this drops you into the `cruddur` DB)
 - load schema: `\i /opt/db-scripts/schema.sql` (runs all table/DDL commands)
 - load seed: `\i /opt/db-scripts/seed.sql` (inserts sample data)
+- also create likes Table/schema `\i /opt/db-scripts/migrations/003_create_likes_table.sql`
 - check tables: `\dt` (lists tables)
 - check a row: `SELECT uuid, handle FROM public.users;`
 - exit psql: `\q`

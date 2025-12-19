@@ -3,7 +3,7 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: |
   Static frontend hosting
   - CloudFront Distribution with Origin Access Control
-  - S3 bucket for cruddur.jawid.me
+  - Uses existing S3 bucket (named by RootDomainName)
   - Route53 alias record to CloudFront
 
 Parameters:
@@ -19,22 +19,7 @@ Parameters:
     Type: String
     Description: Route53 hosted zone ID for jawid.me
 
-
-
 Resources:
-  RootBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Ref RootDomainName
-      WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: error.html
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-
   OriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
     Properties:
@@ -121,6 +106,11 @@ Outputs:
     Value: !Ref RootDomainName
     Export:
       Name: !Sub "${AWS::StackName}RootBucketName"
+
+  DistributionId:
+    Value: !Ref Distribution
+    Export:
+      Name: !Sub "${AWS::StackName}DistributionId"
 
   DistributionDomainName:
     Value: !GetAtt Distribution.DomainName
