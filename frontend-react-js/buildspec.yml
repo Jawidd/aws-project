@@ -9,12 +9,19 @@ env:
     REACT_APP_USER_POOL_CLIENT_ID: 1ls5p1vu83m5ahseab36ufk6vm
     REACT_APP_AVATAR_API_URL: https://mizxii4b39.execute-api.eu-west-2.amazonaws.com
     REACT_APP_ASSETS_BASE_URL: https://assets.cruddur.jawid.me
+    CI: "true"
 
 phases:
   install:
+    runtime-versions:
+      nodejs: 18
     commands:
       - cd frontend-react-js
       - npm ci
+
+  pre_build:
+    commands:
+      - npm test -- --watch=false --passWithNoTests
 
   build:
     commands:
@@ -22,7 +29,11 @@ phases:
 
   post_build:
     commands:
+      - echo "FRONTEND_BUCKET=$FRONTEND_BUCKET"
+      - echo "CLOUDFRONT_DISTRIBUTION_ID=$CLOUDFRONT_DISTRIBUTION_ID"
       - aws s3 sync build/ s3://$FRONTEND_BUCKET/ --delete
-      - aws cloudfront create-invalidation \
-          --distribution-id $CLOUDFRONT_DISTRIBUTION_ID \
-          --paths "/*"
+      - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+
+cache:
+  paths:
+    - /root/.npm/**/*
