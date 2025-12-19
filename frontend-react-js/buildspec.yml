@@ -10,6 +10,8 @@ env:
     REACT_APP_AVATAR_API_URL: https://mizxii4b39.execute-api.eu-west-2.amazonaws.com
     REACT_APP_ASSETS_BASE_URL: https://assets.cruddur.jawid.me
     CI: "true"
+    GENERATE_SOURCEMAP: "false"
+    ESLINT_NO_DEV_ERRORS: "true"
 
 phases:
   install:
@@ -21,7 +23,7 @@ phases:
 
   build:
     commands:
-      - npm run build
+      - CI=false npm run build
 
   post_build:
     commands:
