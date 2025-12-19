@@ -1,0 +1,38 @@
+#! /usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+CFN_PATH="$ROOT_DIR/aws/cfn/backend-ecs/db-shell-service.yaml"
+
+# -------------------------------------------------------------------
+# Explicit deploy configuration
+# -------------------------------------------------------------------
+STACK_NAME="CrdSrvDbShell"
+REGION="eu-west-2"
+BUCKET="cfn-artifacts-225442939245-eu-west-2"
+
+# CloudFormation parameters
+NETWORKING_STACK="CrdNet"
+CLUSTER_STACK="CrdCluster"
+CONTAINER_IMAGE="225442939245.dkr.ecr.eu-west-2.amazonaws.com/db-rds:latest"
+
+echo "Deploying DB shell Service Stack"
+echo "Template: $CFN_PATH"
+echo "Stack:    $STACK_NAME"
+echo "Region:   $REGION"
+echo "Bucket:   $BUCKET"
+
+aws cloudformation deploy \
+  --stack-name "$STACK_NAME" \
+  --s3-bucket "$BUCKET" \
+  --s3-prefix db-shell-service \
+  --region "$REGION" \
+  --template-file "$CFN_PATH" \
+  --tags group=cruddur-db-shell \
+  --parameter-overrides \
+    NetworkingStack="$NETWORKING_STACK" \
+    ClusterStack="$CLUSTER_STACK" \
+    ContainerImage="$CONTAINER_IMAGE" \
+  --capabilities CAPABILITY_NAMED_IAM

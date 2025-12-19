@@ -1,0 +1,163 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  On-demand ECS service for opening a psql shell against RDS.
+  Runs zero tasks by default; scale up when you need an exec session.
+
+Parameters:
+  NetworkingStack:
+    Type: String
+    Default: CrdNet
+
+  ClusterStack:
+    Type: String
+    Default: CrdCluster
+
+  ServiceName:
+    Type: String
+    Default: db-shell
+
+  ContainerName:
+    Type: String
+    Default: db-shell
+
+  TaskFamily:
+    Type: String
+    Default: db-shell
+
+  ContainerImage:
+    Type: String
+    Default: 225442939245.dkr.ecr.eu-west-2.amazonaws.com/db-rds:latest
+
+  ServiceCpu:
+    Type: String
+    Default: '256'
+
+  ServiceMemory:
+    Type: String
+    Default: '512'
+
+  SecretsConnectionUrl:
+    Type: String
+    Default: 'arn:aws:ssm:eu-west-2:225442939245:parameter/cruddur/CONNECTION_URL'
+
+  LogGroupName:
+    Type: String
+    Default: /cruddur/db-rds
+
+Resources:
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Ref LogGroupName
+      RetentionInDays: 30
+
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CruddurDbShellExecutionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CruddurDbShellTaskRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DbShellExecCommand
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
+                Resource: '*'
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Ref TaskFamily
+      Cpu: !Ref ServiceCpu
+      Memory: !Ref ServiceMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+        - Name: !Ref ContainerName
+          Image: !Ref ContainerImage
+          Essential: true
+          Command:
+            - /bin/sh
+            - -c
+            - while true; do sleep 3600; done
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroupName
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: !Ref ServiceName
+          Environment:
+            - Name: PGSSLMODE
+              Value: prefer
+          Secrets:
+            - Name: CONNECTION_URL
+              ValueFrom: !Ref SecretsConnectionUrl
+            - Name: CONNECTION_URL_DB
+              ValueFrom: !Ref SecretsConnectionUrl
+
+  FargateService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - LogGroup
+    Properties:
+      Cluster:
+        Fn::ImportValue:
+          !Sub "${ClusterStack}ClusterName"
+      DesiredCount: 0
+      EnableECSManagedTags: true
+      EnableExecuteCommand: true
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - Fn::ImportValue:
+                !Sub "${ClusterStack}ServiceSecurityGroupId"
+          Subnets:
+            Fn::Split:
+              - ","
+              - Fn::ImportValue:
+                  !Sub "${NetworkingStack}PublicSubnetIds"
+      PlatformVersion: LATEST
+      PropagateTags: SERVICE
+      ServiceName: !Ref ServiceName
+      TaskDefinition: !Ref TaskDefinition
+
+Outputs:
+  DbShellServiceName:
+    Value: !Ref FargateService
+    Export:
+      Name: !Sub "${AWS::StackName}DbShellServiceName"
+
+  DbShellTaskDefinitionArn:
+    Value: !Ref TaskDefinition
+    Export:
+      Name: !Sub "${AWS::StackName}DbShellTaskDefinitionArn"
