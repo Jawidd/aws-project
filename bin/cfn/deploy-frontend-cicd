@@ -7,25 +7,43 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 CFN_PATH="$ROOT_DIR/aws/cfn/cicd/frontend-pipeline.yaml"
 
 STACK_NAME="CrdFrontendCiCd"
+FRONTEND_STACK_NAME="CrdSrvFrontend"
 REGION="eu-west-2"
 BUCKET="cfn-artifacts-225442939245-eu-west-2"
 
 GITHUB_BRANCH="prod"
 GITHUB_REPO="Jawidd/aws-project"
 
+FRONTEND_BUCKET_EXPORT="${FRONTEND_STACK_NAME}RootBucketName"
+CLOUDFRONT_DISTRIBUTION_ID_EXPORT="${FRONTEND_STACK_NAME}DistributionId"
+
 # Resolve frontend stack exports
 FRONTEND_BUCKET_NAME=$(aws cloudformation list-exports \
   --region "$REGION" \
-  --query "Exports[?Name=='CrdFrontendFrontendBucketName'].Value" \
+  --query "Exports[?Name=='${FRONTEND_BUCKET_EXPORT}'].Value" \
   --output text)
 
 CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudformation list-exports \
   --region "$REGION" \
-  --query "Exports[?Name=='CrdFrontendDistributionId'].Value" \
+  --query "Exports[?Name=='${CLOUDFRONT_DISTRIBUTION_ID_EXPORT}'].Value" \
   --output text)
 
-if [[ -z "$FRONTEND_BUCKET_NAME" || -z "$CLOUDFRONT_DISTRIBUTION_ID" ]]; then
-  echo "ERROR: Unable to resolve frontend stack exports"
+# Fallback: get distribution ID directly if export doesn't exist
+if [[ -z "$CLOUDFRONT_DISTRIBUTION_ID" || "$CLOUDFRONT_DISTRIBUTION_ID" == "None" ]]; then
+  DOMAIN_NAME=$(aws cloudformation list-exports \
+    --region "$REGION" \
+    --query "Exports[?Name=='${FRONTEND_STACK_NAME}DistributionDomainName'].Value" \
+    --output text)
+  
+  if [[ -n "$DOMAIN_NAME" && "$DOMAIN_NAME" != "None" ]]; then
+    CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudfront list-distributions \
+      --query "DistributionList.Items[?DomainName=='$DOMAIN_NAME'].Id" \
+      --output text)
+  fi
+fi
+
+if [[ -z "$FRONTEND_BUCKET_NAME" || "$FRONTEND_BUCKET_NAME" == "None" || -z "$CLOUDFRONT_DISTRIBUTION_ID" || "$CLOUDFRONT_DISTRIBUTION_ID" == "None" ]]; then
+  echo "ERROR: Unable to resolve frontend stack exports for stack $FRONTEND_STACK_NAME"
   exit 1
 fi
 
@@ -33,6 +51,7 @@ echo "Deploying Frontend CICD Stack"
 echo "Template:     $CFN_PATH"
 echo "Stack:        $STACK_NAME"
 echo "Region:       $REGION"
+echo "Frontend:     $FRONTEND_STACK_NAME"
 echo "Bucket:       $FRONTEND_BUCKET_NAME"
 echo "Distribution: $CLOUDFRONT_DISTRIBUTION_ID"
 

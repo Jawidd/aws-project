@@ -24,19 +24,9 @@ Parameters:
     Description: CloudFront distribution ID for frontend
 
 Resources:
-  ArtifactBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    Properties:
-      BucketName: !Sub "cruddur-frontend-cicd-${AWS::AccountId}-${AWS::Region}"
-      VersioningConfiguration:
-        Status: Enabled
 
-  CodeStarConnection:
-    Type: AWS::CodeStarConnections::Connection
-    Properties:
-      ConnectionName: !Sub "${AWS::StackName}-github"
-      ProviderType: GitHub
+
+
 
   CodeBuildRole:
     Type: AWS::IAM::Role
@@ -65,21 +55,23 @@ Resources:
                   - s3:GetObject
                   - s3:GetObjectVersion
                   - s3:PutObject
+                  - s3:DeleteObject
                 Resource:
-                  - !Sub "arn:aws:s3:::${ArtifactBucket}/*"
+                  - !Sub "arn:aws:s3:::cfn-artifacts-${AWS::AccountId}-${AWS::Region}/*"
                   - !Sub "arn:aws:s3:::${FrontendBucketName}/*"
 
               - Effect: Allow
                 Action:
                   - s3:ListBucket
+                  - s3:GetBucketLocation
                 Resource:
-                  - !Sub "arn:aws:s3:::${ArtifactBucket}"
+                  - !Sub "arn:aws:s3:::cfn-artifacts-${AWS::AccountId}-${AWS::Region}"
                   - !Sub "arn:aws:s3:::${FrontendBucketName}"
 
               - Effect: Allow
                 Action:
                   - cloudfront:CreateInvalidation
-                Resource: "*"
+                Resource: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistributionId}"
 
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
@@ -95,27 +87,14 @@ Resources:
         EnvironmentVariables:
           - Name: FRONTEND_BUCKET
             Value: !Ref FrontendBucketName
-          - Name: CLOUDFRONT_ID
+          - Name: CLOUDFRONT_DISTRIBUTION_ID
             Value: !Ref CloudFrontDistributionId
+      Cache:
+        Type: S3
+        Location: !Sub "cfn-artifacts-${AWS::AccountId}-${AWS::Region}/codebuild-cache"
       Source:
         Type: CODEPIPELINE
-        BuildSpec: |
-          version: 0.2
-          phases:
-            install:
-              runtime-versions:
-                nodejs: 18
-            pre_build:
-              commands:
-                - cd frontend-react-js
-                - npm ci
-            build:
-              commands:
-                - npm run build
-            post_build:
-              commands:
-                - aws s3 sync build/ s3://$FRONTEND_BUCKET --delete
-                - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths "/*"
+        BuildSpec: frontend-react-js/buildspec.yml
 
   CodePipelineRole:
     Type: AWS::IAM::Role
@@ -139,8 +118,8 @@ Resources:
                   - s3:PutObject
                   - s3:GetBucketVersioning
                 Resource:
-                  - !Sub "arn:aws:s3:::${ArtifactBucket}"
-                  - !Sub "arn:aws:s3:::${ArtifactBucket}/*"
+                  - !Sub "arn:aws:s3:::cfn-artifacts-${AWS::AccountId}-${AWS::Region}"
+                  - !Sub "arn:aws:s3:::cfn-artifacts-${AWS::AccountId}-${AWS::Region}/*"
 
               - Effect: Allow
                 Action:
@@ -151,7 +130,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - codestar-connections:UseConnection
-                Resource: !Ref CodeStarConnection
+                Resource: arn:aws:codeconnections:eu-west-2:225442939245:connection/b774dde0-c8da-4d70-8c29-69959959fc25
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -159,7 +138,7 @@ Resources:
       RoleArn: !GetAtt CodePipelineRole.Arn
       ArtifactStore:
         Type: S3
-        Location: !Ref ArtifactBucket
+        Location: !Sub "cfn-artifacts-${AWS::AccountId}-${AWS::Region}"
       Stages:
         - Name: Source
           Actions:
@@ -168,11 +147,11 @@ Resources:
                 Category: Source
                 Owner: AWS
                 Provider: CodeStarSourceConnection
-                Version: '2'
+                Version: '1'
               OutputArtifacts:
                 - Name: Source
               Configuration:
-                ConnectionArn: !Ref CodeStarConnection
+                ConnectionArn: arn:aws:codeconnections:eu-west-2:225442939245:connection/b774dde0-c8da-4d70-8c29-69959959fc25
                 FullRepositoryId: !Ref GithubRepo
                 BranchName: !Ref GitHubBranch
 
@@ -193,5 +172,4 @@ Outputs:
   PipelineName:
     Value: !Ref Pipeline
 
-  CodeStarConnectionArn:
-    Value: !Ref CodeStarConnection
+

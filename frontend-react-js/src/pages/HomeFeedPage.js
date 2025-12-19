@@ -24,8 +24,16 @@ export default function HomeFeedPage() {
         headers: { Authorization: `Bearer ${token}` },
         method: "GET"
       });
-      const resJson = await res.json();
-      if (res.status === 200) setActivities(resJson);
+      const contentType = res.headers.get('content-type') || '';
+      const isJson = contentType.includes('application/json');
+      const body = isJson ? await res.json() : await res.text();
+
+      if (!res.ok) {
+        console.error('Failed to load home feed', { status: res.status, body });
+        return;
+      }
+
+      setActivities(isJson ? body : []);
     } catch (err) {
       console.log(err);
     }
