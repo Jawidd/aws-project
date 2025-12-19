@@ -73,13 +73,28 @@ app = Flask(__name__)
 #     )
 #     got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
 
-# CORS - Allow all origins for development
-CORS(app, 
-     origins=["http://localhost:3000", "https://localhost:3000"],
-     expose_headers="location,link",
-     allow_headers=["content-type", "if-modified-since", "authorization"],
-     methods=["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"],
-     supports_credentials=True)
+# CORS configuration
+default_origins = [
+    "http://localhost:3000",
+    "https://localhost:3000"
+]
+
+# Allow prod domains when provided through env (ECS sets FRONTEND_URL/BACKEND_URL)
+env_origins = [
+    os.getenv("FRONTEND_URL"),
+    os.getenv("BACKEND_URL")
+]
+
+allowed_origins = [origin for origin in default_origins + env_origins if origin]
+
+CORS(
+    app,
+    origins=allowed_origins,
+    expose_headers="location,link",
+    allow_headers=["content-type", "if-modified-since", "authorization"],
+    methods=["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"],
+    supports_credentials=True
+)
 
 # -------------------------------
 # Rollbar Test
