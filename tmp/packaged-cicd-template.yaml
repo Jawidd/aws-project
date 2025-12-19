@@ -7,33 +7,22 @@ Parameters:
     Default: prod
   GithubRepo:
     Type: String
-    Default: omenking/aws-bootcamp-cruddur-2023
+    Default: Jawidd/aws-project
   ClusterStack:
     Type: String
   ServiceStack:
     Type: String
+  ArtifactBucketName:
+    Type: String
+    Default: cfn-artifacts-225442939245-eu-west-2
 Resources:
-  ArtifactBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    Properties:
-      BucketName:
-        Fn::Sub: cruddur-cicd-${AWS::AccountId}-${AWS::Region}
-      VersioningConfiguration:
-        Status: Enabled
   CodeBuildBakeImageStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.eu-west-2.amazonaws.com/cfn-artifacts-225442939245-eu-west-2/cicd-package/3fa47ed8504853ff0653235273ebf871.template
+      TemplateURL: https://s3.eu-west-2.amazonaws.com/cfn-artifacts-225442939245-eu-west-2/cicd-package/f1a97ef24315badc8cedbe2d6cebccad.template
       Parameters:
         ArtifactBucketName:
-          Ref: ArtifactBucket
-  CodeStarConnection:
-    Type: AWS::CodeStarConnections::Connection
-    Properties:
-      ConnectionName:
-        Fn::Sub: ${AWS::StackName}-github
-      ProviderType: GitHub
+          Ref: ArtifactBucketName
   CodePipelineRole:
     Type: AWS::IAM::Role
     Properties:
@@ -56,8 +45,8 @@ Resources:
             - s3:PutObject
             - s3:GetBucketVersioning
             Resource:
-            - Fn::Sub: ${ArtifactBucket}/*
-            - Ref: ArtifactBucket
+            - Fn::Sub: arn:aws:s3:::${ArtifactBucketName}/*
+            - Fn::Sub: arn:aws:s3:::${ArtifactBucketName}
           - Effect: Allow
             Action:
             - codebuild:BatchGetBuilds
@@ -79,8 +68,7 @@ Resources:
           - Effect: Allow
             Action:
             - codestar-connections:UseConnection
-            Resource:
-              Ref: CodeStarConnection
+            Resource: arn:aws:codeconnections:eu-west-2:225442939245:connection/b774dde0-c8da-4d70-8c29-69959959fc25
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
@@ -91,7 +79,7 @@ Resources:
       ArtifactStore:
         Type: S3
         Location:
-          Ref: ArtifactBucket
+          Ref: ArtifactBucketName
       Stages:
       - Name: Source
         Actions:
@@ -100,12 +88,11 @@ Resources:
             Category: Source
             Owner: AWS
             Provider: CodeStarSourceConnection
-            Version: '2'
+            Version: '1'
           OutputArtifacts:
           - Name: Source
           Configuration:
-            ConnectionArn:
-              Ref: CodeStarConnection
+            ConnectionArn: arn:aws:codeconnections:eu-west-2:225442939245:connection/b774dde0-c8da-4d70-8c29-69959959fc25
             FullRepositoryId:
               Ref: GithubRepo
             BranchName:
