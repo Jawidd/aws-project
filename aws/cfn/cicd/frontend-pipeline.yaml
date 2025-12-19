@@ -13,7 +13,7 @@ Parameters:
 
   GithubRepo:
     Type: String
-    Default: omenking/aws-bootcamp-cruddur-2023
+    Default: Jawidd/aws-project
 
   FrontendBucketName:
     Type: String

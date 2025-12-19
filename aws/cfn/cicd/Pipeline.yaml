@@ -13,7 +13,7 @@ Parameters:
 
   GithubRepo:
     Type: String
-    Default: omenking/aws-bootcamp-cruddur-2023
+    Default: Jawidd/aws-project
 
   ClusterStack:
     Type: String
@@ -21,27 +21,17 @@ Parameters:
   ServiceStack:
     Type: String
 
-Resources:
-  ArtifactBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    Properties:
-      BucketName: !Sub "cruddur-cicd-${AWS::AccountId}-${AWS::Region}"
-      VersioningConfiguration:
-        Status: Enabled
+  ArtifactBucketName:
+    Type: String
+    Default: cfn-artifacts-225442939245-eu-west-2
 
+Resources:
   CodeBuildBakeImageStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: codebuild-bake/codebuild-bake.yaml
       Parameters:
-        ArtifactBucketName: !Ref ArtifactBucket
-
-  CodeStarConnection:
-    Type: AWS::CodeStarConnections::Connection
-    Properties:
-      ConnectionName: !Sub "${AWS::StackName}-github"
-      ProviderType: GitHub
+        ArtifactBucketName: !Ref ArtifactBucketName
 
   CodePipelineRole:
     Type: AWS::IAM::Role
@@ -65,8 +55,8 @@ Resources:
                   - s3:PutObject
                   - s3:GetBucketVersioning
                 Resource:
-                  - !Sub "${ArtifactBucket}/*"
-                  - !Ref ArtifactBucket
+                  - !Sub "arn:aws:s3:::${ArtifactBucketName}/*"
+                  - !Sub "arn:aws:s3:::${ArtifactBucketName}"
               - Effect: Allow
                 Action:
                   - codebuild:BatchGetBuilds
@@ -85,7 +75,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - codestar-connections:UseConnection
-                Resource: !Ref CodeStarConnection
+                Resource: arn:aws:codeconnections:eu-west-2:225442939245:connection/b774dde0-c8da-4d70-8c29-69959959fc25
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -93,7 +83,7 @@ Resources:
       RoleArn: !GetAtt CodePipelineRole.Arn
       ArtifactStore:
         Type: S3
-        Location: !Ref ArtifactBucket
+        Location: !Ref ArtifactBucketName
       Stages:
         - Name: Source
           Actions:
@@ -102,11 +92,11 @@ Resources:
                 Category: Source
                 Owner: AWS
                 Provider: CodeStarSourceConnection
-                Version: '2'
+                Version: '1'
               OutputArtifacts:
                 - Name: Source
               Configuration:
-                ConnectionArn: !Ref CodeStarConnection
+                ConnectionArn: arn:aws:codeconnections:eu-west-2:225442939245:connection/b774dde0-c8da-4d70-8c29-69959959fc25
                 FullRepositoryId: !Ref GithubRepo
                 BranchName: !Ref GitHubBranch
 
