@@ -1,0 +1,47 @@
+#! /usr/bin/env bash
+set -euo pipefail
+
+REGION="eu-west-2"
+CLUSTER_STACK="CrdCluster"
+SERVICE_STACK="CrdSrvDbShell"
+CONTAINER_NAME="db-shell"
+COMMAND="${1:-/bin/sh}"
+
+cluster_name=$(aws cloudformation describe-stacks \
+  --stack-name "$CLUSTER_STACK" \
+  --region "$REGION" \
+  --query "Stacks[0].Outputs[?OutputKey=='ClusterName'].OutputValue" \
+  --output text)
+
+service_name=$(aws cloudformation describe-stacks \
+  --stack-name "$SERVICE_STACK" \
+  --region "$REGION" \
+  --query "Stacks[0].Outputs[?OutputKey=='DbShellServiceName'].OutputValue" \
+  --output text)
+
+if [[ -z "$cluster_name" || -z "$service_name" ]]; then
+  echo "Cluster or service name could not be resolved. Have you deployed both stacks?"
+  exit 1
+fi
+
+task_arn=$(aws ecs list-tasks \
+  --region "$REGION" \
+  --cluster "$cluster_name" \
+  --service-name "$service_name" \
+  --desired-status RUNNING \
+  --query 'taskArns[0]' \
+  --output text)
+
+if [[ "$task_arn" == "None" || -z "$task_arn" ]]; then
+  echo "No running tasks found for $service_name. Scale the service up first."
+  exit 1
+fi
+
+echo "Connecting to $task_arn ($CONTAINER_NAME)..."
+aws ecs execute-command \
+  --region "$REGION" \
+  --cluster "$cluster_name" \
+  --task "$task_arn" \
+  --container "$CONTAINER_NAME" \
+  --interactive \
+  --command "$COMMAND"

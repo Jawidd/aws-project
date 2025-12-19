@@ -1,0 +1,37 @@
+#! /usr/bin/env bash
+set -euo pipefail
+
+REGION="eu-west-2"
+CLUSTER_STACK="CrdCluster"
+SERVICE_STACK="CrdSrvDbShell"
+
+cluster_name=$(aws cloudformation describe-stacks \
+  --stack-name "$CLUSTER_STACK" \
+  --region "$REGION" \
+  --query "Stacks[0].Outputs[?OutputKey=='ClusterName'].OutputValue" \
+  --output text)
+
+service_name=$(aws cloudformation describe-stacks \
+  --stack-name "$SERVICE_STACK" \
+  --region "$REGION" \
+  --query "Stacks[0].Outputs[?OutputKey=='DbShellServiceName'].OutputValue" \
+  --output text)
+
+if [[ -z "$cluster_name" || -z "$service_name" ]]; then
+  echo "Cluster or service name could not be resolved. Have you deployed both stacks?"
+  exit 1
+fi
+
+echo "Scaling db-shell service to 1 task..."
+aws ecs update-service \
+  --region "$REGION" \
+  --cluster "$cluster_name" \
+  --service "$service_name" \
+  --desired-count 1
+
+aws ecs wait services-stable \
+  --region "$REGION" \
+  --cluster "$cluster_name" \
+  --services "$service_name"
+
+echo "db-shell service scaled to 1."
