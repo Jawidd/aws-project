@@ -16,7 +16,7 @@ BUCKET="cfn-artifacts-225442939245-eu-west-2"
 
 # CloudFormation parameters
 GITHUB_BRANCH="prod"
-GITHUB_REPO="omenking/aws-bootcamp-cruddur-2023"
+GITHUB_REPO="Jawidd/aws-project"
 CLUSTER_STACK="CrdCluster"
 SERVICE_STACK="CrdSrvBackendFlask"
 

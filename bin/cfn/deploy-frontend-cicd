@@ -11,7 +11,7 @@ REGION="eu-west-2"
 BUCKET="cfn-artifacts-225442939245-eu-west-2"
 
 GITHUB_BRANCH="prod"
-GITHUB_REPO="omenking/aws-bootcamp-cruddur-2023"
+GITHUB_REPO="Jawidd/aws-project"
 
 # Resolve frontend stack exports
 FRONTEND_BUCKET_NAME=$(aws cloudformation list-exports \

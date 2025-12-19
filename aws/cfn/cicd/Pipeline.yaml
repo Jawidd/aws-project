@@ -64,6 +64,8 @@ Resources:
                 Resource: !GetAtt CodeBuildBakeImageStack.Outputs.CodeBuildProjectArn
               - Effect: Allow
                 Action:
+                  - ecs:DescribeClusters
+                  - ecs:ListServices
                   - ecs:DescribeServices
                   - ecs:DescribeTaskDefinition
                   - ecs:DescribeTasks
