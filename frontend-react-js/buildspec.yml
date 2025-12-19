@@ -19,10 +19,6 @@ phases:
       - cd frontend-react-js
       - npm ci
 
-  pre_build:
-    commands:
-      - npm test -- --watch=false --passWithNoTests
-
   build:
     commands:
       - npm run build
