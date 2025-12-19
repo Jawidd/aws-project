@@ -5,7 +5,7 @@ RUN apk add --no-cache bash
 WORKDIR /workspace
 
 # Include DB helper scripts so they are available inside the exec session
-COPY backend-flask/bin/db /opt/db-scripts
+COPY backend-flask/db /opt/db-scripts
 
 ENV PATH="/opt/db-scripts:${PATH}"
 
