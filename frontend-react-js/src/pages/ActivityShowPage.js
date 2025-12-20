@@ -1,17 +1,25 @@
 import './ActivityShowPage.css';
 import React from "react";
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 import DesktopNavigation from '../components/DesktopNavigation';
 import DesktopSidebar from '../components/DesktopSidebar';
-import ActivityContent from '../components/ActivityContent';
+import ActivityShowItem from '../components/ActivityShowItem';
+import ReplyForm from '../components/ReplyForm';
+import Replies from '../components/Replies';
+import ActivityForm from '../components/ActivityForm';
+import { checkAuth } from '../lib/CheckAuth';
 
 export default function ActivityShowPage() {
   const [activity, setActivity] = React.useState(null);
   const [replies, setReplies] = React.useState([]);
+  const [popped, setPopped] = React.useState(false);
+  const [poppedReply, setPoppedReply] = React.useState(false);
+  const [replyActivity, setReplyActivity] = React.useState(null);
   const [user, setUser] = React.useState(null);
   const dataFetchedRef = React.useRef(false);
   const params = useParams();
+  const navigate = useNavigate();
 
   const loadData = async () => {
     try {
@@ -30,30 +38,48 @@ export default function ActivityShowPage() {
     if (dataFetchedRef.current) return;
     dataFetchedRef.current = true;
     loadData();
+    checkAuth(setUser);
   }, []);
+
+  const goBack = () => navigate(-1);
+
+  let el_activity = null;
+  if (activity) {
+    el_activity = (
+      <ActivityShowItem
+        expanded={true}
+        setReplyActivity={setReplyActivity}
+        setPopped={setPoppedReply}
+        activity={activity}
+      />
+    );
+  }
 
   return (
     <article>
-      <DesktopNavigation user={user} active={'home'} />
+      <DesktopNavigation user={user} active={'home'} setPopped={setPopped} />
       <div className='content'>
+        <ActivityForm
+          popped={popped}
+          setPopped={setPopped}
+        />
+        <ReplyForm
+          activity={replyActivity || activity}
+          popped={poppedReply}
+          setReplies={setReplies}
+          setPopped={setPoppedReply}
+        />
         <div className='activity_feed'>
-          <div className='activity_feed_heading'>
-            <div className='title'>Activity</div>
+          <div className='activity_feed_heading flex'>
+            <div className='back' onClick={goBack}>&larr;</div>
+            <div className='title'>Crud</div>
           </div>
-          {activity && (
-            <div className="activity_item_full">
-              <ActivityContent activity={activity} />
-            </div>
-          )}
-          {replies && replies.length > 0 && (
-            <div className="replies_list">
-              {replies.map((reply) => (
-                <div key={reply.uuid} className="activity_item_full">
-                  <ActivityContent activity={reply} />
-                </div>
-              ))}
-            </div>
-          )}
+          {el_activity}
+          <Replies
+            setReplyActivity={setReplyActivity}
+            setPopped={setPoppedReply}
+            replies={replies}
+          />
         </div>
       </div>
       <DesktopSidebar user={user} />

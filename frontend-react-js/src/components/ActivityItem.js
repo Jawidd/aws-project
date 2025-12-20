@@ -1,5 +1,6 @@
 import './ActivityItem.css';
 
+import { useNavigate } from "react-router-dom";
 import ActivityContent  from '../components/ActivityContent';
 import ActivityActionReply  from '../components/ActivityActionReply';
 import ActivityActionRepost  from '../components/ActivityActionRepost';
@@ -8,6 +9,17 @@ import ActivityActionShare  from '../components/ActivityActionShare';
 
 
 export default function ActivityItem(props) {
+  const navigate = useNavigate();
+
+  const click = (event) => {
+    event.preventDefault();
+    if (event.target.closest('.action')) {
+      return;
+    }
+    const url = `/@${props.activity.handle}/status/${props.activity.uuid}`;
+    navigate(url);
+    return false;
+  }
 
   let replies;
   if (props.activity.replies) {
@@ -24,7 +36,7 @@ export default function ActivityItem(props) {
   }
 
   return (
-    <div className='activity_item'>
+    <div className='activity_item clickable' onClick={click}>
       <ActivityContent activity={props.activity} />
       <div className="activity_actions">
         <ActivityActionReply setReplyActivity={props.setReplyActivity} activity={props.activity} setPopped={props.setPopped} activity_uuid={props.activity.uuid} count={props.activity.replies_count}/>
