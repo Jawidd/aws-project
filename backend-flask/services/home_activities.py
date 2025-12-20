@@ -31,8 +31,8 @@ class HomeActivities:
               SELECT 
                 activities.uuid,
                 activities.user_uuid,
-                users.preferred_username,
                 users.handle,
+                COALESCE(users.full_name, users.preferred_username, users.handle) AS display_name,
                 activities.message,
                 activities.replies_count,
                 activities.reposts_count,
@@ -42,9 +42,9 @@ class HomeActivities:
                 CASE WHEN likes.user_uuid IS NOT NULL THEN true ELSE false END as liked,
                 users.avatar_url
               FROM public.activities
-              LEFT JOIN public.users ON users.uuid = activities.user_uuid
+              JOIN public.users ON users.uuid = activities.user_uuid
               LEFT JOIN public.likes ON likes.activity_uuid = activities.uuid AND likes.user_uuid = %s
-              WHERE activities.reply_to_activity_uuid IS NULL
+              WHERE activities.reply_to_activity_uuid IS NULL AND activities.is_deleted = false
               ORDER BY activities.created_at DESC
             """, (current_user_uuid,))
           else:
@@ -52,8 +52,8 @@ class HomeActivities:
               SELECT 
                 activities.uuid,
                 activities.user_uuid,
-                users.preferred_username,
                 users.handle,
+                COALESCE(users.full_name, users.preferred_username, users.handle) AS display_name,
                 activities.message,
                 activities.replies_count,
                 activities.reposts_count,
@@ -63,8 +63,8 @@ class HomeActivities:
                 false as liked,
                 users.avatar_url
               FROM public.activities
-              LEFT JOIN public.users ON users.uuid = activities.user_uuid
-              WHERE activities.reply_to_activity_uuid IS NULL
+              JOIN public.users ON users.uuid = activities.user_uuid
+              WHERE activities.reply_to_activity_uuid IS NULL AND activities.is_deleted = false
               ORDER BY activities.created_at DESC
             """)
           main_activities = cur.fetchall()
@@ -74,41 +74,41 @@ class HomeActivities:
             cur.execute("""
               SELECT 
                 activities.uuid,
+                activities.reply_to_activity_uuid,
                 activities.user_uuid,
-                users.preferred_username,
                 users.handle,
+                COALESCE(users.full_name, users.preferred_username, users.handle) AS display_name,
                 activities.message,
                 activities.likes_count,
                 activities.replies_count,
                 activities.reposts_count,
-                activities.reply_to_activity_uuid,
                 activities.created_at,
                 CASE WHEN likes.user_uuid IS NOT NULL THEN true ELSE false END as liked,
                 users.avatar_url
               FROM public.activities
-              LEFT JOIN public.users ON users.uuid = activities.user_uuid
+              JOIN public.users ON users.uuid = activities.user_uuid
               LEFT JOIN public.likes ON likes.activity_uuid = activities.uuid AND likes.user_uuid = %s
-              WHERE activities.reply_to_activity_uuid IS NOT NULL
+              WHERE activities.reply_to_activity_uuid IS NOT NULL AND activities.is_deleted = false
               ORDER BY activities.created_at DESC
             """, (current_user_uuid,))
           else:
             cur.execute("""
               SELECT 
                 activities.uuid,
+                activities.reply_to_activity_uuid,
                 activities.user_uuid,
-                users.preferred_username,
                 users.handle,
+                COALESCE(users.full_name, users.preferred_username, users.handle) AS display_name,
                 activities.message,
                 activities.likes_count,
                 activities.replies_count,
                 activities.reposts_count,
-                activities.reply_to_activity_uuid,
                 activities.created_at,
                 false as liked,
                 users.avatar_url
               FROM public.activities
-              LEFT JOIN public.users ON users.uuid = activities.user_uuid
-              WHERE activities.reply_to_activity_uuid IS NOT NULL
+              JOIN public.users ON users.uuid = activities.user_uuid
+              WHERE activities.reply_to_activity_uuid IS NOT NULL AND activities.is_deleted = false
               ORDER BY activities.created_at DESC
             """)
           replies = cur.fetchall()
@@ -116,20 +116,21 @@ class HomeActivities:
       # Group replies by parent activity
       replies_dict = {}
       for reply in replies:
-        parent_uuid = str(reply[7])
+        parent_uuid = str(reply[1])
         if parent_uuid not in replies_dict:
           replies_dict[parent_uuid] = []
         replies_dict[parent_uuid].append({
           'uuid': str(reply[0]),
           'reply_to_activity_uuid': parent_uuid,
-          'handle': reply[2],
-          'message': reply[3],
-          'likes_count': reply[4],
-          'replies_count': reply[5],
-          'reposts_count': reply[6],
-          'created_at': reply[8].isoformat(),
-          'liked': reply[9],
-          'avatar_url': reply[10]
+          'handle': reply[3],
+          'display_name': reply[4],
+          'message': reply[5],
+          'likes_count': reply[6] or 0,
+          'replies_count': reply[7] or 0,
+          'reposts_count': reply[8] or 0,
+          'created_at': reply[9].isoformat(),
+          'liked': reply[10],
+          'avatar_url': reply[11]
         })
       
       # Build results with public activities
@@ -139,14 +140,15 @@ class HomeActivities:
         activity_data = {
           'uuid': activity_uuid,
           'handle': activity[2],
-          'message': activity[3],
-          'created_at': activity[8].isoformat(),
-          'expires_at': activity[7].isoformat() if activity[7] else None,
-          'likes_count': activity[6],
-          'replies_count': activity[4],
-          'reposts_count': activity[5],
-          'liked': activity[9],
-          'avatar_url': activity[10],
+          'display_name': activity[3],
+          'message': activity[4],
+          'replies_count': activity[5] or 0,
+          'reposts_count': activity[6] or 0,
+          'likes_count': activity[7] or 0,
+          'expires_at': activity[8].isoformat() if activity[8] else None,
+          'created_at': activity[9].isoformat(),
+          'liked': activity[10],
+          'avatar_url': activity[11],
           'replies': replies_dict.get(activity_uuid, [])
         }
         

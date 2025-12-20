@@ -59,9 +59,9 @@ class ShowActivity:
           'handle': activity_row[1],
           'display_name': activity_row[2],
           'message': activity_row[3],
-          'replies_count': activity_row[4],
-          'reposts_count': activity_row[5],
-          'likes_count': activity_row[6],
+          'replies_count': activity_row[4] or 0,
+          'reposts_count': activity_row[5] or 0,
+          'likes_count': activity_row[6] or 0,
           'expires_at': activity_row[7].isoformat() if activity_row[7] else None,
           'created_at': activity_row[8].isoformat() if activity_row[8] else None,
           'reply_to_activity_uuid': str(activity_row[9]) if activity_row[9] else None,
@@ -93,27 +93,32 @@ class ShowActivity:
         )
         reply_rows = cur.fetchall()
 
+        reply_ids = [row[0] for row in reply_rows]
+        liked_reply_ids = set()
+        if current_user_uuid and reply_ids:
+          cur.execute(
+            """
+            SELECT activity_uuid 
+            FROM public.likes 
+            WHERE user_uuid = %s AND activity_uuid = ANY(%s)
+            """,
+            (current_user_uuid, reply_ids)
+          )
+          liked_reply_ids = {row[0] for row in cur.fetchall()}
+
         replies = []
         for reply in reply_rows:
-          reply_liked = False
-          if current_user_uuid:
-            cur.execute(
-              "SELECT 1 FROM public.likes WHERE activity_uuid = %s AND user_uuid = %s",
-              (reply[0], current_user_uuid)
-            )
-            reply_liked = cur.fetchone() is not None
-
           replies.append({
             'uuid': str(reply[0]),
             'reply_to_activity_uuid': str(reply[1]) if reply[1] else None,
             'handle': reply[2],
             'display_name': reply[3],
             'message': reply[4],
-            'replies_count': reply[5],
-            'reposts_count': reply[6],
-            'likes_count': reply[7],
+            'replies_count': reply[5] or 0,
+            'reposts_count': reply[6] or 0,
+            'likes_count': reply[7] or 0,
             'created_at': reply[8].isoformat() if reply[8] else None,
-            'liked': reply_liked,
+            'liked': reply[0] in liked_reply_ids,
             'avatar_url': reply[10]
           })
 

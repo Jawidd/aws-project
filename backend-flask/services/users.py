@@ -113,7 +113,14 @@ class UsersService:
                     if existing_uuids:
                         placeholders = ','.join(['%s'] * len(existing_uuids))
                         query = f"""
-                            SELECT uuid, preferred_username, full_name, handle, email, bio, avatar_url
+                            SELECT 
+                              uuid, 
+                              COALESCE(full_name, preferred_username, handle) AS display_name,
+                              full_name,
+                              handle,
+                              email,
+                              bio,
+                              avatar_url
                             FROM public.users
                             WHERE uuid != %s AND uuid NOT IN ({placeholders})
                             ORDER BY full_name, handle
@@ -122,7 +129,14 @@ class UsersService:
                         params = [current_user_uuid] + existing_uuids
                     else:
                         query = """
-                            SELECT uuid, preferred_username, full_name, handle, email, bio, avatar_url
+                            SELECT 
+                              uuid, 
+                              COALESCE(full_name, preferred_username, handle) AS display_name,
+                              full_name,
+                              handle,
+                              email,
+                              bio,
+                              avatar_url
                             FROM public.users
                             WHERE uuid != %s
                             ORDER BY full_name, handle
@@ -134,7 +148,7 @@ class UsersService:
                     users = cur.fetchall()
                     return [{
                         "uuid": str(user[0]),
-                        "preferred_username": user[1],
+                        "display_name": user[1],
                         "full_name": user[2],
                         "handle": user[3],
                         "email": user[4],
