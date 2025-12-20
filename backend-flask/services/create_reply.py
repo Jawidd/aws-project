@@ -28,14 +28,19 @@ class CreateReply:
       with pool.connection() as conn:
         with conn.cursor() as cur:
           cognito_user_id = user_claims.get('sub')
-          cur.execute("SELECT uuid, handle FROM public.users WHERE cognito_user_id = %s", (cognito_user_id,))
+          cur.execute("""
+            SELECT uuid, handle, full_name, preferred_username, avatar_url 
+            FROM public.users 
+            WHERE cognito_user_id = %s
+          """, (cognito_user_id,))
           user_result = cur.fetchone()
           
           if not user_result:
             model['errors'] = ['user_not_found']
             return model
           
-          user_uuid, user_handle = user_result
+          user_uuid, user_handle, full_name, preferred_username, avatar_url = user_result
+          display_name = full_name or preferred_username or user_handle
           now = datetime.now(timezone.utc).astimezone()
           reply_uuid = uuid.uuid4()
 
@@ -43,9 +48,15 @@ class CreateReply:
           # Increment replies_count on the parent activity
           cur.execute("""
             UPDATE public.activities
-            SET replies_count = COALESCE(replies_count, 0) + 1
+            SET 
+              replies_count = COALESCE(replies_count, 0) + 1,
+              updated_at = CURRENT_TIMESTAMP
             WHERE uuid = %s
           """, (activity_uuid,))
+
+          if cur.rowcount == 0:
+            model['errors'] = ['activity_not_found']
+            return model
           
           cur.execute("""
             INSERT INTO public.activities (uuid, user_uuid, message, reply_to_activity_uuid, created_at)
@@ -60,9 +71,15 @@ class CreateReply:
 
     model['data'] = {
       'uuid': str(reply_uuid),
+      'reply_to_activity_uuid': activity_uuid,
       'handle': user_handle,
+      'display_name': display_name,
       'message': message,
+      'likes_count': 0,
+      'replies_count': 0,
+      'reposts_count': 0,
       'created_at': now.isoformat(),
-      'reply_to_activity_uuid': activity_uuid
+      'liked': False,
+      'avatar_url': avatar_url
     }
     return model

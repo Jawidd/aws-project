@@ -49,14 +49,19 @@ class CreateActivity:
         with conn.cursor() as cur:
           # Get user by cognito_user_id from JWT claims
           cognito_user_id = user_claims.get('sub')
-          cur.execute("SELECT uuid, handle FROM public.users WHERE cognito_user_id = %s", (cognito_user_id,))
+          cur.execute("""
+            SELECT uuid, handle, full_name, preferred_username, avatar_url 
+            FROM public.users 
+            WHERE cognito_user_id = %s
+          """, (cognito_user_id,))
           user_result = cur.fetchone()
           
           if not user_result:
             model['errors'] = ['user_not_found']
             return model
           
-          user_uuid, user_handle = user_result
+          user_uuid, user_handle, full_name, preferred_username, avatar_url = user_result
+          display_name = full_name or preferred_username or user_handle
           
           cur.execute("""
             INSERT INTO public.activities (uuid, user_uuid, message, expires_at)
@@ -72,8 +77,15 @@ class CreateActivity:
     model['data'] = {
       'uuid': str(activity_uuid),
       'handle': user_handle,
+      'display_name': display_name,
       'message': message,
+      'replies_count': 0,
+      'reposts_count': 0,
+      'likes_count': 0,
       'created_at': now.isoformat(),
-      'expires_at': expires_at.isoformat()
+      'expires_at': expires_at.isoformat(),
+      'liked': False,
+      'avatar_url': avatar_url,
+      'replies': []
     }
     return model
