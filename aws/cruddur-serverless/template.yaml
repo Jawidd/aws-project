@@ -35,6 +35,16 @@ Parameters:
     Type: String
     Default: "https://cruddur.jawid.me,http://localhost:3000,https://localhost:3000"
 
+  NetworkingStack:
+    Type: String
+    Description: Networking stack name for VPC and subnets
+    Default: CrdNet
+
+  DatabaseStack:
+    Type: String
+    Description: Database stack name for RDS security group
+    Default: CrdDb
+
 Resources:
   # Messaging + WebSocket tables and handlers
   DynamoDBMessagingStack:
@@ -61,6 +71,8 @@ Resources:
         CreateAssetsBucket: !Ref CreateAssetsBucket
         CorsAllowedOrigins: !Ref CorsAllowedOrigins
         DatabaseUrl: !Ref DatabaseUrl
+        NetworkingStack: !Ref NetworkingStack
+        DatabaseStack: !Ref DatabaseStack
 
   AvatarUploadStack:
     Type: AWS::CloudFormation::Stack
