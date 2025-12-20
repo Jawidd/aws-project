@@ -36,10 +36,55 @@ Parameters:
     Type: Number
     Default: 30
 
+  NetworkingStack:
+    Type: String
+    Description: Networking stack name for VPC and subnets
+    Default: CrdNet
+
+  DatabaseStack:
+    Type: String
+    Description: Database stack name for RDS security group
+    Default: CrdDb
+
 Conditions:
   ShouldCreateBucket: !Equals [!Ref CreateAssetsBucket, 'true']
 
 Resources:
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::StackName}LambdaSG"
+      GroupDescription: Security Group for Lambda functions
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${NetworkingStack}VpcId"
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          DestinationSecurityGroupId:
+            Fn::ImportValue:
+              !Sub "${DatabaseStack}DBSecurityGroupId"
+          Description: Lambda to RDS PostgreSQL
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS outbound for AWS services
+
+  # Allow Lambda access to RDS
+  RDSLambdaIngressRule:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Fn::ImportValue:
+          !Sub "${DatabaseStack}DBSecurityGroupId"
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId: !Ref LambdaSecurityGroup
+      Description: Lambda to RDS PostgreSQL
+
   AssetsBucket:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-s3-bucket.html
     Type: AWS::S3::Bucket
@@ -107,11 +152,20 @@ Resources:
       FunctionName: avatar-db-consumer
       CodeUri: functions/avatar_db_consumer/
       Handler: app.lambda_handler
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds:
+          Fn::Split:
+            - ","
+            - Fn::ImportValue:
+                !Sub "${NetworkingStack}PrivateSubnetIds"
       Environment:
         Variables:
           ASSETS_BASE_URL: !Sub "https://${AssetsBucketName}"
           DATABASE_URL: !Ref DatabaseUrl
       Policies:
+        - AWSLambdaVPCAccessExecutionRole
         - AWSLambdaBasicExecutionRole
       Events:
         AvatarEvents:
