@@ -9,6 +9,7 @@ export default function ProfileForm(props) {
   const [bio, setBio] = React.useState('');
   const [displayName, setDisplayName] = React.useState('');
   const [avatarPreview, setAvatarPreview] = React.useState('');
+  const [avatarFile, setAvatarFile] = React.useState(null);
   const [uploadingAvatar, setUploadingAvatar] = React.useState(false);
   const [uploadMessage, setUploadMessage] = React.useState('');
   const [uploadError, setUploadError] = React.useState('');
@@ -72,61 +73,59 @@ export default function ProfileForm(props) {
     return null;
   };
 
-  const handleAvatarChange = async (event) => {
+  const handleAvatarChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setUploadError('');
-    setUploadMessage('');
-    setUploadingAvatar(true);
-
     const previewUrl = URL.createObjectURL(file);
     setAvatarPreview(previewUrl);
-
-    const parts = file.name.split('.');
-    const extension = (parts.length > 1 ? parts.pop() : 'jpg');
-
-    try {
-      const uploadUrl = await requestPresignedUrl(extension, file.type);
-      const uploadRes = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { 'Content-Type': file.type },
-        body: file
-      });
-
-      if (!uploadRes.ok) {
-        throw new Error(`Upload failed with status ${uploadRes.status}`);
-      }
-
-      const previousUrl = props.profile?.avatar_url || "";
-      const refreshedProfile = await waitForProcessedAvatar(previousUrl);
-
-      if (refreshedProfile && props.updateUserProfile) {
-        props.updateUserProfile({
-          display_name: refreshedProfile.display_name || displayName,
-          bio: refreshedProfile.bio ?? bio,
-          avatar_url: refreshedProfile.avatar_url,
-          handle: refreshedProfile.handle,
-          uuid: refreshedProfile.uuid,
-          cognito_user_id: refreshedProfile.cognito_user_id
-        });
-        setAvatarPreview(refreshedProfile.avatar_url || previewUrl);
-        setUploadMessage("Avatar updated!");
-      } else {
-        setUploadMessage("Upload started. The image will refresh after processing.");
-      }
-    } catch (err) {
-      console.log(err);
-      setUploadError(err.message || 'Upload failed');
-      setAvatarPreview(props.profile.avatar_url || "");
-    } finally {
-      setUploadingAvatar(false);
-    }
+    setAvatarFile(file);
+    setUploadError('');
+    setUploadMessage('Avatar ready. Click Save to upload.');
   };
 
   const onsubmit = async (event) => {
     event.preventDefault();
     try {
+      // Upload avatar if a new file was selected
+      if (avatarFile) {
+        setUploadingAvatar(true);
+        setUploadError('');
+        setUploadMessage('Uploading avatar...');
+
+        const parts = avatarFile.name.split('.');
+        const extension = (parts.length > 1 ? parts.pop() : 'jpg');
+
+        const uploadUrl = await requestPresignedUrl(extension, avatarFile.type);
+        const uploadRes = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: { 'Content-Type': avatarFile.type },
+          body: avatarFile
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error(`Upload failed with status ${uploadRes.status}`);
+        }
+
+        const previousUrl = props.profile?.avatar_url || "";
+        const refreshedProfile = await waitForProcessedAvatar(previousUrl);
+
+        if (refreshedProfile && props.updateUserProfile) {
+          props.updateUserProfile({
+            display_name: refreshedProfile.display_name || displayName,
+            bio: refreshedProfile.bio ?? bio,
+            avatar_url: refreshedProfile.avatar_url,
+            handle: refreshedProfile.handle,
+            uuid: refreshedProfile.uuid,
+            cognito_user_id: refreshedProfile.cognito_user_id
+          });
+          setAvatarPreview(refreshedProfile.avatar_url || avatarPreview);
+          setUploadMessage("Avatar uploaded!");
+        } else {
+          setUploadMessage("Upload started. The image will refresh after processing.");
+        }
+      }
+
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/profile/update`
       const res = await fetch(backend_url, {
         method: "POST",
@@ -142,11 +141,11 @@ export default function ProfileForm(props) {
       });
       let data = await res.json();
       if (res.status === 200) {
-        // Update the user profile globally
         if (props.updateUserProfile) {
           props.updateUserProfile({
             bio: bio,
-            display_name: displayName
+            display_name: displayName,
+            avatar_url: avatarPreview || props.profile.avatar_url
           });
         }
         props.setPopped(false)
@@ -155,6 +154,9 @@ export default function ProfileForm(props) {
       }
     } catch (err) {
       console.log(err);
+      setUploadError(err.message || 'Upload failed');
+    } finally {
+      setUploadingAvatar(false);
     }
   }
 

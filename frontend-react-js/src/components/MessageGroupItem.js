@@ -8,7 +8,7 @@ export default function MessageGroupItem(props) {
 
 const classes = () => {
   let classes = ["message_group_item"];
-  if (params.handle === props.message_group.original_uuid){
+  if (params.uuid === props.message_group.original_uuid){
     classes.push('active')
   }
   if (props.hasNewMessage) {

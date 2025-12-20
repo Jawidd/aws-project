@@ -10,3 +10,8 @@
 - check a row: `SELECT uuid, handle FROM public.users;`
 - exit psql: `\q`
 - stop shell task: `bin/db/scale-db-shell-down` (not needed if you used run-db-shell)
+- \x on
+SELECT *
+FROM users
+WHERE email = 'jawid00786@gmail.com';
+\x off
