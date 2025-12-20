@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: |
+  AWS Cognito User Pool for Cruddur application user authentication
+  - User Pool with email authentication
+  - User Pool Client for application access
+  - Lambda trigger for post-confirmation
+  - Email verification configuration
+
+Parameters:
+  EnvironmentSelection:
+    Type: String
+    Description: The environment for the resources (dev or prod)
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+Resources:
+  CognitoUserPool:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cognito-userpool.html
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: cruddur-user-pool
+      EmailAuthenticationMessage: 'Your authentication code is {####}'
+      EmailVerificationMessage: 'Your verification code is {####}'
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      UsernameAttributes:
+        - email
+      UsernameConfiguration:
+        CaseSensitive: false
+      UserPoolTags:
+        Env: !Ref EnvironmentSelection
+      # Account recovery via email only
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      # Enable self sign up
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      # Enable automatic email verification
+      AutoVerifiedAttributes:
+        - email
+      # Additional required attributes
+      Schema:
+        - Name: name
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+      LambdaConfig:
+        PostConfirmation: !ImportValue CruddurPostConfirmationLambdaArnV2
+
+  CognitoLambdaPermission:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-permission.html
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !ImportValue CruddurPostConfirmationLambdaArnV2
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  AppClient:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cognito-userpoolclient.html
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: cruddur-app-client
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+Outputs:
+  UserPoolId:
+    Description: The ID of the Cognito User Pool
+    Value: !Ref CognitoUserPool
+    Export:
+      Name: !Sub "${AWS::StackName}UserPoolId"
+
+  UserPoolClientId:
+    Description: The ID of the Cognito User Pool Client
+    Value: !Ref AppClient
+    Export:
+      Name: !Sub "${AWS::StackName}UserPoolClientId"
+
+  UserPoolArn:
+    Description: The ARN of the Cognito User Pool
+    Value: !GetAtt CognitoUserPool.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}UserPoolArn"

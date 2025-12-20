@@ -44,18 +44,16 @@ Parameters:
 
   CorsAllowedOrigins:
     Type: String
-    Default: "https://cruddur.jawid.me,http://localhost:3000,https://localhost:3000"
+    Default: "https://cruddur.jawid.me"
     Description: Comma-delimited list of allowed CORS origins
 
   # Cognito Configuration ------
   CognitoUserPoolId:
     Type: String
-    Default: eu-west-2_Jwi9THX3b
     Description: Cognito User Pool ID for authentication
 
   CognitoUserPoolClientId:
     Type: String
-    Default: 1ls5p1vu83m5ahseab36ufk6vm
     Description: Cognito User Pool Client ID for authentication
 
   # Infrastructure Stack References ------
