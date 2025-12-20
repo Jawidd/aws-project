@@ -38,14 +38,19 @@ export default function ReplyForm(props) {
       });
       let data = await res.json();
       if (res.status === 200) {
-        let activities_deep_copy = JSON.parse(JSON.stringify(props.activities))
-        let found_activity = activities_deep_copy.find(function (element) {
-          return element.uuid === original_activity_uuid;
-        });
-        found_activity.replies_count++; 
-        found_activity.replies.push(data)
-
-        props.setActivities(activities_deep_copy);
+        if (props.setReplies) {
+          props.setReplies(current => [data, ...(current || [])]);
+        } else if (props.setActivities && props.activities) {
+          let activities_deep_copy = JSON.parse(JSON.stringify(props.activities))
+          let found_activity = activities_deep_copy.find(function (element) {
+            return element.uuid === original_activity_uuid;
+          });
+          if (found_activity) {
+            found_activity.replies_count++; 
+            found_activity.replies.push(data)
+            props.setActivities(activities_deep_copy);
+          }
+        }
         setCount(0)
         setMessage('')
         props.setPopped(false)

@@ -16,6 +16,7 @@
   border-radius: 12px;
   flex-shrink: 0;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  display: block;
 }
 
 .activity_content .activity_meta {
@@ -25,19 +26,32 @@
   margin-bottom: 8px;
 }
 
-.activity_content a.activity_identity {
+.activity_content .activity_identity {
   flex-grow: 1;
   text-decoration: none;
   font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-.activity_content a.activity_identity .display_name {
+.activity_content .activity_identity a {
+  text-decoration: none;
+  display: block;
+  flex-shrink: 1;
+}
+
+.activity_content .activity_identity .display_name {
   font-weight: 700;
   color: #fff;
   margin-right: 8px;
 }
 
-.activity_content a.activity_identity .handle {
+.activity_content .activity_identity .display_name:hover {
+  text-decoration: underline;
+}
+
+.activity_content  .activity_identity .handle {
   color: rgba(255, 255, 255, 0.6);
   font-weight: 500;
 }

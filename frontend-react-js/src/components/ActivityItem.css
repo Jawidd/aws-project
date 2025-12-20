@@ -8,6 +8,10 @@
   position: relative;
 }
 
+.activity_item.clickable {
+  cursor: pointer;
+}
+
 .activity_item::before {
   content: '';
   position: absolute;
@@ -173,4 +177,12 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: 13px;
   line-height: 1.4;
+}
+
+.activity_item.expanded .activity_content {
+  display: flex;
+}
+
+.activity_item.expanded .activity_content .activity_identity {
+  flex-grow: 1;
 }
