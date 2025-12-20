@@ -1,7 +1,7 @@
 .activity_content_wrap {
   display: flex;
   flex-direction: row;
-  align-items: start;
+  align-items: flex-start;
   gap: 16px;
 }
 
@@ -21,7 +21,7 @@
 .activity_content .activity_meta {
   display: flex;
   justify-content: space-between;
-  align-items: start;
+  align-items: flex-start;
   margin-bottom: 8px;
 }
 

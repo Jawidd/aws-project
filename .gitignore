@@ -22,6 +22,6 @@ aws/cfn/networking/config.toml
 
 tmp/packaged-cicd-template.yaml
 tmp/
-TO-DO.md
 
-/home/jawid/workspace/aws/aws-project/TO-DO.md
+_docs/*
+

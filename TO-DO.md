@@ -1,11 +1,21 @@
 #  CRUDDUR
 ## ✅ To-Do List
 
+
+
+curl -L \
+https://github.com/omenking/aws-bootcamp-cruddur-2023/commit/586714817a9af9a9218036543cda1344d91ff416.diff \
+-o 03-add_syn_tool.txt
+
+
+
+
+
 ### Problems: 
 
 - [] NOTRelevant- code[Q dev] is not working on vscode
 - [] NotImportant-force update flask service and task defin after new container push to ecr
-- [] minor: the new crud shoudl be placed at last, add-crud style is not nice, expirey reamining time of cruds shoudl be shown, more button on nav bar is empty, fix about privacy terms  pages, MORE should be hidden when navbar is in collapse state, still several progile images relateed to one user is stored in s3/processesed ,  add cover photo, make a lambda to update db and delete expired cruds or maybe update trending cruds, implement codepipeline for front and backend using cloudformation, should be able to requset for cruddur.jawid.me to run and will be gone again in 5 mins..... to avoid costs...,bootstrap should also create bucket(RootDomainName) because frontend cfn is no longer creating it,
+- [] minor: the new crud shoudl be placed at last, add-crud style is not nice, expirey reamining time of cruds shoudl be shown, more button on nav bar is empty, fix about privacy terms  pages, MORE should be hidden when navbar is in collapse state, still several progile images relateed to one user is stored in s3/processesed ,  add cover photo, make a lambda to update db and delete expired cruds or maybe update trending cruds, implement codepipeline for front and backend using cloudformation, should be able to requset for cruddur.jawid.me to run and will be gone again in 5 mins..... to avoid costs...,bootstrap should also create bucket(RootDomainName) because frontend cfn is no longer creating it, show an aws canvas on your website would be great.
 
 
 ### 🏗️ Current Structure: 
