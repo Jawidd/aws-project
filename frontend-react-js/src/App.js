@@ -10,6 +10,7 @@ import RecoverPage from './pages/RecoverPage';
 import MessageGroupsPage from './pages/MessageGroupsPage';
 import MessageGroupPage from './pages/MessageGroupPage';
 import ConfirmationPage from './pages/ConfirmationPage';
+import ActivityShowPage from './pages/ActivityShowPage';
 import AboutPage from './pages/AboutPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
   {
     path: "/@:handle",
     element: <UserFeedPage />
+  },
+  {
+    path: "/@:handle/status/:activity_uuid",
+    element: <ActivityShowPage />
   },
   {
     path: "/profile",

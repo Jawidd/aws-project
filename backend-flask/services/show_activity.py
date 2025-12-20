@@ -1,18 +1,123 @@
-from datetime import datetime, timedelta, timezone
-class ShowActivities:
-  def run(activity_uuid):
-    now = datetime.now(timezone.utc).astimezone()
-    results = [{
-      'uuid': '68f126b0-1ceb-4a33-88be-d90fa7109eee',
-      'handle':  'Andrew Brown',
-      'message': 'Cloud is fun!',
-      'created_at': (now - timedelta(days=2)).isoformat(),
-      'expires_at': (now + timedelta(days=5)).isoformat(),
-      'replies': {
-        'uuid': '26e12864-1c26-5c3a-9658-97a10f8fea67',
-        'handle':  'Worf',
-        'message': 'This post has no honor!',
-        'created_at': (now - timedelta(days=2)).isoformat()
-      }
-    }]
-    return results
+from lib.db import pool
+
+class ShowActivity:
+  """
+  Fetch a single activity and its replies.
+  """
+  def run(activity_uuid, user_claims=None):
+    current_user_uuid = None
+    if user_claims and user_claims.get('sub'):
+      with pool.connection() as conn:
+        with conn.cursor() as cur:
+          cur.execute(
+            "SELECT uuid FROM public.users WHERE cognito_user_id = %s",
+            (user_claims['sub'],)
+          )
+          row = cur.fetchone()
+          if row:
+            current_user_uuid = row[0]
+
+    with pool.connection() as conn:
+      with conn.cursor() as cur:
+        # Fetch the primary activity
+        cur.execute(
+          """
+          SELECT 
+            activities.uuid,
+            users.handle,
+            COALESCE(users.full_name, users.preferred_username, users.handle) AS display_name,
+            activities.message,
+            activities.replies_count,
+            activities.reposts_count,
+            activities.likes_count,
+            activities.expires_at,
+            activities.created_at,
+            activities.reply_to_activity_uuid,
+            activities.user_uuid,
+            users.avatar_url
+          FROM public.activities
+          LEFT JOIN public.users ON users.uuid = activities.user_uuid
+          WHERE activities.uuid = %s
+          """,
+          (activity_uuid,)
+        )
+        activity_row = cur.fetchone()
+
+        if not activity_row:
+          return {'error': 'activity_not_found'}
+
+        liked = False
+        if current_user_uuid:
+          cur.execute(
+            "SELECT 1 FROM public.likes WHERE activity_uuid = %s AND user_uuid = %s",
+            (activity_uuid, current_user_uuid)
+          )
+          liked = cur.fetchone() is not None
+
+        activity = {
+          'uuid': str(activity_row[0]),
+          'handle': activity_row[1],
+          'display_name': activity_row[2],
+          'message': activity_row[3],
+          'replies_count': activity_row[4],
+          'reposts_count': activity_row[5],
+          'likes_count': activity_row[6],
+          'expires_at': activity_row[7].isoformat() if activity_row[7] else None,
+          'created_at': activity_row[8].isoformat() if activity_row[8] else None,
+          'reply_to_activity_uuid': str(activity_row[9]) if activity_row[9] else None,
+          'liked': liked,
+          'avatar_url': activity_row[11]
+        }
+
+        # Fetch replies for this activity
+        cur.execute(
+          """
+          SELECT 
+            activities.uuid,
+            activities.reply_to_activity_uuid,
+            users.handle,
+            COALESCE(users.full_name, users.preferred_username, users.handle) AS display_name,
+            activities.message,
+            activities.replies_count,
+            activities.reposts_count,
+            activities.likes_count,
+            activities.created_at,
+            activities.user_uuid,
+            users.avatar_url
+          FROM public.activities
+          LEFT JOIN public.users ON users.uuid = activities.user_uuid
+          WHERE activities.reply_to_activity_uuid = %s
+          ORDER BY activities.created_at ASC
+          """,
+          (activity_uuid,)
+        )
+        reply_rows = cur.fetchall()
+
+        replies = []
+        for reply in reply_rows:
+          reply_liked = False
+          if current_user_uuid:
+            cur.execute(
+              "SELECT 1 FROM public.likes WHERE activity_uuid = %s AND user_uuid = %s",
+              (reply[0], current_user_uuid)
+            )
+            reply_liked = cur.fetchone() is not None
+
+          replies.append({
+            'uuid': str(reply[0]),
+            'reply_to_activity_uuid': str(reply[1]) if reply[1] else None,
+            'handle': reply[2],
+            'display_name': reply[3],
+            'message': reply[4],
+            'replies_count': reply[5],
+            'reposts_count': reply[6],
+            'likes_count': reply[7],
+            'created_at': reply[8].isoformat() if reply[8] else None,
+            'liked': reply_liked,
+            'avatar_url': reply[10]
+          })
+
+    return {
+      'activity': activity,
+      'replies': replies
+    }

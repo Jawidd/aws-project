@@ -239,8 +239,14 @@ def data_activities(claims):
     return (model['errors'], 422) if model['errors'] else (model['data'], 200)
 
 @app.route("/api/activities/<string:activity_uuid>", methods=['GET'])
-def data_show_activity(activity_uuid):
-    return show_activity.ShowActivity.run(activity_uuid=activity_uuid), 200
+@require_jwt(optional=True)
+def data_show_activity(claims, activity_uuid):
+    return show_activity.ShowActivity.run(activity_uuid=activity_uuid, user_claims=claims), 200
+
+@app.route("/api/activities/@<string:handle>/status/<string:activity_uuid>", methods=['GET'])
+@require_jwt(optional=True)
+def data_show_activity_by_handle(claims, handle, activity_uuid):
+    return show_activity.ShowActivity.run(activity_uuid=activity_uuid, user_claims=claims), 200
 
 @app.route("/api/activities/<string:activity_uuid>/reply", methods=['POST','OPTIONS'])
 @cross_origin()
