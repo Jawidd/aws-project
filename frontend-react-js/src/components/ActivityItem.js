@@ -16,7 +16,8 @@ export default function ActivityItem(props) {
     if (event.target.closest('.action')) {
       return;
     }
-    const url = `/@${props.activity.handle}/status/${props.activity.uuid}`;
+    const targetUuid = props.activity.user_uuid || props.activity.uuid;
+    const url = `/messages/user/${targetUuid}`;
     navigate(url);
     return false;
   }

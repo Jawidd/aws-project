@@ -21,7 +21,7 @@ def get_db_connection():
 
     return psycopg2.connect(
         host=parsed.hostname,
-        port=parsed.port,
+        port=parsed.port or 5432,
         dbname=parsed.path.lstrip("/"),
         user=parsed.username,
         password=parsed.password,
