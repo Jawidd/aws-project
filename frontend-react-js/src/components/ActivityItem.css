@@ -126,7 +126,7 @@
 .activity_item .reply_item .reply_content_wrap {
   display: flex;
   flex-direction: row;
-  align-items: start;
+  align-items: flex-start;
   gap: 12px;
 }
 
@@ -146,7 +146,7 @@
 .activity_item .reply_item .reply_meta {
   display: flex;
   justify-content: space-between;
-  align-items: start;
+  align-items: flex-start;
   margin-bottom: 4px;
 }
 
