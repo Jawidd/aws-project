@@ -81,13 +81,13 @@ export default function ProfileForm(props) {
     setAvatarPreview(previewUrl);
     setAvatarFile(file);
     setUploadError('');
-    setUploadMessage('Avatar ready. Click Save to upload.');
+    setUploadMessage('Avatar selected. Click Save to upload.');
   };
 
   const onsubmit = async (event) => {
     event.preventDefault();
     try {
-      // Upload avatar if a new file was selected
+      // Upload avatar if selected
       if (avatarFile) {
         setUploadingAvatar(true);
         setUploadError('');

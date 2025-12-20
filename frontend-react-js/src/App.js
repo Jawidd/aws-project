@@ -70,6 +70,10 @@ const router = createBrowserRouter([
     path: "/messages/user/:uuid",
     element: <MessageGroupPage />
   },
+  {
+    path: "/status/:activity_uuid",
+    element: <ActivityShowPage />
+  },
 
   {
     path: "/signup",

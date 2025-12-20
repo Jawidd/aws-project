@@ -74,6 +74,7 @@ class HomeActivities:
             cur.execute("""
               SELECT 
                 activities.uuid,
+                activities.user_uuid,
                 users.preferred_username,
                 users.handle,
                 activities.message,
@@ -94,6 +95,7 @@ class HomeActivities:
             cur.execute("""
               SELECT 
                 activities.uuid,
+                activities.user_uuid,
                 users.preferred_username,
                 users.handle,
                 activities.message,
@@ -120,15 +122,14 @@ class HomeActivities:
         replies_dict[parent_uuid].append({
           'uuid': str(reply[0]),
           'reply_to_activity_uuid': parent_uuid,
-          'user_uuid': str(reply[1]) if reply[1] else None,
-          'handle': reply[3],
-          'message': reply[4],
-          'likes_count': reply[5],
-          'replies_count': reply[6],
-          'reposts_count': reply[7],
-          'created_at': reply[9].isoformat(),
-          'liked': reply[10],
-          'avatar_url': reply[11]
+          'handle': reply[2],
+          'message': reply[3],
+          'likes_count': reply[4],
+          'replies_count': reply[5],
+          'reposts_count': reply[6],
+          'created_at': reply[8].isoformat(),
+          'liked': reply[9],
+          'avatar_url': reply[10]
         })
       
       # Build results with public activities
@@ -137,16 +138,15 @@ class HomeActivities:
         activity_uuid = str(activity[0])
         activity_data = {
           'uuid': activity_uuid,
-          'user_uuid': str(activity[1]) if activity[1] else None,
-          'handle': activity[3],
-          'message': activity[4],
-          'created_at': activity[9].isoformat(),
-          'expires_at': activity[8].isoformat() if activity[8] else None,
-          'likes_count': activity[7],
-          'replies_count': activity[5],
-          'reposts_count': activity[6],
-          'liked': activity[10],
-          'avatar_url': activity[11],
+          'handle': activity[2],
+          'message': activity[3],
+          'created_at': activity[8].isoformat(),
+          'expires_at': activity[7].isoformat() if activity[7] else None,
+          'likes_count': activity[6],
+          'replies_count': activity[4],
+          'reposts_count': activity[5],
+          'liked': activity[9],
+          'avatar_url': activity[10],
           'replies': replies_dict.get(activity_uuid, [])
         }
         

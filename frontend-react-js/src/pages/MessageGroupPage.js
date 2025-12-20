@@ -117,7 +117,7 @@ React.useEffect(() => {
     };
     fetchMessages();
   }
-}, [lastMessage, token, params.uuid, user]);
+}, [lastMessage, token, params.handle, user]);
 
 
 
