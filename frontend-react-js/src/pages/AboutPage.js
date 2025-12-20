@@ -6,7 +6,7 @@ export default function AboutPage() {
       <div className="about-content">
         <div className="hero-section">
           <h1>About Cruddur</h1>
-          <p className="hero-text">A modern social platform designed to connect people through meaningful conversations and shared experiences.</p>
+          <p className="hero-text">A modern social platform designed to connect people through meaningful conversations and shared experiences. version 1.0</p>
         </div>
         
         <section className="mission">

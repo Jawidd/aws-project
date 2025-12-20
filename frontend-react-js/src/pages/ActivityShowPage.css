@@ -1,0 +1,9 @@
+/* Activity detail view */
+.activity_item_full {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.replies_list {
+  margin-top: 8px;
+}
