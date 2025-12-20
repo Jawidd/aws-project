@@ -10,9 +10,11 @@ region = "eu-west-2"
 [default.build.parameters]
 cached = true
 parallel = true
+template = "sam/template.yaml"
 
 [default.validate.parameters]
 lint = true
+template = "sam/template.yaml"
 
 [default.deploy.parameters]
 capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
@@ -20,6 +22,7 @@ confirm_changeset = true
 resolve_s3 = true
 s3_prefix = "cruddur-serverless-v2"
 image_repositories = []
+template_file = "sam/template.yaml"
 parameter_overrides = "DatabaseUrl=\"postgresql://cruddur:SuperSecretPassword@cruddur-db-dev.cjw6kceccsk2.eu-west-2.rds.amazonaws.com:5432/cruddur\" AssetsBucketName=\"assets.cruddur.jawid.me\" AvatarUploadPrefix=\"avatar/original/\" CreateAssetsBucket=\"false\" FrontendOrigin=\"https://cruddur.jawid.me\" CognitoUserPoolId=\"eu-west-2_Jwi9THX3b\" CognitoUserPoolClientId=\"1ls5p1vu83m5ahseab36ufk6vm\" CorsAllowedOrigins=\"https://cruddur.jawid.me,http://localhost:3000,https://localhost:3000\""
 
 [default.package.parameters]
