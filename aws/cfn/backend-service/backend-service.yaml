@@ -46,10 +46,8 @@ Parameters:
     Default: eu-west-2
   EnvCognitoUserPoolId:
     Type: String
-    Default: eu-west-2_Jwi9THX3b
   EnvCognitoUserPoolClientId:
     Type: String
-    Default: 1ls5p1vu83m5ahseab36ufk6vm
   EnvFrontendUrl:
     Type: String
     Default: https://cruddur.jawid.me
@@ -67,7 +65,7 @@ Parameters:
     Default: https://dynamodb.eu-west-2.amazonaws.com
   EnvWebsocketApiEndpoint:
     Type: String
-    Default: wss://h88ifuk3je.execute-api.eu-west-2.amazonaws.com/prod/
+    Default: wss://0q8e5o27ac.execute-api.eu-west-2.amazonaws.com/prod
   SecretsAWSAccessKeyId:
     Type: String
     Default: 'arn:aws:ssm:eu-west-2:225442939245:parameter/cruddur/AWS_ACCESS_KEY_ID'

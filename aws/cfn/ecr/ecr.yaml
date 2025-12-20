@@ -1,0 +1,103 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: |
+  ECR repositories for container images
+  - Python Repository
+  - Backend Flask Repository
+  - Lifecycle policies for image cleanup
+
+Resources:
+  PythonRepository:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecr-repository.html
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: cruddur-python
+      ImageTagMutability: MUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Expire untagged images older than 14 days",
+                "selection": {
+                  "tagStatus": "untagged",
+                  "countType": "sinceImagePushed",
+                  "countUnit": "days",
+                  "countNumber": 14
+                },
+                "action": { "type": "expire" }
+              },
+              {
+                "rulePriority": 2,
+                "description": "Only keep 50 most recent tagged images",
+                "selection": {
+                  "tagStatus": "tagged",
+                  "tagPrefixList": [ "v" ],
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 50
+                },
+                "action": { "type": "expire" }
+              }
+            ]
+          }
+
+  FlaskRepository:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecr-repository.html
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: backend-flask
+      ImageTagMutability: MUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Expire untagged images older than 14 days",
+                "selection": {
+                  "tagStatus": "untagged",
+                  "countType": "sinceImagePushed",
+                  "countUnit": "days",
+                  "countNumber": 14
+                },
+                "action": { "type": "expire" }
+              },
+              {
+                "rulePriority": 2,
+                "description": "Only keep 50 most recent tagged images",
+                "selection": {
+                  "tagStatus": "tagged",
+                  "tagPrefixList": [ "v" ],
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 50
+                },
+                "action": { "type": "expire" }
+              }
+            ]
+          }
+
+Outputs:
+  PythonRepositoryName:
+    Description: Python Repository Name
+    Value: !Ref PythonRepository
+    Export:
+      Name: !Sub "${AWS::StackName}PythonRepositoryName"
+
+  FlaskRepositoryName:
+    Description: Flask Repository Name
+    Value: !Ref FlaskRepository
+    Export:
+      Name: !Sub "${AWS::StackName}FlaskRepositoryName"
+
+  PythonRepositoryUri:
+    Description: Python Repository URI
+    Value: !GetAtt PythonRepository.RepositoryUri
+    Export:
+      Name: !Sub "${AWS::StackName}PythonRepositoryUri"
+
+  FlaskRepositoryUri:
+    Description: Flask Repository URI
+    Value: !GetAtt FlaskRepository.RepositoryUri
+    Export:
+      Name: !Sub "${AWS::StackName}FlaskRepositoryUri"

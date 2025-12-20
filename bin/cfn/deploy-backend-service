@@ -4,7 +4,7 @@ set -e # stop the execution of the script if it fails
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-CFN_PATH="$ROOT_DIR/aws/cfn/backend-ecs/backend-ecs.yaml"
+CFN_PATH="$ROOT_DIR/aws/cfn/backend-service/backend-service.yaml"
 
 # -------------------------------------------------------------------
 # Explicit deploy configuration
@@ -16,6 +16,9 @@ BUCKET="cfn-artifacts-225442939245-eu-west-2"
 # CloudFormation parameters
 NETWORKING_STACK="CrdNet"
 CLUSTER_STACK="CrdCluster"
+EnvCognitoUserPoolClientId="20usdmenjqv0nmofrkldhdnnet"
+EnvCognitoUserPoolId="eu-west-2_LdwGkYD5l"
+EnvWebsocketApiEndpoint="https://e5mz6glfej.execute-api.eu-west-2.amazonaws.com"
 
 echo "Deploying Service Stack"
 echo "Template: $CFN_PATH"
@@ -33,4 +36,8 @@ aws cloudformation deploy \
   --parameter-overrides \
     NetworkingStack="$NETWORKING_STACK" \
     ClusterStack="$CLUSTER_STACK" \
+    EnvCognitoUserPoolClientId="$EnvCognitoUserPoolClientId" \
+    EnvCognitoUserPoolId="$EnvCognitoUserPoolId" \
+    EnvWebsocketApiEndpoint="$EnvWebsocketApiEndpoint" \
   --capabilities CAPABILITY_NAMED_IAM
+

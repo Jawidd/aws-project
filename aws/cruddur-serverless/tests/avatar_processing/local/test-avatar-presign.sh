@@ -5,7 +5,7 @@ set -euo pipefail
 # -------------------------------
 # Configuration (EDIT THESE)
 # -------------------------------
-GATEWAY_URL="https://mizxii4b39.execute-api.eu-west-2.amazonaws.com"
+GATEWAY_URL="https://e5mz6glfej.execute-api.eu-west-2.amazonaws.com"
 PRESIGN_PATH="/avatars/presign"
 TEST_IMAGE_PATH="./sample2.png"
 EXTENSION="png"

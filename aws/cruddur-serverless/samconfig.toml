@@ -1,38 +1,12 @@
-# More information about the configuration file can be found here:
-# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-config.html
 version = 0.1
 
-[default.global.parameters]
-stack_name = "cruddur-serverless-v2"
-region = "eu-west-2"
-
-
-[default.build.parameters]
-cached = true
-parallel = true
-template = "sam/template.yaml"
-
-[default.validate.parameters]
-lint = true
-template = "sam/template.yaml"
-
 [default.deploy.parameters]
-capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
-confirm_changeset = true
+stack_name = "CrdSAM"
 resolve_s3 = true
-s3_prefix = "cruddur-serverless-v2"
+s3_prefix = "CrdSAM"
+capabilities = "CAPABILITY_NAMED_IAM"
+parameter_overrides = "DatabaseUrl=\"\" AssetsBucketName=\"assets.cruddur.jawid.me\" AvatarUploadPrefix=\"avatar/original/\" CreateAssetsBucket=\"false\" FrontendOrigin=\"https://cruddur.jawid.me\" CorsAllowedOrigins=\"https://cruddur.jawid.me\" CognitoUserPoolId=\"eu-west-2_LdwGkYD5l\" CognitoUserPoolClientId=\"20usdmenjqv0nmofrkldhdnnet\" NetworkingStack=\"CrdNet\" DatabaseStack=\"CrdDb\" MessagesTableName=\"cruddur-messages\" ConversationsTableName=\"cruddur-conversations\" ConnectionsTableName=\"cruddur-websocket-connections\" WebSocketApiName=\"cruddur-websocket\" StageName=\"prod\" Runtime=\"python3.13\" LogRetentionInDays=\"30\" DeletionProtection=\"true\""
 image_repositories = []
-template_file = "sam/template.yaml"
-parameter_overrides = "DatabaseUrl=\"postgresql://cruddur:SuperSecretPassword@cruddur-db-dev.cjw6kceccsk2.eu-west-2.rds.amazonaws.com:5432/cruddur\" AssetsBucketName=\"assets.cruddur.jawid.me\" AvatarUploadPrefix=\"avatar/original/\" CreateAssetsBucket=\"false\" FrontendOrigin=\"https://cruddur.jawid.me\" CognitoUserPoolId=\"eu-west-2_Jwi9THX3b\" CognitoUserPoolClientId=\"1ls5p1vu83m5ahseab36ufk6vm\" CorsAllowedOrigins=\"https://cruddur.jawid.me,http://localhost:3000,https://localhost:3000\""
 
-[default.package.parameters]
-resolve_s3 = true
-
-[default.sync.parameters]
-watch = true
-
-[default.local_start_api.parameters]
-warm_containers = "EAGER"
-
-[default.local_start_lambda.parameters]
-warm_containers = "EAGER"
+[default.global.parameters]
+region = "eu-west-2"
