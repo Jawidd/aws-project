@@ -6,12 +6,12 @@ import { Link } from 'react-router-dom';
 
 export default function DesktopSidebar(props) {
   let trending;
-  if (props.user) {
+  if (props.user || props.forceTrending) {
     trending = <TrendingSection />
   }
 
   let join;
-  if (!props.user) {
+  if (!props.user && !props.hideJoin) {
     join = <JoinSection />
   }
 
