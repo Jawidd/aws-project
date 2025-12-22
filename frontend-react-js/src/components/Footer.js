@@ -23,8 +23,7 @@ export default function Footer() {
         <div className="footer-section">
           <h4>Legal</h4>
           <ul>
-            <li><Link to="/terms">Terms of Service</Link></li>
-            <li><Link to="/privacy">Privacy Policy</Link></li>
+            <li><Link to="/info">Info & Policies</Link></li>
             <li><a href="#cookies">Cookie Policy</a></li>
             <li><a href="#community">Community Guidelines</a></li>
           </ul>
@@ -44,8 +43,7 @@ export default function Footer() {
       <div className="footer-bottom">
         <p>&copy; {new Date().getFullYear()} Cruddur. All rights reserved.</p>
         <div className="footer-links">
-          <Link to="/privacy">Privacy</Link>
-          <Link to="/terms">Terms</Link>
+          <Link to="/info">Info</Link>
           <Link to="/about">About</Link>
         </div>
       </div>

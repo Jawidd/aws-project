@@ -6,12 +6,16 @@ export default function AboutPage() {
       <div className="about-content">
         <div className="hero-section">
           <h1>About Cruddur</h1>
-          <p className="hero-text">A modern social platform designed to connect people through meaningful conversations and shared experiences. version 1.3</p>
+          <p className="hero-text">
+            This project was built as part of the AWS Cloud Project Bootcamp and follows the open source Cruddur reference implementation.
+          </p>
         </div>
         
         <section className="mission">
-          <h2>Our Mission</h2>
-          <p>At Cruddur, we believe in fostering authentic connections and enabling users to share their thoughts, ideas, and moments in a safe and engaging environment. We're committed to building a platform that prioritizes user privacy, meaningful interactions, and community building.</p>
+          <h2>What is Cruddur?</h2>
+          <p>
+            Cruddur is a hands-on AWS cloud native social feed used to practice serverless, containers, and CI/CD. The frontend you are using mirrors the patterns and services showcased in the bootcamp and the <a href="https://github.com/omenking/aws-bootcamp-cruddur-2023" target="_blank" rel="noreferrer">Cruddur repository</a>.
+          </p>
         </section>
         
         <section className="features">

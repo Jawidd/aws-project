@@ -60,18 +60,10 @@ export default function DesktopNavigation(props) {
       <DesktopNavigationLink url="/" 
         name="Home"
         handle="home"
-        active={props.active} />
+      active={props.active} />
       {notificationsLink}
       {messagesLink}
       {profileLink}
-      <div className="more-menu-container">
-        <button 
-          className="more-menu-trigger"
-          disabled
-        >
-          More
-        </button>
-      </div>
       {button}
       {showProfile && profile}
     </nav>

@@ -12,8 +12,7 @@ import MessageGroupPage from './pages/MessageGroupPage';
 import ConfirmationPage from './pages/ConfirmationPage';
 import ActivityShowPage from './pages/ActivityShowPage';
 import AboutPage from './pages/AboutPage';
-import TermsPage from './pages/TermsPage';
-import PrivacyPage from './pages/PrivacyPage';
+import InfoPage from './pages/InfoPage';
 import Footer from './components/Footer';
 import React from 'react';
 import process from 'process';
@@ -101,19 +100,10 @@ const router = createBrowserRouter([
     )
   },
   {
-    path: "/terms",
+    path: "/info",
     element: (
       <>
-        <TermsPage />
-        <Footer />
-      </>
-    )
-  },
-  {
-    path: "/privacy",
-    element: (
-      <>
-        <PrivacyPage />
+        <InfoPage />
         <Footer />
       </>
     )
