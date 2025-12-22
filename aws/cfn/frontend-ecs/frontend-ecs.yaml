@@ -10,6 +10,11 @@ Parameters:
   CertificateArn:
     Type: String
 
+  AssetsCertificateArn:
+    Type: String
+    Description: Certificate ARN for assets domain (*.cruddur.jawid.me)
+    Default: arn:aws:acm:us-east-1:225442939245:certificate/70355fe9-d8a3-4bd0-99de-081c2d6e3826
+
   RootDomainName:
     Type: String
     Description: Frontend  domain (cruddur.jawid.me)
@@ -26,24 +31,6 @@ Parameters:
 
 Resources:
   # ======================================================================
-  # S3 BUCKETS
-  # ======================================================================
-
-  AssetsBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Ref AssetsDomainName
-      CorsConfiguration:
-        CorsRules:
-          - AllowedHeaders: ['*']
-            AllowedMethods: [GET, PUT, HEAD]
-            AllowedOrigins: 
-              - !Sub "https://${RootDomainName}"
-              - "http://localhost:3000"
-              - "https://localhost:3000"
-            MaxAge: 3000
-
-  # ======================================================================
   # ORIGIN ACCESS CONTROLS
   # ======================================================================
 
@@ -52,15 +39,6 @@ Resources:
     Properties:
       OriginAccessControlConfig:
         Name: !Sub "${AWS::StackName}OAC"
-        OriginAccessControlOriginType: s3
-        SigningBehavior: always
-        SigningProtocol: sigv4
-
-  AssetsOriginAccessControl:
-    Type: AWS::CloudFront::OriginAccessControl
-    Properties:
-      OriginAccessControlConfig:
-        Name: !Sub "${AWS::StackName}AssetsOAC"
         OriginAccessControlOriginType: s3
         SigningBehavior: always
         SigningProtocol: sigv4
@@ -80,6 +58,15 @@ Resources:
             Condition:
               StringEquals:
                 AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+          - Sid: AllowCloudFrontServicePrincipalAssets
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "arn:aws:s3:::${RootDomainName}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: arn:aws:cloudfront::225442939245:distribution/E8PVS5207B19
           - Sid: DenyInsecureConnections
             Effect: Deny
             Principal: '*'
@@ -87,32 +74,6 @@ Resources:
             Resource:
               - !Sub "arn:aws:s3:::${RootDomainName}/*"
               - !Sub "arn:aws:s3:::${RootDomainName}"
-            Condition:
-              Bool:
-                aws:SecureTransport: false
-
-  AssetsBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref AssetsBucket
-      PolicyDocument:
-        Statement:
-          - Sid: AllowCloudFrontServicePrincipal
-            Effect: Allow
-            Principal:
-              Service: cloudfront.amazonaws.com
-            Action: s3:GetObject
-            Resource: !Sub "arn:aws:s3:::${AssetsDomainName}/*"
-            Condition:
-              StringEquals:
-                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${AssetsDistribution}"
-          - Sid: DenyInsecureConnections
-            Effect: Deny
-            Principal: '*'
-            Action: s3:*
-            Resource:
-              - !Sub "arn:aws:s3:::${AssetsDomainName}/*"
-              - !Sub "arn:aws:s3:::${AssetsDomainName}"
             Condition:
               Bool:
                 aws:SecureTransport: false
@@ -155,28 +116,30 @@ Resources:
 
   AssetsDistribution:
     Type: AWS::CloudFront::Distribution
+    DeletionPolicy: Retain
     Properties:
       DistributionConfig:
         Enabled: true
-        Comment: Assets distribution for Cruddur
-        HttpVersion: http2and3
+        Comment: ""
+        HttpVersion: http2
         Aliases:
           - !Ref AssetsDomainName
         Origins:
-          - Id: AssetsBucketOrigin
+          - Id: assets.cruddur.jawid.me.s3.eu-west-2.amazonaws.com-mj0cubkjcy5
             DomainName: !Sub "${AssetsDomainName}.s3.eu-west-2.amazonaws.com"
             S3OriginConfig:
               OriginAccessIdentity: ''
-            OriginAccessControlId: !GetAtt AssetsOriginAccessControl.Id
+            OriginAccessControlId: E21QS10SCG6GOI
         DefaultCacheBehavior:
-          TargetOriginId: AssetsBucketOrigin
+          TargetOriginId: assets.cruddur.jawid.me.s3.eu-west-2.amazonaws.com-mj0cubkjcy5
           ViewerProtocolPolicy: redirect-to-https
-          AllowedMethods: [GET, HEAD, OPTIONS]
+          AllowedMethods: [GET, HEAD]
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
           Compress: true
         ViewerCertificate:
-          AcmCertificateArn: !Ref CertificateArn
+          AcmCertificateArn: !Ref AssetsCertificateArn
           SslSupportMethod: sni-only
+        WebACLId: arn:aws:wafv2:us-east-1:225442939245:global/webacl/CreatedByCloudFront-f5e379b1/22d5a400-c29b-4358-86de-7c3373fcbe95
 
   CruddurAliasRecord:
     Type: AWS::Route53::RecordSet
@@ -216,7 +179,7 @@ Outputs:
       Name: !Sub "${AWS::StackName}DistributionDomainName"
 
   AssetsBucketName:
-    Value: !Ref AssetsBucket
+    Value: assets.cruddur.jawid.me
     Export:
       Name: !Sub "${AWS::StackName}AssetsBucketName"
 
@@ -224,8 +187,3 @@ Outputs:
     Value: !Ref AssetsDistribution
     Export:
       Name: !Sub "${AWS::StackName}AssetsDistributionId"
-
-  AssetsDistributionDomainName:
-    Value: !GetAtt AssetsDistribution.DomainName
-    Export:
-      Name: !Sub "${AWS::StackName}AssetsDistributionDomainName"

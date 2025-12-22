@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Import existing assets distribution E8PVS5207B19
+
+Parameters:
+  AssetsCertificateArn:
+    Type: String
+    Default: arn:aws:acm:us-east-1:225442939245:certificate/70355fe9-d8a3-4bd0-99de-081c2d6e3826
+
+  AssetsDomainName:
+    Type: String
+    Default: assets.cruddur.jawid.me
+
+Resources:
+  AssetsDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: false
+        Comment: Assets distribution for Cruddur
+        HttpVersion: http2
+        Aliases:
+          - !Ref AssetsDomainName
+        Origins:
+          - Id: assets.cruddur.jawid.me.s3.eu-west-2.amazonaws.com-mj0cubkjcy5
+            DomainName: !Sub "${AssetsDomainName}.s3.eu-west-2.amazonaws.com"
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+            OriginAccessControlId: E21QS10SCG6GOI
+        DefaultCacheBehavior:
+          TargetOriginId: assets.cruddur.jawid.me.s3.eu-west-2.amazonaws.com-mj0cubkjcy5
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD]
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          Compress: true
+        ViewerCertificate:
+          AcmCertificateArn: !Ref AssetsCertificateArn
+          SslSupportMethod: sni-only
+
+Outputs:
+  AssetsDistributionId:
+    Value: !Ref AssetsDistribution
+    Export:
+      Name: ImportedAssetsDistributionId
