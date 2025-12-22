@@ -30,11 +30,7 @@ Parameters:
     Default: avatar/original/
     Description: S3 prefix for original avatar uploads
 
-  CreateAssetsBucket:
-    Type: String
-    AllowedValues: ["true", "false"]
-    Default: "false"
-    Description: Whether to create the assets S3 bucket
+
 
   # Frontend Configuration ------
   FrontendOrigin:
@@ -116,7 +112,7 @@ Parameters:
 
 Conditions:
   EnableDeletionProtection: !Equals [!Ref DeletionProtection, true]
-  ShouldCreateBucket: !Equals [!Ref CreateAssetsBucket, 'true']
+
 
 Globals:
   Function:
@@ -234,9 +230,7 @@ Resources:
   # ======================================================================
 
   AssetsBucket:
-    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-s3-bucket.html
     Type: AWS::S3::Bucket
-    Condition: ShouldCreateBucket
     DeletionPolicy: Retain
     Properties:
       BucketName: !Ref AssetsBucketName
@@ -246,6 +240,43 @@ Resources:
             AllowedMethods: [GET, PUT, HEAD]
             AllowedOrigins: !Split [",", !Ref CorsAllowedOrigins]
             MaxAge: 3000
+
+  # ----------------------------------------------------------------------
+  # CloudFront Origin Access Control (OAC)
+  # ----------------------------------------------------------------------
+
+  AssetsBucketOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${AWS::StackName}-assets-oac"
+        Description: OAC for assets bucket
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # ----------------------------------------------------------------------
+  # S3 Bucket Policy (CloudFront-only access)
+  # ----------------------------------------------------------------------
+
+  AssetsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AssetsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowCloudFrontReadOnly
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "arn:aws:s3:::${AssetsBucketName}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub >
+                  arn:aws:cloudfront::${AWS::AccountId}:distribution/E8PVS5207B19
+
 
   # ======================================================================
   # SNS TOPICS
@@ -654,7 +685,7 @@ Resources:
         AvatarUpload:
           Type: S3
           Properties:
-            Bucket: !Ref AssetsBucketName
+            Bucket: !Ref AssetsBucket
             Events: s3:ObjectCreated:*
             Filter:
               S3Key:

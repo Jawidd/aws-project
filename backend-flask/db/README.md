@@ -2,7 +2,7 @@
 
 - start shell: `bin/db/scale-db-shell-up` (or `bin/db/run-db-shell` to open psql and auto tear down)
 - get into the task: `bin/db/connect-db-shell` → you land at a shell prompt
-- open psql: `psql "$CONNECTION_URL"` (this drops you into the `cruddur` DB)
+- open psql: `  psql "$CONNECTION_URL"    ` (this drops you into the `cruddur` DB)
 - load schema: `\i /opt/db-scripts/schema.sql` (runs all table/DDL commands)
 - load seed: `\i /opt/db-scripts/seed.sql` (inserts sample data)
 - also create likes Table/schema `\i /opt/db-scripts/migrations/003_create_likes_table.sql`
@@ -13,5 +13,9 @@
 - \x on
 SELECT *
 FROM users
-WHERE email = 'jawid00786@gmail.com';
+WHERE email = 'Jawid00776@gmail.com';
 \x off
+
+UPDATE users
+SET avatar_url = NULL
+WHERE email = 'Jawid00776@gmail.com';
