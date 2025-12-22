@@ -632,7 +632,7 @@ Resources:
           - !Ref PostConfirmationSecurityGroup
         SubnetIds: !Split 
           - ","
-          - Fn::ImportValue: !Sub "${NetworkingStack}PrivateSubnetIds"
+          - Fn::ImportValue: !Sub "${NetworkingStack}PublicSubnetIds"
       Environment:
         Variables:
           DATABASE_URL: !Ref DatabaseUrl
@@ -702,7 +702,7 @@ Resources:
           - !Ref AvatarDbConsumerSecurityGroup
         SubnetIds: !Split 
           - ","
-          - Fn::ImportValue: !Sub "${NetworkingStack}PrivateSubnetIds"
+          - Fn::ImportValue: !Sub "${NetworkingStack}PublicSubnetIds"
 
 
 
