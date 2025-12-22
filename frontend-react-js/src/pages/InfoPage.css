@@ -1,20 +1,21 @@
 .info-page {
-  max-width: 840px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 3rem 1.5rem;
   display: flex;
   justify-content: center;
 }
 
 .info-card {
   width: 100%;
-  padding: 2rem;
+  padding: 2.5rem;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.35),
     0 0 0 1px rgba(255, 255, 255, 0.06);
+  text-align: center;
 }
 
 .info-card h1 {
@@ -33,12 +34,12 @@
   font-size: 1.05rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .info-page {
-    padding: 1.25rem;
+    padding: 2rem 1rem;
   }
 
   .info-card {
-    padding: 1.5rem;
+    padding: 2rem 1.5rem;
   }
 }

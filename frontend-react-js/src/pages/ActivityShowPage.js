@@ -57,7 +57,7 @@ export default function ActivityShowPage() {
 
   return (
     <article>
-      <DesktopNavigation user={user} active={'home'} setPopped={setPopped} />
+      <DesktopNavigation user={user} active={null} setPopped={setPopped} />
       <div className='content'>
         <ActivityForm
           popped={popped}
@@ -82,7 +82,7 @@ export default function ActivityShowPage() {
           />
         </div>
       </div>
-      <DesktopSidebar user={user} />
+      <DesktopSidebar user={user} forceTrending={true} hideJoin={true} />
     </article>
   );
 }
