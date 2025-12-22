@@ -97,7 +97,7 @@ Parameters:
   # Lambda Configuration ------
   Runtime:
     Type: String
-    Default: python3.9
+    Default: python3.12
     Description: Lambda runtime version
 
   LogRetentionInDays:
@@ -607,7 +607,7 @@ Resources:
     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
     Type: AWS::Serverless::Function
     Metadata:
-      BuildMethod: python3.9
+      BuildMethod: python3.12
       BuildProperties:
         use_container: true
     DependsOn:
@@ -664,7 +664,7 @@ Resources:
     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
     Type: AWS::Serverless::Function
     Metadata:
-      BuildMethod: python3.9
+      BuildMethod: python3.12
       BuildProperties:
         use_container: true
     DependsOn:
