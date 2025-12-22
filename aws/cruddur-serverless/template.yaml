@@ -66,7 +66,7 @@ Parameters:
   FrontendStack:
     Type: String
     Description: Frontend stack name for assets distribution reference
-    Default: CrdFrontend
+    Default: CrdSrvFrontend
 
   # DynamoDB Table Names ------
   MessagesTableName:
@@ -229,6 +229,43 @@ Resources:
       ApiId: !Ref WebSocketApi
       StageName: !Ref StageName
       AutoDeploy: true
+
+  # ======================================================================
+  # S3 ASSETS BUCKET
+  # ======================================================================
+
+  AssetsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Ref AssetsBucketName
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET, PUT, HEAD]
+            AllowedOrigins: !Split [",", !Ref CorsAllowedOrigins]
+            MaxAge: 3000
+
+  AssetsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AssetsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowCloudFrontReadOnly
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "arn:aws:s3:::${AssetsBucketName}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: 
+                  Fn::Sub:
+                    - "arn:aws:cloudfront::${AWS::AccountId}:distribution/${DistributionId}"
+                    - DistributionId:
+                        Fn::ImportValue: !Sub "${FrontendStack}AssetsDistributionId"
 
   # ======================================================================
   # SNS TOPICS
@@ -637,8 +674,7 @@ Resources:
         AvatarUpload:
           Type: S3
           Properties:
-            Bucket: 
-              Fn::ImportValue: !Sub "${FrontendStack}AssetsBucketName"
+            Bucket: !Ref AssetsBucket
             Events: s3:ObjectCreated:*
             Filter:
               S3Key:
