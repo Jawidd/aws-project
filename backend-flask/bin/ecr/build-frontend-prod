@@ -19,11 +19,11 @@ cd "$PROJECT_ROOT" || exit 1
 
 docker build \
   --build-arg REACT_APP_BACKEND_URL="https://cruddur.jawid.me" \
-  --build-arg REACT_APP_WEBSOCKET_URL="wss://0q8e5o27ac.execute-api.eu-west-2.amazonaws.com/prod" \
+  --build-arg REACT_APP_WEBSOCKET_URL="wss://e7y93hdkga.execute-api.eu-west-2.amazonaws.com/prod" \
   --build-arg REACT_APP_AWS_REGION="eu-west-2" \
-  --build-arg REACT_APP_USER_POOL_ID="eu-west-2_LdwGkYD5l" \
-  --build-arg REACT_APP_USER_POOL_CLIENT_ID="20usdmenjqv0nmofrkldhdnnet" \
-  --build-arg REACT_APP_AVATAR_API_URL="https://e5mz6glfej.execute-api.eu-west-2.amazonaws.com" \
+  --build-arg REACT_APP_USER_POOL_ID="eu-west-2_nYXT1Jren" \
+  --build-arg REACT_APP_USER_POOL_CLIENT_ID="vdsav0rco8m1afdqed8vo7j1i" \
+  --build-arg REACT_APP_AVATAR_API_URL="https://bgc7pnw9rh.execute-api.eu-west-2.amazonaws.com" \
   --build-arg REACT_APP_ASSETS_BASE_URL="https://assets.cruddur.jawid.me" \
   -t frontend-react-js \
   -f Dockerfile.prod \

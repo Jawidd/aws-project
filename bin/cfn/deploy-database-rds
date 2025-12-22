@@ -22,8 +22,8 @@ MASTER_USERNAME="cruddurroot"
 MASTER_USER_PASSWORD="Super776Secre776tPassword"
 
 
-PostConfirmationLambdaSecurityGroupId="sg-0054d7dde919ae1ae"
-DbConsumerLambdaSecurityGroupId="sg-06c4be906d034d5cc"
+PostConfirmationLambdaSecurityGroupId="sg-0ec3c3bf0c287038c"
+DbConsumerLambdaSecurityGroupId="sg-08cee0111ea173ebe"
 
 echo "Deploying Database Stack"
 echo "Template: $CFN_PATH"

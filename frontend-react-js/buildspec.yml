@@ -3,11 +3,11 @@ version: 0.2
 env:
   variables:
     REACT_APP_BACKEND_URL: https://api.cruddur.jawid.me
-    REACT_APP_WEBSOCKET_URL: wss://0q8e5o27ac.execute-api.eu-west-2.amazonaws.com/prod
+    REACT_APP_WEBSOCKET_URL: wss://e7y93hdkga.execute-api.eu-west-2.amazonaws.com/prod
     REACT_APP_AWS_REGION: eu-west-2
-    REACT_APP_USER_POOL_ID: eu-west-2_LdwGkYD5l
-    REACT_APP_USER_POOL_CLIENT_ID: 20usdmenjqv0nmofrkldhdnnet
-    REACT_APP_AVATAR_API_URL: https://e5mz6glfej.execute-api.eu-west-2.amazonaws.com
+    REACT_APP_USER_POOL_ID: eu-west-2_nYXT1Jren
+    REACT_APP_USER_POOL_CLIENT_ID: vdsav0rco8m1afdqed8vo7j1i
+    REACT_APP_AVATAR_API_URL: https://bgc7pnw9rh.execute-api.eu-west-2.amazonaws.com
     REACT_APP_ASSETS_BASE_URL: https://assets.cruddur.jawid.me
     CI: "true"
     GENERATE_SOURCEMAP: "false"
