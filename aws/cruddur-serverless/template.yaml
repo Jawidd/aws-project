@@ -9,7 +9,6 @@ Description: |
   - Cognito post-confirmation Lambda
   - Avatar processing pipeline (S3, SNS, Lambda)
   - Avatar presign API (HTTP API with Cognito auth)
-  - Shared Lambda layer for common utilities
   - Comprehensive IAM roles and security groups
   - CloudWatch log retention and monitoring
 
@@ -17,6 +16,7 @@ Parameters:
   # Database Configuration ------
   DatabaseUrl:
     Type: String
+    Default: arn:aws:ssm:eu-west-2:225442939245:parameter/cruddur/CONNECTION_URL
     Description: PostgreSQL connection string for RDS database
 
   # S3 Assets Configuration ------
@@ -97,7 +97,7 @@ Parameters:
   # Lambda Configuration ------
   Runtime:
     Type: String
-    Default: python3.13
+    Default: python3.9
     Description: Lambda runtime version
 
   LogRetentionInDays:
@@ -125,25 +125,9 @@ Globals:
     Tracing: Active
 
 Resources:
-  # ======================================================================
-  # SHARED LAMBDA LAYER
-  # ======================================================================
 
-  PythonCommonLayer:
-    # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-layerversion.html
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      LayerName: !Sub "${AWS::StackName}PythonCommon"
-      Description: Shared Python utilities for DynamoDB and WebSocket operations
-      ContentUri: ../layers/python-common/
-      CompatibleRuntimes:
-        - !Ref Runtime
-      RetentionPolicy: Retain
-
-  # ======================================================================
   # DYNAMODB TABLES
-  # ======================================================================
-
+ 
   MessagesTable:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dynamodb-table.html
     Type: AWS::DynamoDB::Table
@@ -306,12 +290,12 @@ Resources:
   # SECURITY GROUPS
   # ======================================================================
 
-  LambdaSecurityGroup:
+  PostConfirmationSecurityGroup:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-securitygroup.html
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub "${AWS::StackName}LambdaSG"
-      GroupDescription: Security Group for Lambda functions
+      GroupName: !Sub "${AWS::StackName}PostConfirmationSG"
+      GroupDescription: Security Group for Post Confirmation Lambda
       VpcId:
         Fn::ImportValue:
           !Sub "${NetworkingStack}VpcId"
@@ -322,14 +306,37 @@ Resources:
           DestinationSecurityGroupId:
             Fn::ImportValue:
               !Sub "${DatabaseStack}DBSecurityGroupId"
-          Description: Lambda to RDS PostgreSQL
+          Description: Post Confirmation Lambda to RDS
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
-          Description: HTTPS outbound for AWS services
+          Description: HTTPS for AWS services
 
-  RDSLambdaIngressRule:
+  AvatarDbConsumerSecurityGroup:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-securitygroup.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::StackName}AvatarDbConsumerSG"
+      GroupDescription: Security Group for Avatar DB Consumer Lambda
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${NetworkingStack}VpcId"
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          DestinationSecurityGroupId:
+            Fn::ImportValue:
+              !Sub "${DatabaseStack}DBSecurityGroupId"
+          Description: Avatar DB Consumer Lambda to RDS
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS for AWS services
+
+  RDSPostConfirmationIngressRule:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-securitygroupingress.html
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -339,8 +346,9 @@ Resources:
       IpProtocol: tcp
       FromPort: 5432
       ToPort: 5432
-      SourceSecurityGroupId: !Ref LambdaSecurityGroup
-      Description: Lambda to RDS PostgreSQL
+      SourceSecurityGroupId: !Ref PostConfirmationSecurityGroup
+      Description: Post Confirmation Lambda to RDS
+
 
   # ======================================================================
   # CLOUDWATCH LOG GROUPS
@@ -549,12 +557,10 @@ Resources:
       - MessageStreamLogGroup
     Properties:
       FunctionName: message-stream
-      CodeUri: ../functions/message_stream/
+      CodeUri: functions/message_stream/
       Handler: app.lambda_handler
       Role: !GetAtt MessageStreamExecutionRole.Arn
       Timeout: 30
-      Layers:
-        - !Ref PythonCommonLayer
       Environment:
         Variables:
           DYNAMODB_MESSAGES_TABLE: !Ref MessagesTableName
@@ -576,11 +582,9 @@ Resources:
       - WebSocketConnectLogGroup
     Properties:
       FunctionName: websocket-connect
-      CodeUri: ../functions/websocket_connect/
+      CodeUri: functions/websocket_connect/
       Handler: app.lambda_handler
       Role: !GetAtt WebSocketConnectExecutionRole.Arn
-      Layers:
-        - !Ref PythonCommonLayer
       Environment:
         Variables:
           CONNECTIONS_TABLE: !Ref ConnectionsTableName
@@ -592,11 +596,9 @@ Resources:
       - WebSocketDisconnectLogGroup
     Properties:
       FunctionName: websocket-disconnect
-      CodeUri: ../functions/websocket_disconnect/
+      CodeUri: functions/websocket_disconnect/
       Handler: app.lambda_handler
       Role: !GetAtt WebSocketDisconnectExecutionRole.Arn
-      Layers:
-        - !Ref PythonCommonLayer
       Environment:
         Variables:
           CONNECTIONS_TABLE: !Ref ConnectionsTableName
@@ -604,18 +606,30 @@ Resources:
   PostConfirmationFunction:
     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: python3.9
+      BuildProperties:
+        use_container: true
     DependsOn:
       - PostConfirmationLogGroup
     Properties:
       FunctionName: post-email-confirm
-      CodeUri: ../functions/post_email_confirm/
+      CodeUri: functions/post_email_confirm/
       Handler: app.lambda_handler
       Description: Creates user record after Cognito email confirmation
-      Layers:
-        - !Ref PythonCommonLayer
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref PostConfirmationSecurityGroup
+        SubnetIds: !Split 
+          - ","
+          - Fn::ImportValue: !Sub "${NetworkingStack}PrivateSubnetIds"
       Environment:
         Variables:
           DATABASE_URL: !Ref DatabaseUrl
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: cruddur/CONNECTION_URL
+        - VPCAccessPolicy: {}
 
   ThumbnailLambda:
     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
@@ -624,11 +638,9 @@ Resources:
       - ThumbnailLogGroup
     Properties:
       FunctionName: image-to-thumbnail
-      CodeUri: ../functions/image_to_thumbnail/
+      CodeUri: functions/image_to_thumbnail/
       Handler: app.lambda_handler
       MemorySize: 512
-      Layers:
-        - !Ref PythonCommonLayer
       Environment:
         Variables:
           THUMBING_BUCKET_NAME: !Ref AssetsBucketName
@@ -651,30 +663,35 @@ Resources:
   AvatarDbConsumer:
     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: python3.9
+      BuildProperties:
+        use_container: true
     DependsOn:
       - AvatarDbConsumerLogGroup
     Properties:
       FunctionName: avatar-db-consumer
-      CodeUri: ../functions/avatar_db_consumer/
+      CodeUri: functions/avatar_db_consumer/
       Handler: app.lambda_handler
       MemorySize: 512
       VpcConfig:
         SecurityGroupIds:
-          - !Ref LambdaSecurityGroup
-        SubnetIds:
-          Fn::Split:
-            - ","
-            - Fn::ImportValue:
-                !Sub "${NetworkingStack}PrivateSubnetIds"
-      Layers:
-        - !Ref PythonCommonLayer
+          - !Ref AvatarDbConsumerSecurityGroup
+        SubnetIds: !Split 
+          - ","
+          - Fn::ImportValue: !Sub "${NetworkingStack}PrivateSubnetIds"
+
+
+
       Environment:
         Variables:
           ASSETS_BASE_URL: !Sub "https://${AssetsBucketName}"
           DATABASE_URL: !Ref DatabaseUrl
       Policies:
-        - AWSLambdaVPCAccessExecutionRole
         - AWSLambdaBasicExecutionRole
+        - SSMParameterReadPolicy:
+            ParameterName: cruddur/CONNECTION_URL
+        - VPCAccessPolicy: {}
       Events:
         AvatarEvents:
           Type: SNS
@@ -688,12 +705,10 @@ Resources:
       - AvatarPresignLogGroup
     Properties:
       FunctionName: avatar-presign
-      CodeUri: ../functions/avatar_presign/
+      CodeUri: functions/avatar_presign/
       Handler: app.lambda_handler
       Timeout: 20
       MemorySize: 128
-      Layers:
-        - !Ref PythonCommonLayer
       Environment:
         Variables:
           AVATAR_UPLOAD_BUCKET: !Ref AssetsBucketName

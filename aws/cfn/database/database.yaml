@@ -37,7 +37,7 @@ Parameters:
     AllowedValues:
       - true
       - false
-    Default: 'true'
+    Default: true
 
   EngineVersion:
     Type: String
@@ -52,6 +52,14 @@ Parameters:
     Type: String
     NoEcho: true
 
+  DbConsumerLambdaSecurityGroupId:
+    Type: String
+    Description: Security group ID for avatar-db-consumer Lambda
+
+  PostConfirmationLambdaSecurityGroupId:
+    Type: String
+    Description: Security group ID for post-confirmation Lambda
+
 Conditions:
   EnableDeletionProtection: !Equals [!Ref DeletionProtection, 'true']
 
@@ -65,14 +73,42 @@ Resources:
       VpcId:
         Fn::ImportValue:
           !Sub "${NetworkingStack}VpcId"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          SourceSecurityGroupId:
-            Fn::ImportValue:
-              !Sub "${ClusterStack}ServiceSecurityGroupId"
-          FromPort: 5432
-          ToPort: 5432
-          Description: services to postgres
+
+
+  RdsIngressFromEcs:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref RDSPostgresSG
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId:
+        Fn::ImportValue:
+          !Sub "${ClusterStack}ServiceSecurityGroupId"
+      Description: ECS services to Postgres
+
+  RdsIngressFromDbConsumerLambda:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref RDSPostgresSG
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId: !Ref DbConsumerLambdaSecurityGroupId
+      Description: avatar-db-consumer Lambda to Postgres
+
+  RdsIngressFromPostConfirmLambda:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref RDSPostgresSG
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId: !Ref PostConfirmationLambdaSecurityGroupId
+      Description: post-confirmation Lambda to Postgres
+
+
+
 
   DBSubnetGroup:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbsubnetgroup.html
@@ -106,6 +142,7 @@ Resources:
       EnablePerformanceInsights: true
       Engine: postgres
       EngineVersion: !Ref EngineVersion
+      
 
       # Must be 1 to 63 letters or numbers.
       # First character must be a letter.

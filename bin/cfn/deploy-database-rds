@@ -18,7 +18,12 @@ BUCKET="cfn-artifacts-225442939245-eu-west-2"
 NETWORKING_STACK="CrdNet"
 CLUSTER_STACK="CrdCluster"
 MASTER_USERNAME="cruddurroot"
-MASTER_USER_PASSWORD="$DB_PASSWORD"
+# MASTER_USER_PASSWORD="$DB_PASSWORD"
+MASTER_USER_PASSWORD="Super776Secre776tPassword"
+
+
+PostConfirmationLambdaSecurityGroupId="sg-0054d7dde919ae1ae"
+DbConsumerLambdaSecurityGroupId="sg-06c4be906d034d5cc"
 
 echo "Deploying Database Stack"
 echo "Template: $CFN_PATH"
@@ -38,4 +43,6 @@ aws cloudformation deploy \
     ClusterStack="$CLUSTER_STACK" \
     MasterUsername="$MASTER_USERNAME" \
     MasterUserPassword="$MASTER_USER_PASSWORD" \
+    DbConsumerLambdaSecurityGroupId="$DbConsumerLambdaSecurityGroupId" \
+    PostConfirmationLambdaSecurityGroupId="$PostConfirmationLambdaSecurityGroupId" \
   --capabilities CAPABILITY_NAMED_IAM
