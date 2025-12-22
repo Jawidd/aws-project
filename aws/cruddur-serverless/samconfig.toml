@@ -5,7 +5,7 @@ stack_name = "CrdSam"
 resolve_s3 = true
 s3_prefix = "CrdSam"
 capabilities = "CAPABILITY_NAMED_IAM"
-parameter_overrides = "DatabaseUrl=\"postgresql://cruddurroot:Super776Secre776tPassword@cruddur-instance.cjw6kceccsk2.eu-west-2.rds.amazonaws.com:5432/cruddur\" AssetsBucketName=\"assets.cruddur.jawid.me\" AvatarUploadPrefix=\"avatar/original/\" CreateAssetsBucket=\"false\" FrontendOrigin=\"https://cruddur.jawid.me\" CorsAllowedOrigins=\"https://cruddur.jawid.me\" CognitoUserPoolId=\"eu-west-2_nYXT1Jren\" CognitoUserPoolClientId=\"vdsav0rco8m1afdqed8vo7j1i\" NetworkingStack=\"CrdNet\" DatabaseStack=\"CrdDb\" MessagesTableName=\"cruddur-messages\" ConversationsTableName=\"cruddur-conversations\" ConnectionsTableName=\"cruddur-websocket-connections\" WebSocketApiName=\"cruddur-websocket\" StageName=\"prod\" Runtime=\"python3.12\" LogRetentionInDays=\"30\" DeletionProtection=\"true\""
+parameter_overrides = "DatabaseUrl=\"postgresql://cruddurroot:Super776Secre776tPassword@cruddur-instance.cjw6kceccsk2.eu-west-2.rds.amazonaws.com:5432/cruddur\" AssetsBucketName=\"assets.cruddur.jawid.me\" AssetsCloudFrontDistributionId=\"E8PVS5207B19\" AvatarUploadPrefix=\"avatar/original/\" FrontendOrigin=\"https://cruddur.jawid.me\" CorsAllowedOrigins=\"https://cruddur.jawid.me\" CognitoUserPoolId=\"eu-west-2_nYXT1Jren\" CognitoUserPoolClientId=\"vdsav0rco8m1afdqed8vo7j1i\" NetworkingStack=\"CrdNet\" DatabaseStack=\"CrdDb\" MessagesTableName=\"cruddur-messages\" ConversationsTableName=\"cruddur-conversations\" ConnectionsTableName=\"cruddur-websocket-connections\" WebSocketApiName=\"cruddur-websocket\" StageName=\"prod\" Runtime=\"python3.12\" LogRetentionInDays=\"30\" DeletionProtection=\"true\""
 image_repositories = []
 
 [default.global.parameters]

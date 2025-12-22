@@ -4,7 +4,7 @@ Description: |
   Static frontend hosting
   - CloudFront Distribution with Origin Access Control
   - Uses existing S3 bucket (named by RootDomainName)
-  - Route53 alias record to CloudFront
+  - Route53 alias record to  CloudFront
 
 Parameters:
   CertificateArn:
@@ -12,19 +12,55 @@ Parameters:
 
   RootDomainName:
     Type: String
-    Description: Frontend domain (cruddur.jawid.me)
+    Description: Frontend  domain (cruddur.jawid.me)
     Default: cruddur.jawid.me
+
+  AssetsDomainName:
+    Type: String
+    Description: Assets domain (assets.cruddur.jawid.me)
+    Default: assets.cruddur.jawid.me
 
   HostedZoneId:
     Type: String
     Description: Route53 hosted zone ID for jawid.me
 
 Resources:
+  # ======================================================================
+  # S3 BUCKETS
+  # ======================================================================
+
+  AssetsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref AssetsDomainName
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET, PUT, HEAD]
+            AllowedOrigins: 
+              - !Sub "https://${RootDomainName}"
+              - "http://localhost:3000"
+              - "https://localhost:3000"
+            MaxAge: 3000
+
+  # ======================================================================
+  # ORIGIN ACCESS CONTROLS
+  # ======================================================================
+
   OriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
     Properties:
       OriginAccessControlConfig:
         Name: !Sub "${AWS::StackName}OAC"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  AssetsOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${AWS::StackName}AssetsOAC"
         OriginAccessControlOriginType: s3
         SigningBehavior: always
         SigningProtocol: sigv4
@@ -55,6 +91,32 @@ Resources:
               Bool:
                 aws:SecureTransport: false
 
+  AssetsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AssetsBucket
+      PolicyDocument:
+        Statement:
+          - Sid: AllowCloudFrontServicePrincipal
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "arn:aws:s3:::${AssetsDomainName}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${AssetsDistribution}"
+          - Sid: DenyInsecureConnections
+            Effect: Deny
+            Principal: '*'
+            Action: s3:*
+            Resource:
+              - !Sub "arn:aws:s3:::${AssetsDomainName}/*"
+              - !Sub "arn:aws:s3:::${AssetsDomainName}"
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+
   Distribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -67,7 +129,7 @@ Resources:
           - !Ref RootDomainName
         Origins:
           - Id: RootBucketOrigin
-            DomainName: !Sub "${RootDomainName}.s3.${AWS::Region}.amazonaws.com"
+            DomainName: !Sub "${RootDomainName}.s3.amazonaws.com"
             S3OriginConfig:
               OriginAccessIdentity: ''
             OriginAccessControlId: !GetAtt OriginAccessControl.Id
@@ -91,6 +153,31 @@ Resources:
           AcmCertificateArn: !Ref CertificateArn
           SslSupportMethod: sni-only
 
+  AssetsDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: Assets distribution for Cruddur
+        HttpVersion: http2and3
+        Aliases:
+          - !Ref AssetsDomainName
+        Origins:
+          - Id: AssetsBucketOrigin
+            DomainName: !Sub "${AssetsDomainName}.s3.eu-west-2.amazonaws.com"
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+            OriginAccessControlId: !GetAtt AssetsOriginAccessControl.Id
+        DefaultCacheBehavior:
+          TargetOriginId: AssetsBucketOrigin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS]
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          Compress: true
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CertificateArn
+          SslSupportMethod: sni-only
+
   CruddurAliasRecord:
     Type: AWS::Route53::RecordSet
     Properties:
@@ -100,6 +187,17 @@ Resources:
       AliasTarget:
         HostedZoneId: Z2FDTNDATAQYW2  # CloudFront hosted zone ID
         DNSName: !GetAtt Distribution.DomainName
+        EvaluateTargetHealth: false
+
+  AssetsAliasRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub "${AssetsDomainName}."
+      Type: A
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2  # CloudFront hosted zone ID
+        DNSName: !GetAtt AssetsDistribution.DomainName
         EvaluateTargetHealth: false
 Outputs:
   RootBucketName:
@@ -116,3 +214,18 @@ Outputs:
     Value: !GetAtt Distribution.DomainName
     Export:
       Name: !Sub "${AWS::StackName}DistributionDomainName"
+
+  AssetsBucketName:
+    Value: !Ref AssetsBucket
+    Export:
+      Name: !Sub "${AWS::StackName}AssetsBucketName"
+
+  AssetsDistributionId:
+    Value: !Ref AssetsDistribution
+    Export:
+      Name: !Sub "${AWS::StackName}AssetsDistributionId"
+
+  AssetsDistributionDomainName:
+    Value: !GetAtt AssetsDistribution.DomainName
+    Export:
+      Name: !Sub "${AWS::StackName}AssetsDistributionDomainName"
