@@ -546,6 +546,7 @@ Resources:
       FunctionName: message-stream
       CodeUri: functions/message_stream/
       Handler: app.lambda_handler
+      Description: Broadcasts new conversation messages to active WebSocket connections
       Role: !GetAtt MessageStreamExecutionRole.Arn
       Timeout: 30
       Environment:
@@ -571,6 +572,7 @@ Resources:
       FunctionName: websocket-connect
       CodeUri: functions/websocket_connect/
       Handler: app.lambda_handler
+      Description: Registers a WebSocket connection record with a short TTL
       Role: !GetAtt WebSocketConnectExecutionRole.Arn
       Environment:
         Variables:
@@ -585,6 +587,7 @@ Resources:
       FunctionName: websocket-disconnect
       CodeUri: functions/websocket_disconnect/
       Handler: app.lambda_handler
+      Description: Deletes the WebSocket connection record when clients disconnect
       Role: !GetAtt WebSocketDisconnectExecutionRole.Arn
       Environment:
         Variables:
@@ -627,6 +630,7 @@ Resources:
       FunctionName: image-to-thumbnail
       CodeUri: functions/image_to_thumbnail/
       Handler: app.lambda_handler
+      Description: Generates avatar thumbnails, cleans old files, and emits avatar events
       MemorySize: 512
       Environment:
         Variables:
@@ -646,6 +650,17 @@ Resources:
             Effect: Allow
             Action: lambda:InvokeFunction
             Resource: !GetAtt AvatarDbConsumer.Arn
+      Events:
+        AvatarUpload:
+          Type: S3
+          Properties:
+            Bucket: !Ref AssetsBucketName
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: avatar/original/
 
   AvatarDbConsumer:
     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
@@ -660,6 +675,7 @@ Resources:
       FunctionName: avatar-db-consumer
       CodeUri: functions/avatar_db_consumer/
       Handler: app.lambda_handler
+      Description: Updates user avatar URLs in the database from avatar events
       MemorySize: 512
       VpcConfig:
         SecurityGroupIds:
@@ -694,6 +710,7 @@ Resources:
       FunctionName: avatar-presign
       CodeUri: functions/avatar_presign/
       Handler: app.lambda_handler
+      Description: Issues presigned S3 upload URLs for authenticated avatar uploads
       Timeout: 20
       MemorySize: 128
       Environment:
