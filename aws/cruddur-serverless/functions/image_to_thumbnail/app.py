@@ -35,22 +35,6 @@ def delete_keys(bucket, keys):
         s3.delete_objects(Bucket=bucket, Delete={"Objects": chunk})
 
 
-def clean_all_user_files(user_id):
-    """Delete ALL existing files for a user before processing new upload"""
-    # Clean processed files
-    processed_prefix = f"{OUTPUT_PREFIX}{user_id}_"
-    processed_keys = list(list_keys(BUCKET, processed_prefix))
-    
-    # Clean original files  
-    original_prefix = f"{INPUT_PREFIX}{user_id}"
-    original_keys = list(list_keys(BUCKET, original_prefix))
-    
-    all_to_delete = processed_keys + original_keys
-    if all_to_delete:
-        delete_keys(BUCKET, all_to_delete)
-        logger.info("Deleted %s existing files for user %s", len(all_to_delete), user_id)
-
-
 def publish_avatar_event(original_key, thumbnail_key):
     try:
         sns.publish(
@@ -106,9 +90,6 @@ def lambda_handler(event, context):
 
         filename = original_key.split("/")[-1]
         user_id = filename.split(".")[0]
-
-        # Clean up ALL existing files for this user FIRST
-        clean_all_user_files(user_id)
 
         version = int(time.time())
         output_key = f"{OUTPUT_PREFIX}{user_id}_{version}.jpg"
