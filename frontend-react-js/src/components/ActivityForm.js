@@ -65,8 +65,8 @@ export default function ActivityForm(props) {
 
   if (props.popped === true) {
     return (
-      <div className="popup_form_wrap">
-        <div className="popup_form">
+      <div className="popup_form_wrap activity_popup" onClick={close}>
+        <div className="popup_form" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
           <button className="close_button" onClick={close}>×</button>
           <div className="popup_content">
             <form 
@@ -96,7 +96,7 @@ export default function ActivityForm(props) {
                   </select>
                 </div>
                 <div className={classes.join(' ')}>{240-count}</div>
-                <button type='submit'>Crud</button>
+                <button type='submit'>Post Crud</button>
               </div>
             </form>
           </div>

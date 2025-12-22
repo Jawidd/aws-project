@@ -39,7 +39,7 @@ export default function ReplyForm(props) {
       let data = await res.json();
       if (res.status === 200) {
         if (props.setReplies) {
-          props.setReplies(current => [data, ...(current || [])]);
+          props.setReplies((current = []) => [...current, data]);
         } else if (props.setActivities && props.activities) {
           let activities_deep_copy = JSON.parse(JSON.stringify(props.activities))
           let found_activity = activities_deep_copy.find(function (element) {

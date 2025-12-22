@@ -22,8 +22,7 @@ export default function DesktopSidebar(props) {
       {join}
       <footer>
         <Link to="/about">About</Link>
-        <Link to="/terms">Terms</Link>
-        <Link to="/privacy">Privacy</Link>
+        <Link to="/info">Info</Link>
       </footer>
     </section>
   );

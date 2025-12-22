@@ -110,7 +110,7 @@ CORS(
 
 @app.route("/api/health-check")
 def health_check():
-    return {"success-from app.py V1.3 health-check route": True}, 200
+    return {"success-from app.py V1.4 health-check route": True}, 200
 
 @app.route("/api/activities/trending", methods=['GET'])
 def data_trending():
