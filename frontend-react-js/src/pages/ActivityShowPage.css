@@ -9,14 +9,21 @@
 }
 
 .back {
-  font-size: 24px;
-  color: rgba(255,255,255,0.5);
+  font-size: 26px;
+  color: rgba(255,255,255,0.8);
   cursor: pointer;
-  padding: 0px 16px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
 }
 
 .back:hover {
-  color: rgba(255,255,255,1)
+  color: #fff;
+  background: rgba(59, 130, 246, 0.12);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
 }
 
 .activity_feed_heading.flex {

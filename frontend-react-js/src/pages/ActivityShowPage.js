@@ -41,7 +41,7 @@ export default function ActivityShowPage() {
     checkAuth(setUser);
   }, []);
 
-  const goBack = () => navigate(-1);
+  const goBack = () => navigate('/');
 
   let el_activity = null;
   if (activity) {
@@ -71,7 +71,10 @@ export default function ActivityShowPage() {
         />
         <div className='activity_feed'>
           <div className='activity_feed_heading flex'>
-            <div className='back' onClick={goBack}>&larr;</div>
+            <div className='back' onClick={goBack} title="Back to Home">
+              <span aria-hidden="true">←</span>
+              <span className="back-label">Home</span>
+            </div>
             <div className='title'>Crud</div>
           </div>
           {el_activity}

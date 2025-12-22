@@ -195,12 +195,12 @@
 
 .activity_item.expanded .created_at_full {
   padding-left: 64px;
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
   font-weight: 600;
 }
 
 .activity_item.expanded .activity_actions {
   padding-left: 64px;
-  padding-top: 8px;
+  padding-top: 6px;
 }
