@@ -1,4 +1,5 @@
 import './AboutPage.css';
+import { Link } from 'react-router-dom';
 
 export default function AboutPage() {
   return (
@@ -11,6 +12,9 @@ export default function AboutPage() {
         <p>
           Explore the source on the <a href="https://github.com/omenking/aws-bootcamp-cruddur-2023" target="_blank" rel="noreferrer">Cruddur repository</a>.
         </p>
+        <div className="about-actions">
+          <Link className="home-button" to="/">← Back to Home</Link>
+        </div>
       </div>
     </article>
   );
