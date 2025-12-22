@@ -38,6 +38,6 @@ aws cloudformation deploy \
     ClusterStack="$CLUSTER_STACK" \
     EnvCognitoUserPoolClientId="$EnvCognitoUserPoolClientId" \
     EnvCognitoUserPoolId="$EnvCognitoUserPoolId" \
-    EnvWebsocketApiEndpoint="$EnvWebsocketApiEndpoint" \
+    EnvWebsocketApiEndpoint="$EnvWebsocketApiEndpoint"  \
   --capabilities CAPABILITY_NAMED_IAM
 

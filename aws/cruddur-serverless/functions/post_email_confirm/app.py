@@ -40,7 +40,7 @@ def lambda_handler(event, context):
             ))
             conn.commit()
 
-        logger.info("User post-confirmation processed: %s", email)
+        logger.info("User post-confirmation processed : %s", email)
 
     except Exception:
         logger.exception("Post-confirmation handler failed")
