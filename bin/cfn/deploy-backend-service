@@ -16,9 +16,9 @@ BUCKET="cfn-artifacts-225442939245-eu-west-2"
 # CloudFormation parameters
 NETWORKING_STACK="CrdNet"
 CLUSTER_STACK="CrdCluster"
-EnvCognitoUserPoolClientId="20usdmenjqv0nmofrkldhdnnet"
-EnvCognitoUserPoolId="eu-west-2_LdwGkYD5l"
-EnvWebsocketApiEndpoint="https://e5mz6glfej.execute-api.eu-west-2.amazonaws.com"
+EnvCognitoUserPoolClientId="vdsav0rco8m1afdqed8vo7j1i"
+EnvCognitoUserPoolId="eu-west-2_nYXT1Jren"
+EnvWebsocketApiEndpoint="wss://e7y93hdkga.execute-api.eu-west-2.amazonaws.com/prod"
 
 echo "Deploying Service Stack"
 echo "Template: $CFN_PATH"
