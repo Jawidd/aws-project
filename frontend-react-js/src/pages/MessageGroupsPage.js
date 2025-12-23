@@ -79,17 +79,23 @@ export default function MessageGroupsPage() {
   if (loading) return <LoadingSpinner text="Loading messages..." />;
 
   return (
-    <article>
-      <DesktopNavigation user={user} active={'messages'} setPopped={setPopped} />
-      <section className='message_groups'>
-      <MessageGroupFeed 
-        message_groups={messageGroups} 
-        users_without_conversations={usersWithoutConversations}
-        newMessages={newMessages}
-        setNewMessages={setNewMessages}
-      />
-      </section>
-      <div className='content'></div>
-    </article>
+    <div className="app">
+      <div className="main-container">
+        <div className="sidebar">
+          <DesktopNavigation user={user} active={'messages'} setPopped={setPopped} />
+        </div>
+        <main className="main-content">
+          <MessageGroupFeed 
+            message_groups={messageGroups} 
+            users_without_conversations={usersWithoutConversations}
+            newMessages={newMessages}
+            setNewMessages={setNewMessages}
+          />
+        </main>
+        <div className="right-sidebar">
+          {/* Empty for messages page */}
+        </div>
+      </div>
+    </div>
   );
 }

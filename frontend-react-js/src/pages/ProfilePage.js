@@ -29,10 +29,12 @@ export default function ProfilePage() {
   }
 
   return (
-    <article>
-      <DesktopNavigation user={user} active={'profile'} updateUserProfile={updateUserProfile} />
-      <div className='content'>
-        <div className='content_feed'>
+    <div className="app">
+      <div className="main-container">
+        <div className="sidebar">
+          <DesktopNavigation user={user} active={'profile'} updateUserProfile={updateUserProfile} />
+        </div>
+        <main className="main-content">
           <div className='content_feed_heading'>
             <div className='title'>My Profile</div>
           </div>
@@ -57,15 +59,17 @@ export default function ProfilePage() {
               <p>{user.bio || 'No bio available'}</p>
             </div>
           </div>
+        </main>
+        <div className="right-sidebar">
+          <DesktopSidebar user={user} />
         </div>
       </div>
-      <DesktopSidebar user={user} />
       <ProfileForm 
         profile={user}
         popped={poppedEdit} 
         setPopped={setPoppedEdit}
         updateUserProfile={updateUserProfile}
       />
-    </article>
+    </div>
   );
 }

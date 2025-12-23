@@ -56,29 +56,35 @@ export default function NotifcicationFeedPage() {
   }, [])
 
   return (
-    <article>
-      <DesktopNavigation user={user} active={'notifications'} setPopped={setPopped} />
-      <div className='content'>
-        <ActivityForm  
-          popped={popped}
-          setPopped={setPopped} 
-          setActivities={setActivities} 
-        />
-        <ReplyForm 
-          activity={replyActivity} 
-          popped={poppedReply} 
-          setPopped={setPoppedReply} 
-          setActivities={setActivities} 
-          activities={activities} 
-        />
-        <ActivityFeed 
-          title="Notifications" 
-          setReplyActivity={setReplyActivity} 
-          setPopped={setPoppedReply} 
-          activities={activities} 
-        />
+    <div className="app">
+      <div className="main-container">
+        <div className="sidebar">
+          <DesktopNavigation user={user} active={'notifications'} setPopped={setPopped} />
+        </div>
+        <main className="main-content">
+          <ActivityForm  
+            popped={popped}
+            setPopped={setPopped} 
+            setActivities={setActivities} 
+          />
+          <ReplyForm 
+            activity={replyActivity} 
+            popped={poppedReply} 
+            setPopped={setPoppedReply} 
+            setActivities={setActivities} 
+            activities={activities} 
+          />
+          <ActivityFeed 
+            title="Notifications" 
+            setReplyActivity={setReplyActivity} 
+            setPopped={setPoppedReply} 
+            activities={activities} 
+          />
+        </main>
+        <div className="right-sidebar">
+          <DesktopSidebar user={user} />
+        </div>
       </div>
-      <DesktopSidebar user={user} />
-    </article>
+    </div>
   );
 }
