@@ -282,7 +282,7 @@ def data_profile_me(claims):
   from lib.db import db
   try:
     sql = """
-    SELECT uuid, handle, full_name as display_name, bio, created_at, avatar_url, cognito_user_id
+    SELECT uuid, handle, full_name as display_name, bio, created_at, avatar_url, cognito_user_id, cover_image_url
     FROM public.users 
     WHERE cognito_user_id = %(cognito_user_id)s
     """
@@ -300,7 +300,8 @@ def data_profile_me(claims):
             'bio': result[3] or '',
             'created_at': str(result[4]),
             'avatar_url': result[5],
-            'cognito_user_id': result[6]
+            'cognito_user_id': result[6],
+            'cover_image_url': result[7]
           }, 200
         else:
           return {'error': 'User not found'}, 404

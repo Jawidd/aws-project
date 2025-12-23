@@ -15,6 +15,12 @@ export default function ProfilePage() {
     backgroundSize: 'cover',
     backgroundPosition: 'center'
   } : {};
+  
+  const coverStyle = user?.cover_image_url ? {
+    backgroundImage: `url(${user.cover_image_url})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center'
+  } : {};
 
   if (loading) return <LoadingSpinner text="Loading profile..." />;
 
@@ -31,6 +37,7 @@ export default function ProfilePage() {
             <div className='title'>My Profile</div>
           </div>
           <div className="profile-display">
+            <div className="profile-cover" style={coverStyle}></div>
             <div className="profile-header">
               <div className="profile-avatar-large" style={avatarStyle}></div>
               <div className="profile-details">

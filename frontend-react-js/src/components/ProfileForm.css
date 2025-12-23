@@ -51,6 +51,27 @@ form.profile_form label {
   flex-shrink: 0;
 }
 
+.profile_form .cover_upload {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.profile_form .cover_preview {
+  width: 120px;
+  height: 64px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1a1a1a, #333);
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.profile_form .field.cover {
+  margin-bottom: 24px;
+}
+
 .profile_form .upload_button {
   background: #2d2d2d;
   color: #fff;

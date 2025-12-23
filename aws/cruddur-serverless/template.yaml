@@ -30,6 +30,11 @@ Parameters:
     Default: avatar/original/
     Description: S3 prefix for original avatar uploads
 
+  CoverPhotoPrefix:
+    Type: String
+    Default: cover-photos/
+    Description: S3 prefix for cover photo uploads
+
 
 
   # Frontend Configuration ------
@@ -681,6 +686,16 @@ Resources:
                 Rules:
                   - Name: prefix
                     Value: avatar/original/
+        CoverPhotoUpload:
+          Type: S3
+          Properties:
+            Bucket: !Ref AssetsBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: cover-photos/
 
   AvatarDbConsumer:
     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
@@ -737,6 +752,7 @@ Resources:
         Variables:
           AVATAR_UPLOAD_BUCKET: !Ref AssetsBucketName
           AVATAR_UPLOAD_PREFIX: !Ref AvatarUploadPrefix
+          COVER_PHOTO_PREFIX: !Ref CoverPhotoPrefix
           PRESIGN_URL_TTL_SECONDS: '300'
       Policies:
         - S3WritePolicy:
