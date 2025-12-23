@@ -1,54 +1,74 @@
-main, article {
-  height: 100%;
-  width: 100%;
+.app {
   display: flex;
-  gap: 0;
-}
-
-.content {
-  flex: 1;
   height: 100vh;
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
-  backdrop-filter: blur(25px);
-  border-left: 1px solid rgba(59, 130, 246, 0.2);
-  border-right: 1px solid rgba(59, 130, 246, 0.2);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  overflow-y: auto;
-  margin: 16px 0;
-  border-radius: 24px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100vw;
+  background: #000;
 }
 
-.content:hover {
-  box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(59, 130, 246, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  border-color: rgba(59, 130, 246, 0.4);
+.main-container {
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.message_groups {
-  width: 320px;
-  flex-shrink: 0;
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
-  backdrop-filter: blur(25px);
-  border-right: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 24px;
-  margin: 16px;
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+.sidebar {
+  width: 275px;
+  min-height: 100vh;
+  border-right: 1px solid #2f3336;
+  padding: 0;
+  position: sticky;
+  top: 0;
 }
 
-.message_groups:hover {
-  box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(59, 130, 246, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  border-color: rgba(59, 130, 246, 0.4);
+.main-content {
+  flex: 1;
+  min-height: 100vh;
+  border-right: 1px solid #2f3336;
+  max-width: 600px;
+}
+
+.right-sidebar {
+  width: 350px;
+  min-height: 100vh;
+  padding: 0;
+  position: sticky;
+  top: 0;
+}
+
+/* Mobile styles */
+@media (max-width: 1024px) {
+  .right-sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-container {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+    border-right: none;
+    border-top: 1px solid #2f3336;
+    order: 2;
+    position: fixed;
+    bottom: 0;
+    z-index: 1000;
+    background: #000;
+  }
+  
+  .main-content {
+    max-width: 100%;
+    border-right: none;
+    padding-bottom: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-container {
+    padding: 0;
+  }
 }
