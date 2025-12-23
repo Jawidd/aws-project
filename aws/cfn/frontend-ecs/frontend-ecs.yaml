@@ -129,7 +129,7 @@ Resources:
             DomainName: !Sub "${AssetsDomainName}.s3.eu-west-2.amazonaws.com"
             S3OriginConfig:
               OriginAccessIdentity: ''
-            OriginAccessControlId: E21QS10SCG6GOI
+            OriginAccessControlId: !GetAtt OriginAccessControl.Id
         DefaultCacheBehavior:
           TargetOriginId: assets.cruddur.jawid.me.s3.eu-west-2.amazonaws.com-mj0cubkjcy5
           ViewerProtocolPolicy: redirect-to-https
