@@ -10,7 +10,10 @@ export default function ProfileForm(props) {
   const [displayName, setDisplayName] = React.useState('');
   const [avatarPreview, setAvatarPreview] = React.useState('');
   const [avatarFile, setAvatarFile] = React.useState(null);
+  const [coverPreview, setCoverPreview] = React.useState('');
+  const [coverFile, setCoverFile] = React.useState(null);
   const [uploadingAvatar, setUploadingAvatar] = React.useState(false);
+  const [uploadingCover, setUploadingCover] = React.useState(false);
   const [uploadMessage, setUploadMessage] = React.useState('');
   const [uploadError, setUploadError] = React.useState('');
 
@@ -18,16 +21,17 @@ export default function ProfileForm(props) {
     setBio(props.profile.bio || "");
     setDisplayName(props.profile.display_name || "");
     setAvatarPreview(props.profile.avatar_url || "");
+    setCoverPreview(props.profile.cover_image_url || "");
   }, [props.profile])
 
-  const requestPresignedUrl = async (extension, contentType) => {
+  const requestPresignedUrl = async (extension, contentType, type = 'avatar') => {
     if (!token) {
-      throw new Error("You must be signed in to upload an avatar");
+      throw new Error("You must be signed in to upload an image");
     }
 
     const gatewayBase = process.env.REACT_APP_AVATAR_API_URL;
     if (!gatewayBase) {
-      throw new Error("Avatar upload endpoint is not configured");
+      throw new Error("Image upload endpoint is not configured");
     }
 
     const res = await fetch(`${gatewayBase}/avatars/presign`, {
@@ -39,7 +43,8 @@ export default function ProfileForm(props) {
       },
       body: JSON.stringify({
         extension: extension,
-        content_type: contentType
+        content_type: contentType,
+        type: type
       }),
     });
 
@@ -84,6 +89,17 @@ export default function ProfileForm(props) {
     setUploadMessage('Avatar selected. Click Save to upload.');
   };
 
+  const handleCoverChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const previewUrl = URL.createObjectURL(file);
+    setCoverPreview(previewUrl);
+    setCoverFile(file);
+    setUploadError('');
+    setUploadMessage('Cover photo selected. Click Save to upload.');
+  };
+
   const onsubmit = async (event) => {
     event.preventDefault();
     try {
@@ -96,7 +112,7 @@ export default function ProfileForm(props) {
         const parts = avatarFile.name.split('.');
         const extension = (parts.length > 1 ? parts.pop() : 'jpg');
 
-        const uploadUrl = await requestPresignedUrl(extension, avatarFile.type);
+        const uploadUrl = await requestPresignedUrl(extension, avatarFile.type, 'avatar');
         const uploadRes = await fetch(uploadUrl, {
           method: "PUT",
           headers: { 'Content-Type': avatarFile.type },
@@ -115,6 +131,7 @@ export default function ProfileForm(props) {
             display_name: refreshedProfile.display_name || displayName,
             bio: refreshedProfile.bio ?? bio,
             avatar_url: refreshedProfile.avatar_url,
+            cover_image_url: refreshedProfile.cover_image_url || coverPreview,
             handle: refreshedProfile.handle,
             uuid: refreshedProfile.uuid,
             cognito_user_id: refreshedProfile.cognito_user_id
@@ -124,6 +141,29 @@ export default function ProfileForm(props) {
         } else {
           setUploadMessage("Upload started. The image will refresh after processing.");
         }
+      }
+
+      // Upload cover photo if selected
+      if (coverFile) {
+        setUploadingCover(true);
+        setUploadError('');
+        setUploadMessage('Uploading cover photo...');
+
+        const parts = coverFile.name.split('.');
+        const extension = (parts.length > 1 ? parts.pop() : 'jpg');
+
+        const uploadUrl = await requestPresignedUrl(extension, coverFile.type, 'cover');
+        const uploadRes = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: { 'Content-Type': coverFile.type },
+          body: coverFile
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error(`Cover photo upload failed with status ${uploadRes.status}`);
+        }
+
+        setUploadMessage("Cover photo uploaded!");
       }
 
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/profile/update`
@@ -145,7 +185,8 @@ export default function ProfileForm(props) {
           props.updateUserProfile({
             bio: bio,
             display_name: displayName,
-            avatar_url: avatarPreview || props.profile.avatar_url
+            avatar_url: avatarPreview || props.profile.avatar_url,
+            cover_image_url: coverPreview || props.profile.cover_image_url
           });
         }
         props.setPopped(false)
@@ -157,6 +198,7 @@ export default function ProfileForm(props) {
       setUploadError(err.message || 'Upload failed');
     } finally {
       setUploadingAvatar(false);
+      setUploadingCover(false);
     }
   }
 
@@ -207,6 +249,24 @@ export default function ProfileForm(props) {
               </div>
               {uploadMessage && <div className="upload_message">{uploadMessage}</div>}
               {uploadError && <div className="upload_error">{uploadError}</div>}
+            </div>
+            <div className="field cover">
+              <label>Cover Photo</label>
+              <div className="cover_upload">
+                <div
+                  className="cover_preview"
+                  style={coverPreview ? { backgroundImage: `url(${coverPreview})` } : {}}
+                ></div>
+                <label className="upload_button">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCoverChange}
+                    disabled={uploadingCover}
+                  />
+                  {uploadingCover ? 'Uploading...' : 'Choose file'}
+                </label>
+              </div>
             </div>
             <div className="field display_name">
               <label>Display Name</label>

@@ -20,7 +20,8 @@ CREATE TABLE public.users (
     cognito_user_id VARCHAR(255) UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     bio TEXT,
-    avatar_url VARCHAR(500)
+    avatar_url VARCHAR(500),
+    cover_image_url VARCHAR(500)
 );
 
 CREATE TABLE public.activities (

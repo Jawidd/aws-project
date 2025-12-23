@@ -88,6 +88,11 @@ def lambda_handler(event, context):
         if not original_key or not original_key.startswith(INPUT_PREFIX):
             continue
 
+        # Skip processing for cover photos - they don't need thumbnails
+        if original_key.startswith("cover-photos/"):
+            logger.info(f"Skipping thumbnail generation for cover photo: {original_key}")
+            continue
+
         filename = original_key.split("/")[-1]
         user_id = filename.split(".")[0]
 

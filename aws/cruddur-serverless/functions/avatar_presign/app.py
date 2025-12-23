@@ -6,12 +6,15 @@ import boto3
 s3 = boto3.client("s3")
 
 BUCKET = os.environ["AVATAR_UPLOAD_BUCKET"]
-PREFIX = os.getenv("AVATAR_UPLOAD_PREFIX", "avatar/original/")
+AVATAR_PREFIX = os.getenv("AVATAR_UPLOAD_PREFIX", "avatar/original/")
+COVER_PREFIX = "cover-photos/"
 URL_TTL = int(os.getenv("PRESIGN_URL_TTL_SECONDS", "300"))
 
-# Ensure folder-style prefix
-if not PREFIX.endswith("/"):
-    PREFIX += "/"
+# Ensure folder-style prefixes
+if not AVATAR_PREFIX.endswith("/"):
+    AVATAR_PREFIX += "/"
+if not COVER_PREFIX.endswith("/"):
+    COVER_PREFIX += "/"
 
 
 def lambda_handler(event, context):
@@ -36,9 +39,13 @@ def lambda_handler(event, context):
 
     file_ext = (body.get("extension") or "jpg").lstrip(".").lower()
     content_type = body.get("content_type")
+    upload_type = body.get("type", "avatar").lower()
 
+    # Choose prefix based on upload type
+    prefix = COVER_PREFIX if upload_type == "cover" else AVATAR_PREFIX
+    
     # Predictable object key simplifies cleanup later
-    object_key = f"{PREFIX}{user_sub}.{file_ext}"
+    object_key = f"{prefix}{user_sub}.{file_ext}"
 
     params = {
         "Bucket": BUCKET,
