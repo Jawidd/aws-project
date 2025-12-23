@@ -25,8 +25,8 @@ COPY . .
 # Inside Container and wil remain set when the container is running
 ENV FLASK_DEBUG=0
 
-EXPOSE 5000
+EXPOSE 4567
 
 # CMD (Command)
 # python3 -m flask run --host=0.0.0.0 --port=4567
-CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0", "--port=5000", "--no-debug","--no-debugger","--no-reload"]
+CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0", "--port=4567", "--no-debug","--no-debugger","--no-reload"]

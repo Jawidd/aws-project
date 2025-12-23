@@ -151,7 +151,7 @@ Resources:
       # Constraints: Must contain from 8 to 128 characters.
       MasterUserPassword: !Ref MasterUserPassword
 
-      PubliclyAccessible: false
+      PubliclyAccessible: true
       VPCSecurityGroups:
         - !GetAtt RDSPostgresSG.GroupId
 
