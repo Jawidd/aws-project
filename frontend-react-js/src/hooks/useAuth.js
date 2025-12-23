@@ -42,6 +42,7 @@ export default function useAuth() {
           bio: profile?.bio || '',
           uuid: profile?.uuid,
           avatar_url: profile?.avatar_url || null,
+          cover_image_url: profile?.cover_image_url || null,
           cognito_user_id: profile?.cognito_user_id || user.userId
         });
         setToken(token);
