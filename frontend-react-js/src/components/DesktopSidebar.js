@@ -16,7 +16,7 @@ export default function DesktopSidebar(props) {
   }
 
   return (
-    <section>
+    <section className="sidebar-section">
       <Search />
       {trending}
       {join}

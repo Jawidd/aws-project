@@ -56,36 +56,41 @@ export default function ActivityShowPage() {
   }
 
   return (
-    <article>
-      <DesktopNavigation user={user} active={null} setPopped={setPopped} />
-      <div className='content'>
-        <ActivityForm
-          popped={popped}
-          setPopped={setPopped}
-        />
-        <ReplyForm
-          activity={replyActivity || activity}
-          popped={poppedReply}
-          setReplies={setReplies}
-          setPopped={setPoppedReply}
-        />
-        <div className='activity_feed'>
-          <div className='activity_feed_heading flex'>
-            <div className='back' onClick={goBack} title="Back to Home">
-              <span aria-hidden="true">←</span>
-              <span className="back-label">Home</span>
-            </div>
-            <div className='title'>Crud</div>
-          </div>
-          {el_activity}
-          <Replies
-            setReplyActivity={setReplyActivity}
-            setPopped={setPoppedReply}
-            replies={replies}
+    <div className="app">
+      <div className="main-container">
+        <div className="sidebar">
+          <DesktopNavigation user={user} active={null} setPopped={setPopped} />
+        </div>
+        <main className="main-content">
+          <ActivityForm
+            popped={popped}
+            setPopped={setPopped}
           />
+          <ReplyForm
+            activity={replyActivity || activity}
+            popped={poppedReply}
+            setReplies={setReplies}
+            setPopped={setPoppedReply}
+          />
+          <div className='activity_feed'>
+            <div className='activity_feed_heading'>
+              <button className='back-button' onClick={goBack} title="Back to Home">
+                <span aria-hidden="true">←</span>
+              </button>
+              <div className='title'>Post</div>
+            </div>
+            {el_activity}
+            <Replies
+              setReplyActivity={setReplyActivity}
+              setPopped={setPoppedReply}
+              replies={replies}
+            />
+          </div>
+        </main>
+        <div className="right-sidebar">
+          <DesktopSidebar user={user} forceTrending={true} hideJoin={true} />
         </div>
       </div>
-      <DesktopSidebar user={user} forceTrending={true} hideJoin={true} />
-    </article>
+    </div>
   );
 }

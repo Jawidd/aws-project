@@ -49,19 +49,25 @@ export default function HomeFeedPage() {
   if (loading) return <LoadingSpinner text="Loading home feed..." />;
 
   return (
-    <article>
-      <DesktopNavigation user={user} active={'home'} setPopped={setPopped} updateUserProfile={updateUserProfile} />
-      <div className='content'>
-        <ActivityForm  
-          popped={popped} setPopped={setPopped} setActivities={setActivities} 
-        />
-        <ReplyForm 
-          activity={replyActivity} popped={poppedReply} 
-          setPopped={setPoppedReply} setActivities={setActivities} activities={activities} 
-        />
-        <ActivityFeed title="Home" setReplyActivity={setReplyActivity} setPopped={setPoppedReply} activities={activities} />
+    <div className="app">
+      <div className="main-container">
+        <div className="sidebar">
+          <DesktopNavigation user={user} active={'home'} setPopped={setPopped} updateUserProfile={updateUserProfile} />
+        </div>
+        <main className="main-content">
+          <ActivityForm  
+            popped={popped} setPopped={setPopped} setActivities={setActivities} 
+          />
+          <ReplyForm 
+            activity={replyActivity} popped={poppedReply} 
+            setPopped={setPoppedReply} setActivities={setActivities} activities={activities} 
+          />
+          <ActivityFeed title="Home" setReplyActivity={setReplyActivity} setPopped={setPoppedReply} activities={activities} />
+        </main>
+        <div className="right-sidebar">
+          <DesktopSidebar user={user} />
+        </div>
       </div>
-      <DesktopSidebar user={user} />
-    </article>
+    </div>
   );
 }

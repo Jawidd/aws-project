@@ -1,7 +1,1 @@
-article {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 0 24px;
-}
+/* HomeFeedPage styles are now handled by App.css */
