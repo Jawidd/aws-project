@@ -3,6 +3,8 @@ import React from "react";
 import {ReactComponent as Logo} from '../components/svg/logo.svg';
 import { Link } from "react-router-dom";
 import { signUp, getCurrentUser } from 'aws-amplify/auth';
+import DesktopNavigation from '../components/DesktopNavigation';
+import DesktopSidebar from '../components/DesktopSidebar';
 
 export default function SignupPage() {
   const [name, setName] = React.useState('');
@@ -10,6 +12,7 @@ export default function SignupPage() {
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [errors, setErrors] = React.useState('');
+  const [user, setUser] = React.useState(null);
 
   React.useEffect(() => {
     const checkAuthStatus = async () => {
@@ -68,64 +71,68 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-header">
-          <Logo className='auth-logo' />
-          <h1>Join Cruddur today</h1>
-        </div>
-        
-        <form className='auth-form' onSubmit={onsubmit}>
-          <div className='form-field'>
-            <label>Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={name_onchange}
-              required
-            />
+    <article className='signup-article'>
+      <DesktopNavigation user={user} active={null} setPopped={() => {}} />
+      <div className='content'>
+        <div className='signup-wrapper'>
+          <form 
+            className='signup_form'
+            onSubmit={onsubmit}
+          >
+            <div className='signup-info'>
+              <Logo className='logo' />
+            </div>
+            <h2>Sign up to create a Cruddur account</h2>
+            <div className='fields'>
+              <div className='field text_field name'>
+                <label>Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={name_onchange}
+                  required
+                />
+              </div>
+              <div className='field text_field email'>
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={email_onchange}
+                  required
+                />
+              </div>
+              <div className='field text_field username'>
+                <label>Username</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={username_onchange}
+                  required
+                />
+              </div>
+              <div className='field text_field password'>
+                <label>Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={password_onchange}
+                  required
+                />
+              </div>
+            </div>
+            {el_errors}
+            <div className='submit'>
+              <button type='submit'>Sign Up</button>
+            </div>
+          </form>
+          <div className="already-have-an-account">
+            <span>Already have an account?</span>
+            <Link to="/signin">Sign in</Link>
           </div>
-          
-          <div className='form-field'>
-            <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={email_onchange}
-              required
-            />
-          </div>
-          
-          <div className='form-field'>
-            <label>Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={username_onchange}
-              required
-            />
-          </div>
-          
-          <div className='form-field'>
-            <label>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={password_onchange}
-              required
-            />
-          </div>
-          
-          {el_errors}
-          
-          <button type='submit' className="auth-button">Sign Up</button>
-        </form>
-        
-        <div className="auth-footer">
-          <span>Already have an account?</span>
-          <Link to="/signin">Sign in</Link>
         </div>
       </div>
-    </div>
+      <DesktopSidebar user={user} />
+    </article>
   );
 }

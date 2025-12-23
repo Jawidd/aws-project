@@ -7,7 +7,7 @@ import {ReactComponent as MessagesIcon} from './svg/messages.svg';
 
 export default function DesktopNavigationLink(props) {
   const classes = ()=> {
-    const classes = ['nav-link']
+    const classes = ['primary']
     if (props.handle === props.active) {
       classes.push('active')
     }
@@ -34,7 +34,7 @@ export default function DesktopNavigationLink(props) {
   return (
     <Link to={props.url} className={classes()}>
       {icon()}
-      <span className="text">{props.name}</span>
+      <span>{props.name}</span>
     </Link>
   );
 }

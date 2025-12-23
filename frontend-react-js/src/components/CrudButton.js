@@ -7,6 +7,6 @@ export default function CrudButton(props) {
   }
 
   return (
-    <button onClick={pop_activities_form} className='post-button'>Post</button>
+    <button onClick={pop_activities_form} className='post'>Crud</button>
   );
 }

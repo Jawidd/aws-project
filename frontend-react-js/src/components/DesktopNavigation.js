@@ -33,23 +33,17 @@ export default function DesktopNavigation(props) {
   }
 
   return (
-    <nav className="nav-container">
-      <div className="nav-header">
-        <Logo className='nav-logo' />
-      </div>
-      <div className="nav-links">
-        <DesktopNavigationLink url="/" 
-          name="Home"
-          handle="home"
-          active={props.active} />
-        {notificationsLink}
-        {messagesLink}
-        {profileLink}
-      </div>
+    <nav>
+      <Logo className='logo' />
+      <DesktopNavigationLink url="/" 
+        name="Home"
+        handle="home"
+        active={props.active} />
+      {notificationsLink}
+      {messagesLink}
+      {profileLink}
       {button}
-      <div className="nav-profile">
-        {profile}
-      </div>
+      {profile}
     </nav>
   );
 }

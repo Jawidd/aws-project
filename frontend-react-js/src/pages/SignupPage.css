@@ -1,1 +1,143 @@
-/* SignupPage styles are now handled by SigninPage.css shared styles */
+article.signup-article {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: flex-start;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.signup-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 40px;
+}
+
+.signup_form {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.signup-info {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.signup-info .logo {
+  width: 60px;
+  height: 60px;
+  fill: rgba(59, 130, 246, 0.8);
+}
+
+.signup_form h2 {
+  text-align: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 24px;
+  margin-bottom: 32px;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field label {
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.field input {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  display: block;
+  width: 100%;
+  padding: 16px 20px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgba(59, 130, 246, 0.05);
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.field input:focus {
+  border: 1px solid #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.submit {
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+}
+
+.submit button {
+  font-weight: 700;
+  outline: none;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 32px;
+  font-size: 16px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  width: 100%;
+}
+
+.submit button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+}
+
+.already-have-an-account {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  padding: 24px;
+  color: rgba(255, 255, 255, 0.7);
+  gap: 8px;
+  display: flex;
+  justify-content: center;
+  font-weight: 500;
+  border-radius: 12px;
+  margin-top: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.already-have-an-account a {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  margin-left: 8px;
+}
+
+.already-have-an-account a:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.errors {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  margin-top: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}

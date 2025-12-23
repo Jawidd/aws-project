@@ -1,97 +1,147 @@
-.auth-header {
+article.signin-article {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: flex-start;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.signin-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 40px;
+}
+
+.signin_form {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.signin-info {
   text-align: center;
+  margin-bottom: 24px;
+}
+
+.signin-info .logo {
+  width: 60px;
+  height: 60px;
+  fill: rgba(59, 130, 246, 0.8);
+}
+
+.signin_form h2 {
+  text-align: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 24px;
   margin-bottom: 32px;
 }
 
-.auth-logo {
-  width: 48px;
-  height: 48px;
-  fill: #1d9bf0;
-  margin-bottom: 16px;
-}
-
-.auth-header h1 {
-  color: #e7e9ea;
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-}
-
-.auth-form {
+.fields {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.form-field {
+.field label {
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.field input {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  display: block;
+  width: 100%;
+  padding: 16px 20px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgba(59, 130, 246, 0.05);
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.field input:focus {
+  border: 1px solid #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.submit {
+  margin-top: 32px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
+  align-items: center;
 }
 
-.form-field label {
-  color: #e7e9ea;
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.form-field input {
-  background: #000;
-  border: 1px solid #2f3336;
-  border-radius: 8px;
-  padding: 16px;
-  color: #e7e9ea;
-  font-size: 15px;
-  transition: border-color 0.2s;
-}
-
-.form-field input:focus {
-  outline: none;
-  border-color: #1d9bf0;
-}
-
-.auth-button {
-  background: #1d9bf0;
-  color: white;
-  border: none;
-  border-radius: 9999px;
-  padding: 16px;
-  font-size: 15px;
+.submit button {
   font-weight: 700;
+  outline: none;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 32px;
+  font-size: 16px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #fff;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  width: 100%;
 }
 
-.auth-button:hover {
-  background: #1a8cd8;
+.submit button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
 }
 
 .forgot-link {
-  color: #1d9bf0;
+  color: #3b82f6;
+  font-weight: 600;
   text-decoration: none;
-  text-align: center;
-  font-size: 15px;
+  transition: all 0.3s ease;
 }
 
 .forgot-link:hover {
+  color: #1d4ed8;
   text-decoration: underline;
 }
 
-.auth-footer {
-  text-align: center;
-  margin-top: 32px;
-  padding-top: 20px;
-  border-top: 1px solid #2f3336;
-  color: #71767b;
+.dont-have-an-account {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  padding: 24px;
+  color: rgba(255, 255, 255, 0.7);
+  gap: 8px;
+  display: flex;
+  justify-content: center;
+  font-weight: 500;
+  border-radius: 12px;
+  margin-top: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.auth-footer a {
-  color: #1d9bf0;
+.dont-have-an-account a {
+  color: #3b82f6;
   text-decoration: none;
+  font-weight: 700;
+  transition: all 0.3s ease;
   margin-left: 8px;
 }
 
-.auth-footer a:hover {
+.dont-have-an-account a:hover {
+  color: #1d4ed8;
   text-decoration: underline;
 }
 
@@ -103,6 +153,7 @@
   border-radius: 8px;
   text-align: center;
   font-size: 14px;
+  margin-bottom: 20px;
 }
 
 .errors {
@@ -113,14 +164,5 @@
   border-radius: 8px;
   text-align: center;
   font-size: 14px;
-}
-
-@media (max-width: 480px) {
-  .auth-container {
-    padding: 20px;
-  }
-  
-  .auth-header h1 {
-    font-size: 20px;
-  }
+  margin-top: 20px;
 }
