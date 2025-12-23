@@ -263,9 +263,7 @@ Resources:
             Principal:
               Service: cloudfront.amazonaws.com
             Action: s3:GetObject
-            Resource: 
-              - !Sub "arn:aws:s3:::${AssetsBucketName}/avatar/*"
-              - !Sub "arn:aws:s3:::${AssetsBucketName}/cover-photos/*"
+            Resource: !Sub "arn:aws:s3:::${AssetsBucketName}/*"
             Condition:
               StringEquals:
                 AWS:SourceArn: 
