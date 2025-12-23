@@ -40,3 +40,17 @@ docker push \
   "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPO:latest"
 
 echo "✅ db-rds image built and pushed successfully"
+
+CLUSTER_NAME="CrdClusterFargateCluster"
+SERVICE_NAME="db-shell"
+
+echo "Updating ECS service to latest task definition..."
+
+aws ecs update-service \
+  --cluster "$CLUSTER_NAME" \
+  --service "$SERVICE_NAME" \
+  --task-definition "$ECR_REPO" \
+  --force-new-deployment \
+  --region "$REGION"
+
+echo "✅ ECS service updated"
