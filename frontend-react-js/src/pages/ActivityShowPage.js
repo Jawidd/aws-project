@@ -59,7 +59,7 @@ export default function ActivityShowPage() {
     <div className="app">
       <div className="main-container">
         <div className="sidebar">
-          <DesktopNavigation user={user} active={null} setPopped={setPopped} />
+          <DesktopNavigation user={user} active="status" setPopped={setPopped} />
         </div>
         <main className="main-content">
           <ActivityForm

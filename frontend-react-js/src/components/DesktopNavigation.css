@@ -3,6 +3,11 @@
   flex-direction: column;
   height: 100%;
   padding: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 275px;
+  z-index: 1000;
 }
 
 .nav-header {
@@ -40,6 +45,11 @@
 
 .nav-link.active {
   font-weight: 700;
+  color: #1d9bf0;
+}
+
+.nav-link.active .icon {
+  fill: #1d9bf0;
 }
 
 .nav-link .icon {
@@ -80,8 +90,13 @@
   .nav-container {
     flex-direction: row;
     height: 60px;
+    width: 100%;
+    top: auto;
+    bottom: 0;
+    left: 0;
     border-top: 1px solid #2f3336;
     background: #000;
+    position: fixed;
   }
   
   .nav-header {
