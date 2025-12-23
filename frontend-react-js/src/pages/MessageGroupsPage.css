@@ -1,1 +1,11 @@
-.message_groups {\n  width: 100%;\n  background: #000;\n}\n\n/* Mobile responsive message groups */\n@media (max-width: 768px) {\n  .message_groups {\n    width: 100%;\n  }\n}
+.message_groups {
+  width: 100%;
+  background: #000;
+}
+
+/* Mobile responsive message groups */
+@media (max-width: 768px) {
+  .message_groups {
+    width: 100%;
+  }
+}
