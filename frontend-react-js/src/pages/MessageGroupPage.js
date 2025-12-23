@@ -125,23 +125,25 @@ React.useEffect(() => {
   if (loading) return <LoadingSpinner text="Loading conversation..." />;
 
   return (
-    <article>
-      <DesktopNavigation user={user} active="messages" setPopped={setPopped} />
-      
-      <section className="message_groups">
-        <MessageGroupFeed 
-          message_groups={messageGroups} 
-          newMessages={newMessages}
-          setNewMessages={setNewMessages}
-        />
-      </section>
+    <div className="app">
+      <div className="main-container">
+        <div className="sidebar">
+          <DesktopNavigation user={user} active="messages" setPopped={setPopped} />
+        </div>
+        
+        <section className="message_groups">
+          <MessageGroupFeed 
+            message_groups={messageGroups} 
+            newMessages={newMessages}
+            setNewMessages={setNewMessages}
+          />
+        </section>
 
-      <div className="content messages">
-        {/* <MessagesFeed messages={messages} /> */}
-        <MessagesFeed messages={messages} user={user} />
-
-        <MessagesForm setMessages={setMessages} />
+        <main className="main-content messages">
+          <MessagesFeed messages={messages} user={user} />
+          <MessagesForm setMessages={setMessages} />
+        </main>
       </div>
-    </article>
+    </div>
   );
 }

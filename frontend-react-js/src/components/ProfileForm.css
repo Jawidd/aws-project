@@ -12,6 +12,7 @@ form.profile_form textarea {
   border: solid 1px #333;
   background: #1a1a1a;
   color: #fff;
+  box-sizing: border-box;
 }
 
 form.profile_form input[type='text']::placeholder,
@@ -39,6 +40,7 @@ form.profile_form label {
   align-items: center;
   gap: 12px;
   margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .profile_form .avatar_preview {
@@ -56,6 +58,7 @@ form.profile_form label {
   align-items: center;
   gap: 12px;
   margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .profile_form .cover_preview {
@@ -83,6 +86,7 @@ form.profile_form label {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  font-size: 14px;
 }
 
 .profile_form .upload_button input {
@@ -128,4 +132,58 @@ form.profile_form textarea:focus {
 
 .profile_popup button[type='submit']:hover {
   background: #7a00cc;
+}
+
+/* Mobile responsive profile form */
+@media (max-width: 768px) {
+  .profile_popup .popup_content {
+    padding: 12px;
+  }
+  
+  form.profile_form input[type='text'],
+  form.profile_form textarea {
+    padding: 12px;
+    font-size: 16px;
+  }
+  
+  .profile_form .avatar_upload,
+  .profile_form .cover_upload {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .profile_form .avatar_preview {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .profile_form .cover_preview {
+    width: 100%;
+    max-width: 200px;
+    height: 100px;
+  }
+  
+  form.profile_form textarea {
+    height: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile_popup .popup_content {
+    padding: 8px;
+  }
+  
+  form.profile_form .field.display_name {
+    margin-bottom: 16px;
+  }
+  
+  .profile_form .field.cover {
+    margin-bottom: 16px;
+  }
+  
+  .profile_form .upload_button {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
 }

@@ -42,7 +42,7 @@ export default function TrendingsSection(props) {
   return (
     <div className="trendings">
       <div className='trendings-header'>
-        <div className='trendings-title'>Most Liked</div>
+        <div className='trendings-title'>Trending</div>
         {hasMore && (
           <div className='trending-controls'>
             <button 

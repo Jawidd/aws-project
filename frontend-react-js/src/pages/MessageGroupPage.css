@@ -14,3 +14,21 @@
   padding: 16px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
 }
+
+.message_groups {
+  width: 300px;
+  border-right: 1px solid #2f3336;
+  background: #000;
+}
+
+/* Mobile responsive messages */
+@media (max-width: 768px) {
+  .message_groups {
+    display: none;
+  }
+  
+  .messages.content {
+    border-left: none;
+    border-right: none;
+  }
+}
