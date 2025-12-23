@@ -686,16 +686,6 @@ Resources:
                 Rules:
                   - Name: prefix
                     Value: avatar/original/
-        CoverPhotoUpload:
-          Type: S3
-          Properties:
-            Bucket: !Ref AssetsBucket
-            Events: s3:ObjectCreated:*
-            Filter:
-              S3Key:
-                Rules:
-                  - Name: prefix
-                    Value: cover-photos/
 
   AvatarDbConsumer:
     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
@@ -735,6 +725,16 @@ Resources:
           Type: SNS
           Properties:
             Topic: !Ref AvatarEventsTopic
+        CoverPhotoEvents:
+          Type: S3
+          Properties:
+            Bucket: !Ref AssetsBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: cover-photos/
 
   AvatarPresignFunction:
     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
