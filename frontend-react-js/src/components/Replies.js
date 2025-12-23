@@ -1,5 +1,9 @@
 import './Replies.css';
-import ActivityItem from './ActivityItem';
+import ActivityContent from './ActivityContent';
+import ActivityActionReply from './ActivityActionReply';
+import ActivityActionRepost from './ActivityActionRepost';
+import ActivityActionLike from './ActivityActionLike';
+import ActivityActionShare from './ActivityActionShare';
 
 export default function Replies(props) {
   const { replies = [], setReplyActivity, setPopped } = props;
@@ -13,14 +17,17 @@ export default function Replies(props) {
     );
   } else {
     content = (
-      <div className='activities_feed_collection'>
+      <div className='replies'>
         {replies.map((activity) => (
-          <ActivityItem
-            setReplyActivity={setReplyActivity}
-            setPopped={setPopped}
-            key={activity.uuid}
-            activity={activity}
-          />
+          <div key={activity.uuid} className='activity_item'>
+            <ActivityContent activity={activity} />
+            <div className="activity_actions">
+              <ActivityActionReply setReplyActivity={setReplyActivity} activity={activity} setPopped={setPopped} activity_uuid={activity.uuid} count={activity.replies_count}/>
+              <ActivityActionRepost activity_uuid={activity.uuid} count={activity.reposts_count}/>
+              <ActivityActionLike activity_uuid={activity.uuid} count={activity.likes_count} liked={activity.liked}/>
+              <ActivityActionShare activity_uuid={activity.uuid} />
+            </div>
+          </div>
         ))}
       </div>
     );
