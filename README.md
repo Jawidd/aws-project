@@ -69,9 +69,12 @@ I use multiple diagrams so it’s easier to understand each layer.
 ![All CFNs (excluding SAM)](_docs/diagrams/all%20cfns%20except%20SAM.svg)
 
 #### One big messy diagram (service map)
-I also have this file:
-- `_docs/diagrams/all.svg`
+I also have this diagram:
 
+- `_docs/diagrams/all.svg` (preferred)
+- `_docs/diagrams/all.png` (fallback)
+
+![All services](_docs/diagrams/all.svg)
 
 It’s one big messy “everything in one picture” diagram. I don’t use it as the main diagram, but it’s useful if you just want to quickly see **all AWS services involved** in the project.
 
