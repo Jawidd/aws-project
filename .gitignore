@@ -23,6 +23,8 @@ aws/cfn/networking/config.toml
 tmp/packaged-cicd-template.yaml
 tmp/
 
-_docs/*
+
 
 aws/cruddur-serverless/samconfig.toml
+
+_docs/diagramsignore/*
