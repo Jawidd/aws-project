@@ -1,0 +1,518 @@
+#!/usr/bin/env bash
+# =============================================================================
+# deploy-from-zero
+# Full deployment from scratch: infra → serverless → ECR image → frontend
+#
+# ASSUMPTIONS:
+#   - Route53 hosted zone for jawid.me already exists (Z07396163MWBNYQ71OQ9A)
+#   - ACM cert for ALB (eu-west-2) already exists
+#   - ACM cert for CloudFront (us-east-1) already exists
+#   - ACM cert for assets CloudFront (us-east-1) already exists
+#   - SSM parameters already exist under /cruddur/*:
+#       /cruddur/CONNECTION_URL
+#       /cruddur/AWS_ACCESS_KEY_ID
+#       /cruddur/AWS_SECRET_ACCESS_KEY
+#       /cruddur/ROLLBAR_ACCESS_TOKEN
+#       /cruddur/OTEL_EXPORTER_OTLP_HEADERS
+#   - Docker is running locally
+#   - AWS CLI is configured for account 225442939245 / eu-west-2
+#   - python:3.11-slim-buster image is available locally (needed for ECR push)
+#
+# USAGE:
+#   chmod +x bin/cfn/deploy-from-zero
+#   ./bin/cfn/deploy-from-zero
+# =============================================================================
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# =============================================================================
+# KNOWN FIXED VALUES
+# =============================================================================
+REGION="eu-west-2"
+ACCOUNT_ID="225442939245"
+BUCKET="cfn-artifacts-${ACCOUNT_ID}-${REGION}"
+
+# ACM certs — already issued and validated
+ALB_CERT_ARN="arn:aws:acm:eu-west-2:225442939245:certificate/4182aef0-5ba8-45d2-9ac1-1a300ef44bd3"
+CF_CERT_ARN="arn:aws:acm:us-east-1:225442939245:certificate/2cbac534-9a60-4476-aed9-4cf5389e3e2f"
+ASSETS_CERT_ARN="arn:aws:acm:us-east-1:225442939245:certificate/70355fe9-d8a3-4bd0-99de-081c2d6e3826"
+
+# Route53 — existing hosted zone, not recreated
+HOSTED_ZONE_ID="Z07396163MWBNYQ71OQ9A"
+
+# Domains
+ROOT_DOMAIN="cruddur.jawid.me"
+API_DOMAIN="api.cruddur.jawid.me"
+ASSETS_DOMAIN="assets.cruddur.jawid.me"
+
+# Database
+DB_MASTER_USERNAME="cruddurroot"
+DB_MASTER_PASSWORD="Super776Secre776tPassword"
+
+# Lambda security groups — created by SAM stack, needed by database stack
+# These are outputs from the SAM/serverless stack.
+# If redeploying SAM first, fetch them dynamically below.
+# If known from a previous deploy, hardcode here:
+POST_CONFIRM_SG="sg-0ec3c3bf0c287038c"
+AVATAR_DB_CONSUMER_SG="sg-08cee0111ea173ebe"
+
+# Cognito — outputs from CrdCognito stack (populated after deploy-cognito runs)
+COGNITO_USER_POOL_ID="eu-west-2_nYXT1Jren"
+COGNITO_USER_POOL_CLIENT_ID="vdsav0rco8m1afdqed8vo7j1i"
+
+# WebSocket — output from SAM stack (populated after sam deploy runs)
+WEBSOCKET_ENDPOINT="wss://e7y93hdkga.execute-api.eu-west-2.amazonaws.com/prod"
+AVATAR_API_URL="https://bgc7pnw9rh.execute-api.eu-west-2.amazonaws.com"
+
+# ECR
+ECR_URL="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
+BACKEND_IMAGE="${ECR_URL}/backend-flask:latest"
+
+# Stack names
+STACK_BOOTSTRAP="CfnBootstrap"
+STACK_NET="CrdNet"
+STACK_CLUSTER="CrdCluster"
+STACK_DB="CrdDb"
+STACK_ECR="CrdEcr"
+STACK_DNS="CrdDns"
+STACK_BACKEND="CrdSrvBackendFlask"
+STACK_FRONTEND="CrdSrvFrontend"
+STACK_COGNITO="CrdCognito"
+STACK_SAM="cruddur-serverless"
+
+# =============================================================================
+# HELPERS
+# =============================================================================
+log()  { printf "\n\033[1;35m== %s ==\033[0m\n" "$1"; }
+ok()   { printf "\033[1;32m✓ %s\033[0m\n" "$1"; }
+info() { printf "\033[0;36m  %s\033[0m\n" "$1"; }
+
+wait_stack() {
+  local stack=$1
+  local region=$2
+  info "Waiting for stack $stack to complete..."
+  aws cloudformation wait stack-create-complete \
+    --stack-name "$stack" --region "$region" 2>/dev/null || \
+  aws cloudformation wait stack-update-complete \
+    --stack-name "$stack" --region "$region" 2>/dev/null || true
+}
+
+# =============================================================================
+# STEP 1 — BOOTSTRAP (S3 artifacts bucket)
+# =============================================================================
+log "STEP 1: Bootstrap — S3 artifacts bucket"
+
+aws cloudformation deploy \
+  --stack-name "$STACK_BOOTSTRAP" \
+  --region "$REGION" \
+  --template-file "$ROOT_DIR/aws/cfn/bootstrap/bootstraping.yaml" \
+  --capabilities CAPABILITY_NAMED_IAM
+
+ok "Bootstrap done — bucket: $BUCKET"
+
+# =============================================================================
+# STEP 2 — NETWORKING (VPC, subnets, security groups, DynamoDB endpoint)
+# =============================================================================
+log "STEP 2: Networking — VPC, subnets, security groups"
+
+aws cloudformation deploy \
+  --stack-name "$STACK_NET" \
+  --s3-bucket "$BUCKET" \
+  --s3-prefix networking \
+  --region "$REGION" \
+  --template-file "$ROOT_DIR/aws/cfn/networking/networking.yaml" \
+  --tags group=cruddur-networking \
+  --capabilities CAPABILITY_NAMED_IAM
+
+ok "Networking done"
+info "Exports: ${STACK_NET}VpcId, ${STACK_NET}PublicSubnetIds, ${STACK_NET}PrivateSubnetIds"
+
+# =============================================================================
+# STEP 3 — ECR (repositories for backend-flask and cruddur-python)
+# =============================================================================
+log "STEP 3: ECR — container image repositories"
+
+aws cloudformation deploy \
+  --stack-name "$STACK_ECR" \
+  --s3-bucket "$BUCKET" \
+  --s3-prefix ecr \
+  --region "$REGION" \
+  --template-file "$ROOT_DIR/aws/cfn/ecr/ecr.yaml" \
+  --tags group=cruddur-ecr \
+  --capabilities CAPABILITY_NAMED_IAM
+
+ok "ECR done — repos: backend-flask, cruddur-python"
+
+# =============================================================================
+# STEP 4 — CLUSTER (ECS Fargate cluster + ALB)
+# =============================================================================
+log "STEP 4: Cluster — ECS Fargate + ALB"
+info "Using ALB cert: $ALB_CERT_ARN"
+
+aws cloudformation deploy \
+  --stack-name "$STACK_CLUSTER" \
+  --s3-bucket "$BUCKET" \
+  --s3-prefix cluster \
+  --region "$REGION" \
+  --template-file "$ROOT_DIR/aws/cfn/cluster/cluster.yaml" \
+  --tags group=cruddur-cluster \
+  --parameter-overrides \
+    NetworkingStack="$STACK_NET" \
+    CertificateArn="$ALB_CERT_ARN" \
+  --capabilities CAPABILITY_NAMED_IAM
+
+ok "Cluster done"
+info "Exports: ${STACK_CLUSTER}ClusterName, ${STACK_CLUSTER}ALBDnsName, ${STACK_CLUSTER}ServiceSecurityGroupId"
+
+# =============================================================================
+# STEP 5 — DATABASE PASS 1 (RDS PostgreSQL — placeholder Lambda SG IDs)
+#
+# The database stack needs Lambda SG IDs from the SAM stack, but the SAM stack
+# needs the DB security group export from this stack. Deploy DB first with the
+# cluster's own service SG as a placeholder, then update after SAM runs.
+# =============================================================================
+log "STEP 5: Database (pass 1) — RDS PostgreSQL with placeholder Lambda SG IDs"
+
+# Use the cluster service SG as a safe placeholder — it already has RDS egress
+# rules and won't break the stack. We update with real Lambda SGs after SAM.
+CLUSTER_SERVICE_SG=$(aws cloudformation describe-stacks \
+  --stack-name "$STACK_CLUSTER" \
+  --region "$REGION" \
+  --query "Stacks[0].Outputs[?OutputKey=='ServiceSecurityGroupId'].OutputValue" \
+  --output text)
+
+info "Using cluster service SG as placeholder: $CLUSTER_SERVICE_SG"
+
+aws cloudformation deploy \
+  --stack-name "$STACK_DB" \
+  --s3-bucket "$BUCKET" \
+  --s3-prefix db \
+  --region "$REGION" \
+  --template-file "$ROOT_DIR/aws/cfn/database/database.yaml" \
+  --tags group=cruddur-db \
+  --parameter-overrides \
+    NetworkingStack="$STACK_NET" \
+    ClusterStack="$STACK_CLUSTER" \
+    MasterUsername="$DB_MASTER_USERNAME" \
+    MasterUserPassword="$DB_MASTER_PASSWORD" \
+    PostConfirmationLambdaSecurityGroupId="$CLUSTER_SERVICE_SG" \
+    DbConsumerLambdaSecurityGroupId="$CLUSTER_SERVICE_SG" \
+  --capabilities CAPABILITY_NAMED_IAM
+
+ok "Database (pass 1) done"
+info "Exports: ${STACK_DB}DBEndpoint, ${STACK_DB}DBSecurityGroupId"
+
+RDS_ENDPOINT=$(aws cloudformation describe-stacks \
+  --stack-name "$STACK_DB" \
+  --region "$REGION" \
+  --query "Stacks[0].Outputs[?OutputKey=='DBEndpoint'].OutputValue" \
+  --output text)
+info "RDS endpoint: $RDS_ENDPOINT"
+
+# =============================================================================
+# STEP 6 — SERVERLESS (SAM: DynamoDB, WebSocket, Lambda, S3 assets, SNS)
+#
+# Now CrdDb exists so SAM can import CrdDbDBSecurityGroupId.
+# =============================================================================
+log "STEP 6: Serverless — SAM stack (DynamoDB, WebSocket, Lambda, S3, SNS)"
+info "Stack: $STACK_SAM"
+
+cd "$ROOT_DIR/aws/cruddur-serverless"
+
+cat > samconfig.toml <<SAMCONFIG
+version = 0.1
+
+[default.global.parameters]
+stack_name = "${STACK_SAM}"
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
+confirm_changeset = false
+resolve_s3 = true
+s3_prefix = "cruddur-serverless"
+region = "${REGION}"
+image_repositories = []
+parameter_overrides = "CognitoUserPoolId=${COGNITO_USER_POOL_ID} CognitoUserPoolClientId=${COGNITO_USER_POOL_CLIENT_ID} AssetsBucketName=${ASSETS_DOMAIN} FrontendOrigin=https://${ROOT_DOMAIN} NetworkingStack=${STACK_NET} DatabaseStack=${STACK_DB} FrontendStack=${STACK_FRONTEND}"
+SAMCONFIG
+
+sam build
+sam deploy
+
+ok "SAM stack done"
+info "Outputs: WebSocket endpoint, Avatar API URL, DynamoDB table names, Lambda SG IDs"
+
+# Fetch real Lambda SG IDs created by SAM
+POST_CONFIRM_SG=$(aws ec2 describe-security-groups \
+  --region "$REGION" \
+  --filters "Name=group-name,Values=${STACK_SAM}PostConfirmationSG" \
+  --query "SecurityGroups[0].GroupId" \
+  --output text 2>/dev/null || echo "$POST_CONFIRM_SG")
+
+AVATAR_DB_CONSUMER_SG=$(aws ec2 describe-security-groups \
+  --region "$REGION" \
+  --filters "Name=group-name,Values=${STACK_SAM}AvatarDbConsumerSG" \
+  --query "SecurityGroups[0].GroupId" \
+  --output text 2>/dev/null || echo "$AVATAR_DB_CONSUMER_SG")
+
+info "PostConfirmation SG: $POST_CONFIRM_SG"
+info "AvatarDbConsumer SG: $AVATAR_DB_CONSUMER_SG"
+
+# Fetch real WebSocket and Avatar API endpoints from SAM outputs
+WEBSOCKET_ENDPOINT=$(aws cloudformation describe-stacks \
+  --stack-name "$STACK_SAM" \
+  --region "$REGION" \
+  --query "Stacks[0].Outputs[?OutputKey=='WebSocketApiEndpoint'].OutputValue" \
+  --output text 2>/dev/null || echo "$WEBSOCKET_ENDPOINT")
+
+AVATAR_API_URL=$(aws cloudformation describe-stacks \
+  --stack-name "$STACK_SAM" \
+  --region "$REGION" \
+  --query "Stacks[0].Outputs[?OutputKey=='AvatarUploadApiUrl'].OutputValue" \
+  --output text 2>/dev/null || echo "$AVATAR_API_URL")
+
+info "WebSocket endpoint: $WEBSOCKET_ENDPOINT"
+info "Avatar API URL:     $AVATAR_API_URL"
+
+cd "$ROOT_DIR"
+
+# =============================================================================
+# STEP 6b — DATABASE PASS 2 (update with real Lambda SG IDs from SAM)
+# =============================================================================
+log "STEP 6b: Database (pass 2) — update with real Lambda SG IDs"
+info "PostConfirmation SG: $POST_CONFIRM_SG"
+info "AvatarDbConsumer SG: $AVATAR_DB_CONSUMER_SG"
+
+aws cloudformation deploy \
+  --stack-name "$STACK_DB" \
+  --s3-bucket "$BUCKET" \
+  --s3-prefix db \
+  --region "$REGION" \
+  --template-file "$ROOT_DIR/aws/cfn/database/database.yaml" \
+  --tags group=cruddur-db \
+  --parameter-overrides \
+    NetworkingStack="$STACK_NET" \
+    ClusterStack="$STACK_CLUSTER" \
+    MasterUsername="$DB_MASTER_USERNAME" \
+    MasterUserPassword="$DB_MASTER_PASSWORD" \
+    PostConfirmationLambdaSecurityGroupId="$POST_CONFIRM_SG" \
+    DbConsumerLambdaSecurityGroupId="$AVATAR_DB_CONSUMER_SG" \
+  --capabilities CAPABILITY_NAMED_IAM
+
+ok "Database (pass 2) done — Lambda SGs wired to RDS security group"
+
+# =============================================================================
+# STEP 7 — DNS (Route53 alias record for api.cruddur.jawid.me → ALB)
+#
+# Hosted zone already exists — the dns.yaml creates the ACM cert and
+# the api.cruddur.jawid.me alias record pointing to the ALB.
+# =============================================================================
+log "STEP 7: DNS — ACM cert + api.cruddur.jawid.me alias record"
+
+aws cloudformation deploy \
+  --stack-name "$STACK_DNS" \
+  --s3-bucket "$BUCKET" \
+  --s3-prefix dns \
+  --region "$REGION" \
+  --template-file "$ROOT_DIR/aws/cfn/dns/dns.yaml" \
+  --tags group=cruddur-dns \
+  --parameter-overrides \
+    ClusterStack="$STACK_CLUSTER" \
+  --capabilities CAPABILITY_NAMED_IAM
+
+ok "DNS done"
+info "Exports: ${STACK_DNS}HostedZoneId, ${STACK_DNS}CertificateArn"
+
+# =============================================================================
+# STEP 8 — COGNITO (User Pool + App Client, wired to post-confirmation Lambda)
+# =============================================================================
+log "STEP 8: Cognito — User Pool + App Client"
+
+aws cloudformation deploy \
+  --stack-name "$STACK_COGNITO" \
+  --s3-bucket "$BUCKET" \
+  --s3-prefix cognito \
+  --region "$REGION" \
+  --template-file "$ROOT_DIR/aws/cfn/cognito/cognito.yaml" \
+  --tags group=cruddur-cognito \
+  --parameter-overrides \
+    EnvironmentSelection="prod" \
+  --capabilities CAPABILITY_NAMED_IAM
+
+ok "Cognito done"
+info "Exports: ${STACK_COGNITO}UserPoolId, ${STACK_COGNITO}UserPoolClientId"
+
+# Fetch Cognito IDs from stack outputs (in case they changed)
+COGNITO_USER_POOL_ID=$(aws cloudformation describe-stacks \
+  --stack-name "$STACK_COGNITO" \
+  --region "$REGION" \
+  --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" \
+  --output text 2>/dev/null || echo "$COGNITO_USER_POOL_ID")
+
+COGNITO_USER_POOL_CLIENT_ID=$(aws cloudformation describe-stacks \
+  --stack-name "$STACK_COGNITO" \
+  --region "$REGION" \
+  --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" \
+  --output text 2>/dev/null || echo "$COGNITO_USER_POOL_CLIENT_ID")
+
+info "Cognito Pool ID: $COGNITO_USER_POOL_ID"
+info "Cognito Client ID: $COGNITO_USER_POOL_CLIENT_ID"
+
+# =============================================================================
+# STEP 9 — BUILD + PUSH BACKEND DOCKER IMAGE TO ECR
+# =============================================================================
+log "STEP 9: Build + push backend Docker image to ECR"
+
+# ECR login
+aws ecr get-login-password --region "$REGION" \
+  | docker login --username AWS --password-stdin "$ECR_URL"
+
+# Build
+cd "$ROOT_DIR/backend-flask"
+docker build -f Dockerfile.prod -t backend-flask-prod .
+
+# Tag + push
+docker tag backend-flask-prod:latest "$BACKEND_IMAGE"
+docker push "$BACKEND_IMAGE"
+
+ok "Backend image pushed: $BACKEND_IMAGE"
+cd "$ROOT_DIR"
+
+# =============================================================================
+# STEP 10 — BACKEND SERVICE (ECS Fargate service + task definition)
+# =============================================================================
+log "STEP 10: Backend Service — ECS Fargate service"
+
+aws cloudformation deploy \
+  --stack-name "$STACK_BACKEND" \
+  --s3-bucket "$BUCKET" \
+  --s3-prefix backend-service \
+  --region "$REGION" \
+  --template-file "$ROOT_DIR/aws/cfn/backend-service/backend-service.yaml" \
+  --tags group=cruddur-backend-flask \
+  --parameter-overrides \
+    NetworkingStack="$STACK_NET" \
+    ClusterStack="$STACK_CLUSTER" \
+    EnvCognitoUserPoolId="$COGNITO_USER_POOL_ID" \
+    EnvCognitoUserPoolClientId="$COGNITO_USER_POOL_CLIENT_ID" \
+    EnvWebsocketApiEndpoint="$WEBSOCKET_ENDPOINT" \
+  --capabilities CAPABILITY_NAMED_IAM
+
+ok "Backend service done"
+info "Exports: ${STACK_BACKEND}ServiceName, ${STACK_BACKEND}TaskDefinitionArn"
+
+# =============================================================================
+# STEP 11 — FRONTEND (CloudFront + S3 for cruddur.jawid.me and assets)
+# =============================================================================
+log "STEP 11: Frontend — CloudFront + S3"
+info "Using CF cert:     $CF_CERT_ARN"
+info "Using assets cert: $ASSETS_CERT_ARN"
+info "Using hosted zone: $HOSTED_ZONE_ID"
+
+aws cloudformation deploy \
+  --stack-name "$STACK_FRONTEND" \
+  --s3-bucket "$BUCKET" \
+  --s3-prefix frontend-service \
+  --region "$REGION" \
+  --template-file "$ROOT_DIR/aws/cfn/frontend-ecs/frontend-ecs.yaml" \
+  --tags group=cruddur-frontend \
+  --parameter-overrides \
+    CertificateArn="$CF_CERT_ARN" \
+    AssetsCertificateArn="$ASSETS_CERT_ARN" \
+    RootDomainName="$ROOT_DOMAIN" \
+    AssetsDomainName="$ASSETS_DOMAIN" \
+    HostedZoneId="$HOSTED_ZONE_ID" \
+    ExistingOACId="E3VXAIPGONI24J" \
+  --capabilities CAPABILITY_NAMED_IAM
+
+ok "Frontend stack done"
+info "Exports: ${STACK_FRONTEND}AssetsDistributionId, S3 bucket for cruddur.jawid.me"
+
+# Fetch CloudFront distribution ID for invalidation later
+CF_DIST_ID=$(aws cloudformation describe-stacks \
+  --stack-name "$STACK_FRONTEND" \
+  --region "$REGION" \
+  --query "Stacks[0].Outputs[?contains(OutputKey,'DistributionId')].OutputValue" \
+  --output text 2>/dev/null || echo "")
+
+# =============================================================================
+# STEP 12 — BUILD + UPLOAD FRONTEND TO S3
+# =============================================================================
+log "STEP 12: Build + upload React frontend to S3"
+
+cd "$ROOT_DIR/frontend-react-js"
+
+docker build \
+  --build-arg REACT_APP_BACKEND_URL="https://${API_DOMAIN}" \
+  --build-arg REACT_APP_WEBSOCKET_URL="$WEBSOCKET_ENDPOINT" \
+  --build-arg REACT_APP_AWS_REGION="$REGION" \
+  --build-arg REACT_APP_USER_POOL_ID="$COGNITO_USER_POOL_ID" \
+  --build-arg REACT_APP_USER_POOL_CLIENT_ID="$COGNITO_USER_POOL_CLIENT_ID" \
+  --build-arg REACT_APP_AVATAR_API_URL="$AVATAR_API_URL" \
+  --build-arg REACT_APP_ASSETS_BASE_URL="https://${ASSETS_DOMAIN}" \
+  -t frontend-react-js \
+  -f Dockerfile.prod \
+  .
+
+# Extract build from nginx image
+docker rm -f temp-container >/dev/null 2>&1 || true
+docker create --name temp-container frontend-react-js
+docker cp temp-container:/usr/share/nginx/html ./build
+docker rm temp-container
+
+# Sync to S3
+aws s3 sync ./build/ "s3://${ROOT_DOMAIN}" --delete --region "$REGION"
+
+# Invalidate CloudFront
+if [[ -n "$CF_DIST_ID" && "$CF_DIST_ID" != "None" ]]; then
+  aws cloudfront create-invalidation \
+    --distribution-id "$CF_DIST_ID" \
+    --paths "/*"
+  ok "CloudFront invalidation triggered: $CF_DIST_ID"
+fi
+
+rm -rf ./build
+ok "Frontend uploaded to s3://${ROOT_DOMAIN}"
+cd "$ROOT_DIR"
+
+# =============================================================================
+# STEP 13 — DATABASE SCHEMA + SEED
+# =============================================================================
+log "STEP 13: Load database schema and seed data"
+info "RDS endpoint: $RDS_ENDPOINT"
+info "Make sure CONNECTION_URL in SSM points to: postgresql://${DB_MASTER_USERNAME}:<password>@${RDS_ENDPOINT}:5432/cruddur"
+
+# Requires psql and AWS_RDS_PSQL_CONNECTION to be set in backend-flask/db/bin/.env
+# or run manually:
+info "Run manually if psql is available:"
+info "  cd backend-flask"
+info "  ENV_TYPE=prod AWS_RDS_PSQL_CONNECTION=\"postgresql://${DB_MASTER_USERNAME}:${DB_MASTER_PASSWORD}@${RDS_ENDPOINT}:5432/cruddur\" ./db/bin/schema-load"
+info "  ENV_TYPE=prod AWS_RDS_PSQL_CONNECTION=\"postgresql://${DB_MASTER_USERNAME}:${DB_MASTER_PASSWORD}@${RDS_ENDPOINT}:5432/cruddur\" ./db/bin/seed"
+
+# =============================================================================
+# DONE
+# =============================================================================
+printf "\n\033[1;32m"
+echo "=============================================="
+echo " DEPLOYMENT COMPLETE"
+echo "=============================================="
+printf "\033[0m"
+echo ""
+echo "  Frontend:  https://${ROOT_DOMAIN}"
+echo "  API:       https://${API_DOMAIN}/api/health-check"
+echo "  WebSocket: ${WEBSOCKET_ENDPOINT}"
+echo "  Assets:    https://${ASSETS_DOMAIN}"
+echo ""
+echo "  Cognito Pool ID:    $COGNITO_USER_POOL_ID"
+echo "  Cognito Client ID:  $COGNITO_USER_POOL_CLIENT_ID"
+echo "  RDS Endpoint:       $RDS_ENDPOINT"
+echo ""
+echo "  WebSocket test:"
+echo "    node backend-flask/bin/ddb/web-socket-test.js"
+echo ""

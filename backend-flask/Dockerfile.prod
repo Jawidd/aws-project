@@ -1,6 +1,6 @@
-# FROM python:3.11-slim
+FROM python:3.11-slim
 
-FROM 225442939245.dkr.ecr.eu-west-2.amazonaws.com/cruddur-python:3.11-slim-buster
+# FROM 225442939245.dkr.ecr.eu-west-2.amazonaws.com/cruddur-python:3.11-slim-buster
 
 
 # Inside Container

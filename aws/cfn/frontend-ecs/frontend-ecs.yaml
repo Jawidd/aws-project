@@ -29,6 +29,14 @@ Parameters:
     Type: String
     Description: Route53 hosted zone ID for jawid.me
 
+  ExistingOACId:
+    Type: String
+    Description: Existing CloudFront OAC ID to reuse (leave empty to create new)
+    Default: ""
+
+Conditions:
+  CreateOAC: !Equals [!Ref ExistingOACId, ""]
+
 Resources:
   # ======================================================================
   # ORIGIN ACCESS CONTROLS
@@ -36,6 +44,7 @@ Resources:
 
   OriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
+    Condition: CreateOAC
     Properties:
       OriginAccessControlConfig:
         Name: !Sub "${AWS::StackName}OAC"
@@ -93,7 +102,7 @@ Resources:
             DomainName: !Sub "${RootDomainName}.s3.amazonaws.com"
             S3OriginConfig:
               OriginAccessIdentity: ''
-            OriginAccessControlId: !GetAtt OriginAccessControl.Id
+            OriginAccessControlId: !If [CreateOAC, !GetAtt OriginAccessControl.Id, !Ref ExistingOACId]
         DefaultCacheBehavior:
           TargetOriginId: RootBucketOrigin
           ViewerProtocolPolicy: redirect-to-https
@@ -129,7 +138,7 @@ Resources:
             DomainName: !Sub "${AssetsDomainName}.s3.eu-west-2.amazonaws.com"
             S3OriginConfig:
               OriginAccessIdentity: ''
-            OriginAccessControlId: !GetAtt OriginAccessControl.Id
+            OriginAccessControlId: !If [CreateOAC, !GetAtt OriginAccessControl.Id, !Ref ExistingOACId]
         DefaultCacheBehavior:
           TargetOriginId: assets.cruddur.jawid.me.s3.eu-west-2.amazonaws.com-mj0cubkjcy5
           ViewerProtocolPolicy: redirect-to-https
@@ -140,7 +149,6 @@ Resources:
         ViewerCertificate:
           AcmCertificateArn: !Ref AssetsCertificateArn
           SslSupportMethod: sni-only
-        WebACLId: arn:aws:wafv2:us-east-1:225442939245:global/webacl/CreatedByCloudFront-f5e379b1/22d5a400-c29b-4358-86de-7c3373fcbe95
 
   CruddurAliasRecord:
     Type: AWS::Route53::RecordSet
