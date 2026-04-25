@@ -1,54 +1,49 @@
 .about-page {
   max-width: 760px;
   margin: 0 auto;
-  padding: 3rem 1.5rem;
-  color: rgba(255, 255, 255, 0.9);
+  padding: 2rem 1.5rem;
+  color: var(--text);
   display: flex;
   justify-content: center;
 }
 
 .about-card {
   width: 100%;
-  padding: 2.5rem;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(255, 255, 255, 0.06);
+  padding: 1.75rem;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
 }
 
 .about-card h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 1rem;
   text-align: center;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text);
 }
 
 .about-card p {
-  font-size: 1.05rem;
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.85);
-  text-align: center;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+  opacity: 0.92;
+  margin-bottom: 0.95rem;
 }
 
 .about-card a {
-  color: #3b82f6;
+  color: var(--accent);
   font-weight: 600;
   text-decoration: none;
 }
 
 .about-card a:hover {
-  color: #60a5fa;
   text-decoration: underline;
 }
 
 .about-actions {
-  margin-top: 1.75rem;
+  margin-top: 1.25rem;
   display: flex;
   justify-content: center;
 }
@@ -57,31 +52,29 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 24px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--accent);
   color: #fff;
   font-weight: 700;
   text-decoration: none;
-  box-shadow: 0 14px 30px rgba(59, 130, 246, 0.35);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .home-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 36px rgba(59, 130, 246, 0.45);
+  background: var(--accent-hover);
+  color: #fff;
 }
 
 @media (max-width: 640px) {
   .about-page {
-    padding: 2rem 1rem;
+    padding: 1.5rem 1rem;
   }
 
   .about-card {
-    padding: 2rem 1.5rem;
+    padding: 1.3rem;
   }
 
   .about-card h1 {
-    font-size: 2.1rem;
+    font-size: 1.7rem;
   }
 }

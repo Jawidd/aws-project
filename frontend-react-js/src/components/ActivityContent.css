@@ -11,12 +11,13 @@
 }
 
 .activity_content_wrap .activity_avatar {
-  background: #1d9bf0;
+  background: var(--surface-muted);
   height: 40px;
   width: 40px;
-  border-radius: 50%;
+  border-radius: 999px;
   flex-shrink: 0;
   display: block;
+  border: 1px solid var(--border);
 }
 
 .activity_content .activity_meta {
@@ -41,7 +42,7 @@
 
 .activity_content .activity_identity .display_name {
   font-weight: 700;
-  color: #e7e9ea;
+  color: var(--text);
   font-size: 15px;
 }
 
@@ -49,10 +50,11 @@
   text-decoration: underline;
 }
 
-.activity_content .activity_identity .handle {
-  color: #71767b;
+.activity_content .activity_identity .handle,
+.activity_content .activity_times .created_at {
+  color: var(--text-muted);
+  font-size: 14px;
   font-weight: 400;
-  font-size: 15px;
 }
 
 .activity_content .activity_times {
@@ -61,46 +63,34 @@
   gap: 4px;
 }
 
-.activity_content .activity_times .created_at {
-  color: #71767b;
-  font-size: 15px;
-  font-weight: 400;
-}
-
 .activity_content .activity_times .expires_at {
-  color: #1d9bf0;
-  font-size: 15px;
-  font-weight: 400;
+  color: var(--accent);
+  font-size: 14px;
   display: flex;
   gap: 4px;
   align-items: center;
 }
 
 .activity_content .activity_times .expires_at svg.icon {
-  fill: #1d9bf0;
+  fill: var(--accent);
   width: 14px;
   height: 14px;
 }
 
 .activity_content .message {
-  color: #e7e9ea;
+  color: var(--text);
   font-size: 15px;
-  line-height: 1.3125;
+  line-height: 1.35;
   margin-top: 4px;
   word-wrap: break-word;
 }
 
-/* Mobile styles */
 @media (max-width: 768px) {
-  .activity_content_wrap {
-    gap: 10px;
-  }
-  
   .activity_content_wrap .activity_avatar {
     height: 36px;
     width: 36px;
   }
-  
+
   .activity_content .activity_identity .display_name,
   .activity_content .activity_identity .handle,
   .activity_content .activity_times .created_at,
@@ -110,15 +100,11 @@
 }
 
 @media (max-width: 480px) {
-  .activity_content_wrap {
-    gap: 8px;
-  }
-  
   .activity_content_wrap .activity_avatar {
     height: 32px;
     width: 32px;
   }
-  
+
   .activity_content .activity_identity .display_name,
   .activity_content .activity_identity .handle,
   .activity_content .activity_times .created_at,

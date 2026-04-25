@@ -11,10 +11,11 @@
 .content_feed_heading {
   display: flex;
   align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid #2f3336;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(12px);
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.85);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -22,9 +23,42 @@
 
 .activity_feed_heading .title,
 .content_feed_heading .title {
-  color: #e7e9ea;
+  color: var(--text);
   font-weight: 700;
   font-size: 20px;
+}
+
+.activity_controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control_btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-elevated);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.control_btn:hover:not(.disabled) {
+  background: rgba(29, 155, 240, 0.16);
+}
+
+.control_btn.disabled,
+.control_btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.activity_counter {
+  color: var(--text-muted);
+  font-size: 12px;
 }
 
 .no_activities {
@@ -32,17 +66,16 @@
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  color: #71767b;
+  color: var(--text-muted);
   font-size: 16px;
 }
 
-/* Mobile styles */
 @media (max-width: 768px) {
   .activity_feed_heading,
   .content_feed_heading {
     padding: 12px 16px;
   }
-  
+
   .activity_feed_heading .title,
   .content_feed_heading .title {
     font-size: 18px;
@@ -54,9 +87,13 @@
   .content_feed_heading {
     padding: 10px 12px;
   }
-  
+
   .activity_feed_heading .title,
   .content_feed_heading .title {
     font-size: 16px;
+  }
+
+  .activity_counter {
+    display: none;
   }
 }

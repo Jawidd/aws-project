@@ -1,29 +1,22 @@
 .trendings {
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
-  backdrop-filter: blur(25px);
-  border-radius: 16px;
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
 .trendings-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.08) 100%);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
 }
 
 .trendings-title {
-  color: #fff;
+  color: var(--text);
   font-weight: 700;
   font-size: 18px;
-  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #1d4ed8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .trending-controls {
@@ -32,31 +25,31 @@
 }
 
 .trending-btn {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(99, 102, 241, 0.15) 100%);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  color: #60a5fa;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   font-size: 16px;
-  font-weight: bold;
-  transition: all 0.2s ease;
+  font-weight: 700;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 .trending-btn:hover:not(.disabled) {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(99, 102, 241, 0.25) 100%);
-  transform: scale(1.1);
+  background: rgba(29, 155, 240, 0.16);
+  border-color: rgba(29, 155, 240, 0.45);
 }
 
 .trending-btn.disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
 .trending-collection {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.2s;
 }

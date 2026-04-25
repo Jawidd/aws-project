@@ -1,26 +1,19 @@
 section.message_groups {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0px;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  padding: 0;
 }
 
 .message_group_feed_heading {
-  padding: 24px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.02);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
 }
 
 .message_group_feed_heading .title {
-  color: #fff;
+  color: var(--text);
   font-weight: 700;
-  font-size: 24px;
-  letter-spacing: -0.025em;
-  background: linear-gradient(135deg, #fff 0%, #e2e8f0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 20px;
 }
 
 .message_group_feed {
@@ -35,25 +28,19 @@ section.message_groups {
 }
 
 .users_without_conversations_heading {
-  padding: 20px 24px 16px;
-  border-top: 1px solid rgba(59, 130, 246, 0.2);
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(99, 102, 241, 0.03) 100%);
-  margin-top: 16px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
 }
 
 .users_without_conversations_heading .title {
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 600;
-  font-size: 16px;
-  letter-spacing: -0.025em;
-  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 15px;
 }
 
 .users_without_conversations_collection {
-  padding: 0 16px 16px;
+  padding: 0 12px 12px;
   max-height: 300px;
   overflow-y: auto;
 }

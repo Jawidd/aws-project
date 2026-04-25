@@ -1,10 +1,9 @@
 .join {
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   margin-top: 24px;
   overflow: hidden;
 }
@@ -12,59 +11,57 @@
 .join .join-title {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.join p {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 16px;
-  text-align: center;
-  line-height: 1.5;
+  color: var(--text);
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
 }
 
 .join-content {
-  padding: 24px;
+  padding: 16px;
+}
+
+.join p {
+  color: var(--text);
+  opacity: 0.9;
+  font-size: 15px;
+  text-align: left;
+  line-height: 1.5;
+  margin: 0 0 8px;
 }
 
 .join-content a.action {
   display: block;
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  background: var(--accent);
   color: #fff;
   border: none;
   text-decoration: none;
-  border-radius: 12px;
+  border-radius: 999px;
   width: 100%;
-  font-size: 16px;
-  font-weight: 600;
-  padding: 16px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 18px;
   text-align: center;
-  margin-top: 20px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  margin-top: 14px;
+  transition: background-color 0.2s ease;
 }
 
 .join-content a.action:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+  background: var(--accent-hover);
 }
 
 .join-content a.subaction {
-  color: #3b82f6;
+  color: var(--accent);
   text-align: center;
   text-decoration: none;
   display: block;
-  padding: 12px 16px;
-  margin-top: 12px;
-  font-size: 16px;
+  padding: 10px;
+  margin-top: 8px;
+  font-size: 14px;
   font-weight: 600;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  border-radius: 999px;
+  transition: background-color 0.2s ease;
 }
 
 .join-content a.subaction:hover {
-  background: rgba(59, 130, 246, 0.1);
-  transform: translateY(-1px);
+  background: rgba(29, 155, 240, 0.12);
 }

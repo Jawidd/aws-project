@@ -1,9 +1,8 @@
 .message_groups {
   width: 100%;
-  background: #000;
+  background: var(--bg);
 }
 
-/* Mobile responsive message groups */
 @media (max-width: 768px) {
   .message_groups {
     width: 100%;

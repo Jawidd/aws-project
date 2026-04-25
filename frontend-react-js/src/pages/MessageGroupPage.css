@@ -1,32 +1,30 @@
 .messages.content {
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
   flex: 1;
 }
 
 .message_feed {
   flex-grow: 1;
   overflow: auto;
-  padding: 16px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
+  padding: 0;
+  background: var(--bg);
 }
 
 .message_groups {
   width: 300px;
-  border-right: 1px solid #2f3336;
-  background: #000;
+  border-right: 1px solid var(--border);
+  background: var(--bg);
 }
 
-/* Mobile responsive messages */
 @media (max-width: 768px) {
   .message_groups {
     display: none;
   }
-  
+
   .messages.content {
     border-left: none;
     border-right: none;

@@ -1,12 +1,16 @@
 .trending_activity {
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
+.trending_activity:last-child {
+  border-bottom: none;
+}
+
 .trending_activity:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(231, 233, 234, 0.05);
 }
 
 .trending_activity_content {
@@ -16,9 +20,10 @@
 }
 
 .trending_activity_message {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text);
   font-size: 14px;
   line-height: 1.4;
+  word-break: break-word;
 }
 
 .trending_activity_meta {
@@ -28,7 +33,7 @@
 }
 
 .trending_activity_author {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   font-size: 12px;
   font-weight: 500;
 }
@@ -37,7 +42,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #ef4444;
+  color: #f91880;
   font-size: 12px;
   font-weight: 600;
 }
@@ -45,5 +50,5 @@
 .trending_heart_icon {
   width: 12px;
   height: 12px;
-  fill: #ef4444;
+  fill: #f91880;
 }
